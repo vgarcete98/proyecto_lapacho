@@ -1,6 +1,10 @@
 
 const express = require( 'express' );
 
+const rutas = require( '../routes/routes' );
+
+const router_socio = require( '../routes/socio_routes' )
+
 class Server {
 
 
@@ -22,6 +26,7 @@ class Server {
     }
 
     routes () {
+        this.app.use( rutas.Socio.ruta, router_socio );
 
     }
 
@@ -29,9 +34,9 @@ class Server {
     listen(){
 
 
-        this.app.listen( ()=>{
+        this.app.listen( this.PUERTO, ()=>{
 
-            console.log ( `ESCUCHANDO PUERTO  ${ this.PUERTO } ` )
+            console.log ( `ESCUCHANDO PUERTO  ${ this.PUERTO }` )
 
         } )
     }

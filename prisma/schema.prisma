@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,4 +5,205 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model accesos_usuario {
+  id_acceso          BigInt        @id(map: "accesos_usuario_pk") @default(autoincrement())
+  id_rol_usuario     BigInt
+  id_usuario         BigInt
+  descripcion_acceso String        @db.VarChar(255)
+  roles_usuario      roles_usuario @relation(fields: [id_rol_usuario], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_accesos_usuario_fk")
+  usuario            usuario       @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "usuario_accesos_usuario_fk")
+}
+
+model agendamiento_clase {
+  id_agendamiento    BigInt   @id(map: "agendamiento_clase_pk") @default(autoincrement())
+  id_socio           BigInt
+  fecha_agendamiento DateTime @db.Date
+  horario_inicio     String   @db.VarChar(10)
+  horario_hasta      String   @db.VarChar(10)
+  socio              socio    @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_agendamiento_clase_fk")
+}
+
+model calendario_eventos {
+  id_evento_calendario BigInt          @id(map: "calendario_eventos_pk") @default(autoincrement())
+  id_tipo_evento       BigInt
+  fecha_desde_evento   DateTime        @db.Date
+  fecha_hasta_evento   DateTime?       @db.Date
+  costo                BigInt?
+  eventos              eventos         @relation(fields: [id_tipo_evento], references: [id_tipo_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_calendario_eventos_fk")
+  inscripciones        inscripciones[]
+}
+
+model clubes_habilitados {
+  id_club_habilitado     BigInt        @id(map: "clubes_habilitados_pk") @default(autoincrement())
+  nombre_club_habilitado String        @db.VarChar(255)
+  esta_habilitado        Boolean       @default(false)
+  pases_socio            pases_socio[]
+}
+
+model cuotas_socio {
+  id_cuota_socio    BigInt         @id(map: "cuotas_socio_pk") @default(autoincrement())
+  id_socio          BigInt
+  id_tipo_cuota     BigInt
+  id_tipo_descuento BigInt
+  fecha_vencimiento DateTime       @db.Date
+  descripcion       String         @db.VarChar(255)
+  descuento         Float?         @db.Real
+  socio             socio          @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_cuotas_socio_fk")
+  tipo_cuota        tipo_cuota     @relation(fields: [id_tipo_cuota], references: [id_tipo_cuota], onDelete: NoAction, onUpdate: NoAction, map: "tipo_cuota_cuotas_socio_fk")
+  tipo_descuento    tipo_descuento @relation(fields: [id_tipo_descuento], references: [id_tipo_descuento], onDelete: NoAction, onUpdate: NoAction, map: "tipo_descuento_cuotas_socio_fk")
+  pagos_socio       pagos_socio[]
+}
+
+model eventos {
+  id_tipo_evento     BigInt               @id(map: "eventos_pk") @default(autoincrement())
+  desc_tipo_evento   String               @db.VarChar(255)
+  calendario_eventos calendario_eventos[]
+}
+
+model gastos_club {
+  id_pago_club BigInt     @id(map: "gastos_club_pk") @default(autoincrement())
+  id_tipo_pago BigInt
+  id_usuario   BigInt
+  nro_factura  String     @db.VarChar(255)
+  descripcion  String     @db.VarChar(255)
+  monto_gasto  BigInt
+  ingreso      Boolean?   @default(false)
+  egreso       Boolean?   @default(false)
+  tipo_pagos   tipo_pagos @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "tipo_pagos_pagos_club_fk")
+  usuario      usuario    @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "usuario_gastos_club_fk")
+}
+
+model inscripciones {
+  id_inscripcion       BigInt             @id(map: "inscripciones_pk")
+  id_socio             BigInt
+  id_evento_calendario BigInt
+  desc_inscripcion     String?            @db.VarChar(255)
+  fecha_inscripcion    DateTime           @db.Date
+  abonado              Boolean
+  calendario_eventos   calendario_eventos @relation(fields: [id_evento_calendario], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_inscripciones_fk")
+  socio                socio              @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_inscripciones_fk")
+}
+
+model mesas {
+  id_mesa   BigInt     @id(map: "mesas_pk") @default(autoincrement())
+  desc_mesa String     @db.VarChar(255)
+  reservas  reservas[]
+}
+
+model pagos_socio {
+  id_pago_socio  BigInt       @id(map: "pagos_socio_pk") @default(autoincrement())
+  id_cuota_socio BigInt
+  nro_factura    String       @db.VarChar(255)
+  monto_abonado  BigInt
+  fecha_pago     DateTime?    @db.Date
+  cuotas_socio   cuotas_socio @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_pagos_socio_fk")
+}
+
+model pases_socio {
+  id_pase              BigInt             @id(map: "pases_socio_pk") @default(autoincrement())
+  id_club_habilitado   BigInt
+  id_socio             BigInt
+  descripcion_traspaso String             @db.VarChar(255)
+  monto_pase           Boolean            @default(false)
+  doc_adjunto          Boolean            @default(false)
+  abonado              Boolean            @default(false)
+  clubes_habilitados   clubes_habilitados @relation(fields: [id_club_habilitado], references: [id_club_habilitado], onDelete: NoAction, onUpdate: NoAction, map: "clubes_habilitados_pases_socio_fk")
+  socio                socio              @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_pases_socio_fk")
+}
+
+model persona {
+  id_persona       BigInt   @id(map: "persona_pk") @default(autoincrement())
+  apellido         String   @db.VarChar(255)
+  nombre           String   @db.VarChar(255)
+  cedula           String   @db.VarChar(255)
+  fecha_nacimiento DateTime @db.Date
+  socio            socio[]
+}
+
+model reservas {
+  id_reserva            BigInt         @id(map: "reservas_pk")
+  id_tipo_reserva       BigInt
+  id_socio_reserva      BigInt
+  id_mesa               BigInt
+  horario_reserva_desde String?        @db.VarChar(20)
+  horario_reserva_hasta String?        @db.VarChar(20)
+  fecha_reserva         DateTime       @db.Date
+  mesas                 mesas          @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reservas_fk")
+  socio_reservas        socio_reservas @relation(fields: [id_socio_reserva], references: [id_socio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "socio_reservas_reservas_fk")
+  tipo_reserva          tipo_reserva   @relation(fields: [id_tipo_reserva], references: [id_tipo_reserva], onDelete: NoAction, onUpdate: NoAction, map: "tipo_reserva_reservas_fk")
+}
+
+model roles_usuario {
+  id_rol_usuario  BigInt            @id(map: "roles_usuario_pk") @default(autoincrement())
+  descripcion_rol String            @db.VarChar(255)
+  accesos_usuario accesos_usuario[]
+}
+
+model socio {
+  id_socio           BigInt               @id(map: "socio_pk") @default(autoincrement())
+  id_tipo_socio      BigInt
+  id_persona         BigInt
+  correo_electronico String?              @db.VarChar(255)
+  numero_telefono    String?              @db.VarChar(255)
+  direccion          String?              @db.VarChar(255)
+  ruc                String?              @db.VarChar(255)
+  agendamiento_clase agendamiento_clase[]
+  cuotas_socio       cuotas_socio[]
+  inscripciones      inscripciones[]
+  pases_socio        pases_socio[]
+  persona            persona              @relation(fields: [id_persona], references: [id_persona], onDelete: NoAction, onUpdate: NoAction, map: "persona_socio_fk")
+  tipo_socio         tipo_socio           @relation(fields: [id_tipo_socio], references: [id_tipo_socio], onDelete: NoAction, onUpdate: NoAction, map: "tipo_socio_socio_fk")
+  socio_reservas     socio_reservas[]
+  usuario            usuario[]
+}
+
+model socio_reservas {
+  id_socio_reserva BigInt     @id(map: "socio_reservas_pk") @default(autoincrement())
+  id_socio         BigInt
+  reservas         reservas[]
+  socio            socio      @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_socio_reservas_fk")
+}
+
+model tipo_cuota {
+  id_tipo_cuota   BigInt         @id(map: "tipo_cuota_pk") @default(autoincrement())
+  desc_tipo_cuota String         @db.VarChar(255)
+  monto_cuota     BigInt
+  cuotas_socio    cuotas_socio[]
+}
+
+model tipo_descuento {
+  id_tipo_descuento   BigInt         @id(map: "tipo_descuento_pk") @default(autoincrement())
+  desc_tipo_descuento String         @db.VarChar
+  cuotas_socio        cuotas_socio[]
+}
+
+model tipo_pagos {
+  id_tipo_pago   BigInt        @id(map: "tipo_pagos_pk")
+  desc_tipo_pago String        @db.VarChar(255)
+  gastos_club    gastos_club[]
+}
+
+model tipo_reserva {
+  id_tipo_reserva   BigInt     @id(map: "tipo_reserva_pk") @default(autoincrement())
+  desc_tipo_reserva String     @db.VarChar(255)
+  reservas          reservas[]
+}
+
+model tipo_socio {
+  id_tipo_socio   BigInt  @id(map: "tipo_socio_pk") @default(autoincrement())
+  desc_tipo_socio String  @db.VarChar
+  socio           socio[]
+}
+
+model usuario {
+  id_usuario      BigInt            @id(map: "usuario_pk") @default(autoincrement())
+  id_socio        BigInt
+  tipo_usuario    String            @db.VarChar(255)
+  nombre_usuario  String            @db.VarChar(255)
+  contrasea       String            @db.VarChar(255)
+  accesos_usuario accesos_usuario[]
+  gastos_club     gastos_club[]
+  socio           socio             @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_usuario_fk")
 }
