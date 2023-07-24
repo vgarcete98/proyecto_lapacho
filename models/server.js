@@ -20,7 +20,10 @@ class Server {
 
     middlewares (){
 
+        //Modo de lectura de datos usando JSON
+        this.app.use( express.json() );
 
+        
         this.app.use( express.static( 'public' ) );
 
     }
