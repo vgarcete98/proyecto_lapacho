@@ -13,11 +13,13 @@ const router_socio = Router();
 
 router_socio.get( '/', obtener_socios );
 
+router_socio.get( '/:id', obtener_socio );
+
 router_socio.post( '/', crear_socio );
 
-router_socio.delete( '/', borrar_socio );
+router_socio.delete( '/:id', borrar_socio );
 
-router_socio.put( '/', actualizar_socio );
+router_socio.put( '/:id', actualizar_socio );
 
 
 

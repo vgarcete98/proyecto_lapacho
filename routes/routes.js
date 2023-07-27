@@ -24,6 +24,11 @@ const rutas = {
     Gastos_club : {
 
         ruta : "/gastos_club"
+    },
+    
+    roles_club : {
+
+        ruta : "/roles"
     }
 
 }

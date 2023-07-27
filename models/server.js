@@ -5,6 +5,10 @@ const rutas = require( '../routes/routes' );
 
 const router_socio = require( '../routes/socio_routes' )
 
+const router_rol = require( '../routes/roles_routes' )
+
+
+
 class Server {
 
 
@@ -30,7 +34,7 @@ class Server {
 
     routes () {
         this.app.use( rutas.Socio.ruta, router_socio );
-
+        this.app.use( rutas.roles_club.ruta, router_rol );
     }
 
 
