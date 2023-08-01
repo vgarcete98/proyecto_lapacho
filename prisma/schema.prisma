@@ -10,10 +10,9 @@ datasource db {
 model accesos_usuario {
   id_acceso          BigInt        @id(map: "accesos_usuario_pk") @default(autoincrement())
   id_rol_usuario     BigInt
-  id_usuario         BigInt
   descripcion_acceso String        @db.VarChar(255)
   roles_usuario      roles_usuario @relation(fields: [id_rol_usuario], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_accesos_usuario_fk")
-  usuario            usuario       @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "usuario_accesos_usuario_fk")
+  usuario            usuario[]
 }
 
 model agendamiento_clase {
@@ -198,12 +197,13 @@ model tipo_socio {
 }
 
 model usuario {
-  id_usuario      BigInt            @id(map: "usuario_pk") @default(autoincrement())
+  id_usuario      BigInt          @id(map: "usuario_pk") @default(autoincrement())
+  id_acceso       BigInt
   id_socio        BigInt
-  tipo_usuario    String            @db.VarChar(255)
-  nombre_usuario  String            @db.VarChar(255)
-  contrasea       String            @db.VarChar(255)
-  accesos_usuario accesos_usuario[]
+  tipo_usuario    String          @db.VarChar(255)
+  nombre_usuario  String          @db.VarChar(255)
+  contrasea       String          @db.VarChar(255)
   gastos_club     gastos_club[]
-  socio           socio             @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_usuario_fk")
+  accesos_usuario accesos_usuario @relation(fields: [id_acceso], references: [id_acceso], onDelete: NoAction, onUpdate: NoAction, map: "accesos_usuario_usuario_fk")
+  socio           socio           @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_usuario_fk")
 }

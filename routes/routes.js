@@ -29,6 +29,11 @@ const rutas = {
     roles_club : {
 
         ruta : "/roles"
+    },
+    
+    tipo_reserva : {
+
+        ruta : "/tipo_reserva"
     }
 
 }
