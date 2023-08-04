@@ -2,6 +2,10 @@
 
 const rutas = {
 
+    Login : {
+        ruta : "auth"
+    },
+    
     Usuarios : {
         ruta : "/usuario"
     },

@@ -4,10 +4,9 @@ const express = require( 'express' );
 const rutas = require( '../routes/routes' );
 
 const router_socio = require( '../routes/socio_routes' )
-
 const router_rol = require( '../routes/roles_routes' )
 const router_tipo_reserva = require( '../routes/tipo_reserva_routes' )
-
+const router_login = require( '../routes/login_routes' )
 
 class Server {
 
@@ -36,6 +35,7 @@ class Server {
         this.app.use( rutas.Socio.ruta, router_socio );
         this.app.use( rutas.tipo_reserva.ruta, router_socio );
         this.app.use( rutas.roles_club.ruta, router_rol );
+        this.app.use( rutas.Login.ruta, router_login );
     }
 
 
