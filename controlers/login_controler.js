@@ -10,7 +10,7 @@ const { generar_token } = require( '../helpers/generar_token' )
 
 const login = async ( req = request, res = response )=> {
 
-    const { usuario, contraseña } = req.body;
+    //const { usuario, contraseña } = req.body;
     
     const id_usuario = 0;
     const token = await generar_token( id_usuario );
@@ -20,7 +20,7 @@ const login = async ( req = request, res = response )=> {
         {
             status : 'OK',
             msj : 'Login OK',
-            usuario,
+            //usuario,
             token
 
         }

@@ -3,9 +3,9 @@
 const rutas = {
 
     Login : {
-        ruta : "auth"
+        ruta : "/auth"
     },
-    
+
     Usuarios : {
         ruta : "/usuario"
     },
