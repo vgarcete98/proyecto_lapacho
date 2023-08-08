@@ -6,7 +6,7 @@ const { actualizar_usuario,
         crear_usuario,
         obtener_accesos_usuario,
         obtener_usuario,
-        obtener_usuarios } = require( '../controlers/roles_controler' );
+        obtener_usuarios } = require( '../controlers/usuario_controller' );
 
 
 const router_usuario = Router();

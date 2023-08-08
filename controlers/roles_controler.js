@@ -76,7 +76,8 @@ const obtener_roles = async ( req = request, res = response ) => {
 
     //const { descripcion_rol } = req.body;
 
-    const roles_usuario = await prisma.$queryRaw`SELECT ID_ROL_USUARIO, DESCRIPCION_ROL FROM public.roles_usuario`;
+    const roles_usuario = await prisma.$queryRaw`select CAST ( id_rol_usuario AS INTEGER ) AS id_rol_usuario, descripcion_rol
+                                                    from roles_usuario;`;
 
     res.status( 200 ).json(
 

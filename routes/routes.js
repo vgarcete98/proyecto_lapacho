@@ -14,6 +14,12 @@ const rutas = {
 
         ruta : "/socio"
     },
+
+    Tipo_Socio : {
+
+        ruta : "/tipo_socio"
+    },
+
     
     Eventos : {
 
@@ -38,6 +44,12 @@ const rutas = {
     tipo_reserva : {
 
         ruta : "/tipo_reserva"
+    }
+    ,
+    
+    accesos_usuario : {
+
+        ruta : "/accesos"
     }
 
 }

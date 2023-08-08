@@ -7,18 +7,19 @@ const prisma = new PrismaClient();
 
 const crear_usuario = async ( req = request, res = response ) => {
 
-    const { descripcion_rol } = req.body;
+    const { id_usuario, id_acceso, id_socio, tipo_usuario, nombre_usuario, contraseña } = req.body;
 
-    const rol_nuevo = await prisma.$executeRaw`INSERT INTO public.roles_usuario(
-                                                    descripcion_rol )
-                                                VALUES ( ${ descripcion_rol });`;
+    const nuevo_usuario = await prisma.$executeRaw`INSERT INTO public.usuario(
+                                                    id_usuario, id_acceso, id_socio, tipo_usuario, nombre_usuario, contrasea)
+                                                    VALUES ( ${ id_usuario }, ${ id_acceso }, ${ id_socio }, 
+                                                                ${ tipo_usuario }, ${ nombre_usuario }, ${ contraseña } );`;
 
     res.status( 200 ).json(
 
         {
             status : 'OK',
             msj : 'Rol Creado',
-            rol_nuevo
+            nuevo_usuario
         }
 
     );
@@ -27,22 +28,6 @@ const crear_usuario = async ( req = request, res = response ) => {
 
 const borrar_usuario = async ( req = request, res = response ) => {
 
-    const { descripcion_rol } = req.body;
-
-    const rol_nuevo = await prisma.$executeRaw`INSERT INTO public.roles_usuario(
-                                                    descripcion_rol )
-                                                VALUES ( ${ descripcion_rol });`;
-
-    res.status( 200 ).json(
-
-        {
-            status : 'OK',
-            msj : 'Rol Creado',
-            rol_nuevo
-        }
-
-    );
-
 }
 
 
@@ -50,21 +35,6 @@ const borrar_usuario = async ( req = request, res = response ) => {
 
 const actualizar_usuario = async ( req = request, res = response ) => {
 
-    const { descripcion_rol } = req.body;
-
-    const rol_nuevo = await prisma.$executeRaw`INSERT INTO public.roles_usuario(
-                                                    descripcion_rol )
-                                                VALUES ( ${ descripcion_rol });`;
-
-    res.status( 200 ).json(
-
-        {
-            status : 'OK',
-            msj : 'Rol Creado',
-            rol_nuevo
-        }
-
-    );
 
 }
 
@@ -74,18 +44,17 @@ const actualizar_usuario = async ( req = request, res = response ) => {
 
 const obtener_usuarios = async ( req = request, res = response ) => {
 
-    const { descripcion_rol } = req.body;
+    //const { descripcion_rol } = req.body;
 
-    const rol_nuevo = await prisma.$executeRaw`INSERT INTO public.roles_usuario(
-                                                    descripcion_rol )
-                                                VALUES ( ${ descripcion_rol });`;
+    const usuarios = await prisma.$queryRaw`SELECT id_usuario, id_acceso, id_socio, tipo_usuario, nombre_usuario, contrasea
+                                                FROM public.Usuario;`;
 
     res.status( 200 ).json(
 
         {
             status : 'OK',
-            msj : 'Rol Creado',
-            rol_nuevo
+            msj : 'Usuarios del sistema',
+            usuarios
         }
 
     );
@@ -96,18 +65,18 @@ const obtener_usuarios = async ( req = request, res = response ) => {
 
 const obtener_usuario = async ( req = request, res = response ) => {
 
-    const { descripcion_rol } = req.body;
+    const { id_usuario } = req.params;
 
-    const rol_nuevo = await prisma.$executeRaw`INSERT INTO public.roles_usuario(
-                                                    descripcion_rol )
-                                                VALUES ( ${ descripcion_rol });`;
+    const usuario = await prisma.$queryRaw`SELECT id_usuario, id_acceso, id_socio, tipo_usuario, nombre_usuario, contraseña
+                                                FROM public.Usuario
+                                            WHERE id_usuario = ${ id_usuario };`;
 
     res.status( 200 ).json(
 
         {
             status : 'OK',
-            msj : 'Rol Creado',
-            rol_nuevo
+            msj : 'Usuarios del sistema',
+            usuario
         }
 
     );
