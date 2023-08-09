@@ -18,7 +18,7 @@ const crear_rol = async ( req = request, res = response ) => {
         {
             status : 'OK',
             msj : 'Rol Creado',
-            rol_nuevo
+            rol_nuevo : descripcion_rol
         }
 
     );

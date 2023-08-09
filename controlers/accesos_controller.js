@@ -39,7 +39,7 @@ const crear_accesos = async ( req = request, res = response ) => {
         {
             status : 'OK',
             msj : 'Acceso Creado',
-            nuevo_acceso
+            descripcion_acceso
 
         }
     );

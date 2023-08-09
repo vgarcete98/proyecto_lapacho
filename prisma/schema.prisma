@@ -198,8 +198,8 @@ model tipo_socio {
 
 model usuario {
   id_usuario      BigInt          @id(map: "usuario_pk") @default(autoincrement())
-  id_acceso       BigInt
   id_socio        BigInt
+  id_acceso       BigInt
   tipo_usuario    String          @db.VarChar(255)
   nombre_usuario  String          @db.VarChar(255)
   contrasea       String          @db.VarChar(255)

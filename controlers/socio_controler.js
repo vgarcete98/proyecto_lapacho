@@ -1,6 +1,7 @@
 const { request, response } = require('express')
 
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient } = require('@prisma/client');
+const { generar_fecha } = require('../helpers/generar_fecha');
 
 const prisma = new PrismaClient()
 
@@ -9,25 +10,26 @@ const prisma = new PrismaClient()
 const crear_socio = async ( req = request, res = response ) => {
 
     //console.log ( req.body)
-    const { nombre, apellido, fecha_nacimiento, cedula, correo, numero_tel, direccion, ruc } = req.body;
+    const { nombre, apellido, fecha_nacimiento, cedula, correo, numero_tel, direccion, ruc, tipo_socio } = req.body;
 
     //console.log ( nombre, apellido, fecha_nacimiento );
     //convertir la fecha de nacimiento a fecha
-    const new_date = new Date(  )
+    const fecha_db = generar_fecha( fecha_nacimiento );
 
     //primero debo de crear una persona y el sgte codigo devuelve el id de la persona creada
     const persona = await prisma.$executeRaw`INSERT INTO public.persona(
                                                     apellido, nombre, cedula, fecha_nacimiento)
-                                                VALUES ( ${apellido}, ${nombre}, ${cedula}, ${new_date});`;
-    //console.log ( typeof(persona), persona );
+                                                VALUES ( ${apellido}, ${nombre}, ${cedula}, ${fecha_db});`;
     //OBTENER EL ULTIMO INSERTADO
-    const result  =  await prisma.$queryRaw`SELECT CAST ( MAX( id_persona ) AS INTEGER ) AS id_ultimo FROM  public.persona` ;
-    const { id_ultimo } = result[0];
+    const result  =  await prisma.$queryRaw`SELECT CAST ( id_persona AS INTEGER ) AS id_persona 
+                                                FROM  public.persona
+                                            WHERE cedula = CAST( ${ cedula } AS VARCHAR )` ;
+    const { id_persona } = result[0];
     //console.log ( result )
 
     const socio = await prisma.$executeRaw`INSERT INTO public.socio(
                                                 id_tipo_socio, id_persona, correo_electronico, numero_telefono, direccion, ruc)
-                                            VALUES ( 1, ${ id_ultimo },${correo} , ${numero_tel}, ${direccion}, ${ruc} )`;
+                                            VALUES ( ${ tipo_socio }, ${ id_persona },${correo} , ${numero_tel}, ${direccion}, ${ruc} )`;
     res.status( 200 ).json(
 
         {
@@ -101,7 +103,9 @@ const borrar_socio = async ( req = request, res = response ) => {
 
 const obtener_socios = async ( req = request, res = response ) => {
 
-    const socios = await prisma.$queryRaw`SELECT id_socio, id_tipo_socio, correo_electronico, direccion, ruc 
+    const socios = await prisma.$queryRaw`SELECT CAST ( id_socio AS INTEGER ) AS id_socio, 
+                                                CAST ( id_tipo_socio AS INTEGER ) AS id_tipo_socio, 
+                                                correo_electronico, direccion, ruc 
                                             FROM SOCIO`;
 
     //console.log ( socios );

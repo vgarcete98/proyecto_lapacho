@@ -7,19 +7,24 @@ const prisma = new PrismaClient();
 
 const crear_usuario = async ( req = request, res = response ) => {
 
-    const { id_usuario, id_acceso, id_socio, tipo_usuario, nombre_usuario, contraseña } = req.body;
+    const { id_acceso, id_socio, tipo_usuario, nombre_usuario, contraseña } = req.body;
 
     const nuevo_usuario = await prisma.$executeRaw`INSERT INTO public.usuario(
-                                                    id_usuario, id_acceso, id_socio, tipo_usuario, nombre_usuario, contrasea)
-                                                    VALUES ( ${ id_usuario }, ${ id_acceso }, ${ id_socio }, 
+                                                    id_acceso, id_socio, tipo_usuario, nombre_usuario, contrasea)
+                                                    VALUES ( ${ id_acceso }, ${ id_socio }, 
                                                                 ${ tipo_usuario }, ${ nombre_usuario }, ${ contraseña } );`;
-
     res.status( 200 ).json(
 
         {
             status : 'OK',
             msj : 'Rol Creado',
-            nuevo_usuario
+            usuario_creado : {
+                id_acceso,
+                id_socio,
+                tipo_usuario,
+                nombre_usuario,
+                contraseña
+            }
         }
 
     );
@@ -46,7 +51,9 @@ const obtener_usuarios = async ( req = request, res = response ) => {
 
     //const { descripcion_rol } = req.body;
 
-    const usuarios = await prisma.$queryRaw`SELECT id_usuario, id_acceso, id_socio, tipo_usuario, nombre_usuario, contrasea
+    const usuarios = await prisma.$queryRaw`SELECT CAST ( id_usuario AS INTEGER ) AS id_usuario, 
+                                                    CAST ( id_acceso AS INTEGER ) AS id_acceso, 
+                                                    CAST ( id_socio AS INTEGER ) AS id_socio, tipo_usuario, nombre_usuario, contrasea
                                                 FROM public.Usuario;`;
 
     res.status( 200 ).json(
