@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "scripts": {
     "build": "npx prisma db push && node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
