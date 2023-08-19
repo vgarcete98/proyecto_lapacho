@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 
 
-const validar_existe_usuario = (  ) =>{
+const validar_existe_usuario = ( res = response, req = request, next ) =>{
 
 
 
@@ -17,3 +17,6 @@ const validar_existe_usuario = (  ) =>{
 
     
 }
+
+
+module.exports = validar_existe_usuario;

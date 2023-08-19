@@ -3,9 +3,9 @@ const prisma = new PrismaClient()
 
 async function main() {
 
-    const primer_rol = "ADMINISTRADOR"
+    const primer_rol = "ADMINISTRADOR";
     
-    const primer_acceso = "ACCESO_TOTAL"
+    const primer_acceso = "ACCESO_TOTAL";
 
     //----------------------
     const nombre_admin = "ADMINISTRADOR_CLUB";
@@ -13,10 +13,10 @@ async function main() {
     const cedula_admin = "12345678";
     const fecha_admin_nac = new Date();
     //----------------------
-    const correo_electronico = "----------------"
-    const numero_telefono = "----------------"
-    const direccion = "----------------"
-    const ruc = "----------------"
+    const correo_electronico = "----------------";
+    const numero_telefono = "----------------";
+    const direccion = "----------------";
+    const ruc = "----------------";
     //----------------------
 
     const primer_tipo_socio = "SOCIO_ADMIN";
@@ -46,7 +46,7 @@ async function main() {
     const pass_admin = process.env.C0NTR4SEN1A_4DM1N;
     const usuario_admin = await prisma.$executeRaw`INSERT INTO public.usuario(
         id_socio, id_acceso, tipo_usuario, nombre_usuario, contrasea)
-    VALUES ( 1, 1, 1, ${ primer_acceso }, ${ pass_admin } )`;
+    VALUES ( 1, 1, 1, ${ nombre_admin }, ${ pass_admin } )`;
 
 }
 

@@ -8,7 +8,8 @@ const { actualizar_usuario,
         obtener_usuario,
         obtener_usuarios } = require( '../controlers/usuario_controller' );
 
-
+const validar_token = require( '../middlewares/validar_token' );
+const validar_rol_usuario = require('../middlewares/validar_rol_usuario');
 const router_usuario = Router();
 
 
