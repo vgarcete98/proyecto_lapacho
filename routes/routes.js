@@ -44,12 +44,16 @@ const rutas = {
     tipo_reserva : {
 
         ruta : "/tipo_reserva"
-    }
-    ,
+    },
     
     accesos_usuario : {
 
         ruta : "/accesos"
+    },
+    
+    reserva_club : {
+
+        ruta : "/reserva_en_club"
     }
 
 }

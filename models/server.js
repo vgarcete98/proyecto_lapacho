@@ -10,7 +10,7 @@ const router_login = require( '../routes/login_routes' )
 const router_usuario = require ( '../routes/usuarios_routes' );
 const tipo_socio_router = require ( '../routes/tipo_socio_route' );
 const router_accesos = require( '../routes/accesos_routes' );
-
+const router_reservas_club = require( '../routes/reservas_club_routes' );
 
 
 class Server {
@@ -50,6 +50,8 @@ class Server {
         this.app.use( rutas.accesos_usuario.ruta, router_accesos );       
         
         this.app.use( rutas.Login.ruta, router_login );
+
+        this.app.use( rutas.reserva_club.ruta, router_reservas_club );
     }
 
 

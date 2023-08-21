@@ -17,12 +17,13 @@ const validar_rol_usuario = async ( req = request, res = response, next ) =>{
                                                 WHERE A.ID_USUARIO = ${ id_usuario };`
     //console.log( rol_usuario );
     const { descripcion_acceso } = rol_usuario;
-
-    if( rol_usuario === 'ACCESO_TOTAL' ){
+    console.log( rol_usuario );  
+    if( descripcion_acceso === 'ACCESO_TOTAL' ){
         next(); 
     }else{
         res.status( 400 ).json( {
-            msg : "El rol del usuario no es uno valido para la peticion"
+            msg : "El rol del usuario no es uno valido para la peticion",
+            id_usuario
         } )
     }
   
