@@ -1,14 +1,17 @@
 const Router = require( 'express' );
 
 
-const { crear_tipo_socio, obtener_tipos_socios } = require( '../controlers/tipo_socio_controller' )
+const { crear_tipo_socio, obtener_tipos_socios } = require( '../controlers/tipo_socio_controller' );
+
+const validar_token = require('../middlewares/validar_token');
+const validar_rol_usuario = require('../middlewares/validar_rol_usuario');
 
 const tipo_socio_router = Router();
 
 
-tipo_socio_router.get( '/', crear_tipo_socio );
+tipo_socio_router.get( '/', [ validar_token, validar_rol_usuario ], crear_tipo_socio );
 
-tipo_socio_router.post( '/', obtener_tipos_socios );
+tipo_socio_router.post( '/', [ validar_token, validar_rol_usuario ], obtener_tipos_socios );
 
 
 
