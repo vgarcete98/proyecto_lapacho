@@ -54,6 +54,16 @@ const rutas = {
     reserva_club : {
 
         ruta : "/reserva_en_club"
+    },
+    
+    pagos_socio : {
+
+        ruta : "/pagos_socio"
+    },
+    
+    tipo_cuotas : {
+
+        ruta : "/tipo_cuotas"
     }
 
 }

@@ -3,6 +3,7 @@ const express = require( 'express' );
 
 const rutas = require( '../routes/routes' );
 
+//----------------------------------------------------------------------------
 const router_socio = require( '../routes/socio_routes' )
 const router_rol = require( '../routes/roles_routes' )
 const router_tipo_reserva = require( '../routes/tipo_reserva_routes' )
@@ -11,6 +12,9 @@ const router_usuario = require ( '../routes/usuarios_routes' );
 const tipo_socio_router = require ( '../routes/tipo_socio_route' );
 const router_accesos = require( '../routes/accesos_routes' );
 const router_reservas_club = require( '../routes/reservas_club_routes' );
+const router_pagos = require( '../routes/pago_cuotas_routes' );
+
+//----------------------------------------------------------------------------
 
 
 class Server {
@@ -37,11 +41,12 @@ class Server {
     }
 
     routes () {
+
         this.app.use( rutas.Socio.ruta, router_socio );
         
         this.app.use( rutas.Usuarios.ruta, router_usuario );        
         
-        //this.app.use( rutas.tipo_reserva.ruta, router_socio );
+        this.app.use( rutas.tipo_reserva.ruta, router_tipo_reserva );
         
         this.app.use( rutas.roles_club.ruta, router_rol );
         
@@ -52,6 +57,8 @@ class Server {
         this.app.use( rutas.Login.ruta, router_login );
 
         this.app.use( rutas.reserva_club.ruta, router_reservas_club );
+
+        this.app.use( rutas.pagos_socio.ruta, router_pagos );
     }
 
 
@@ -60,7 +67,7 @@ class Server {
 
         this.app.listen( this.PUERTO, ()=>{
 
-            console.log ( `ESCUCHANDO PUERTO  ${ this.PUERTO }` )
+            console.log ( `BACKEND CLUB LAPACHO\nEN LINEA EN PUERTO  ${ this.PUERTO }` )
 
         } )
     }
