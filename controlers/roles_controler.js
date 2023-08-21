@@ -39,7 +39,7 @@ const actualizar_rol = async ( req = request, res = response ) => {
 
         {
             status : 'OK',
-            msj : 'Rol Creado',
+            msj : 'Rol Editado',
             rol_editado
         }
 
@@ -55,7 +55,7 @@ const borrar_rol = async ( req = request, res = response ) => {
     const { id } = req.params;
     //const { descripcion_rol } = req.body;
 
-    const rol_editado = await prisma.$executeRaw`UPDATE public.roles_usuario
+    const rol_borrado = await prisma.$executeRaw`UPDATE public.roles_usuario
                                                     SET activacion_rol= false
                                                 WHERE id_rol_usuario = ${id}`;
 
@@ -63,7 +63,7 @@ const borrar_rol = async ( req = request, res = response ) => {
 
         {
             status : 'OK',
-            msj : 'Rol Creado',
+            msj : 'Rol Borrado',
             rol_borrado
         }
 
@@ -74,8 +74,6 @@ const borrar_rol = async ( req = request, res = response ) => {
 
 const obtener_roles = async ( req = request, res = response ) => {
 
-    //const { descripcion_rol } = req.body;
-
     const roles_usuario = await prisma.$queryRaw`select CAST ( id_rol_usuario AS INTEGER ) AS id_rol_usuario, descripcion_rol
                                                     from roles_usuario;`;
 
@@ -83,7 +81,7 @@ const obtener_roles = async ( req = request, res = response ) => {
 
         {
             status : 'OK',
-            msj : 'Rol Creado',
+            msj : 'Roles del sistema',
             roles_usuario
         }
 
