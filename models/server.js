@@ -67,8 +67,15 @@ class Server {
 
         this.app.listen( this.PUERTO, ()=>{
 
-            console.log ( `BACKEND CLUB LAPACHO\nEN LINEA EN PUERTO  ${ this.PUERTO }` )
-
+            console.log ( `BACKEND CLUB LAPACHO\n` );
+            console.log('    ________');
+            console.log('   /       \\');
+            console.log('  |         |');
+            console.log('  |         |');
+            console.log('   \\_______/');
+            console.log('     |   |');
+            console.log('     |___|');
+            console.log ( `\nEN LINEA EN PUERTO  ${ this.PUERTO }` );
         } )
     }
 
