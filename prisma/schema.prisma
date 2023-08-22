@@ -62,16 +62,18 @@ model eventos {
 }
 
 model gastos_club {
-  id_pago_club BigInt     @id(map: "gastos_club_pk") @default(autoincrement())
-  id_tipo_pago BigInt
-  id_usuario   BigInt
-  nro_factura  String     @db.VarChar(255)
-  descripcion  String     @db.VarChar(255)
-  monto_gasto  BigInt
-  ingreso      Boolean?   @default(false)
-  egreso       Boolean?   @default(false)
-  tipo_pagos   tipo_pagos @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "tipo_pagos_pagos_club_fk")
-  usuario      usuario    @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "usuario_gastos_club_fk")
+  id_pago_club   BigInt     @id(map: "gastos_club_pk") @default(autoincrement())
+  id_tipo_pago   BigInt
+  id_usuario     BigInt
+  nro_factura    String     @db.VarChar(255)
+  gastocreadoen  DateTime?  @db.Date
+  gastoeditadoen DateTime?  @db.Date
+  descripcion    String     @db.VarChar(255)
+  monto_gasto    BigInt
+  ingreso        Boolean?   @default(false)
+  egreso         Boolean?   @default(false)
+  tipo_pagos     tipo_pagos @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "tipo_pagos_pagos_club_fk")
+  usuario        usuario    @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "usuario_gastos_club_fk")
 }
 
 model inscripciones {
@@ -108,6 +110,7 @@ model pases_socio {
   monto_pase           Boolean            @default(false)
   doc_adjunto          Boolean            @default(false)
   abonado              Boolean            @default(false)
+  estado_pase_socio    Int?               @db.SmallInt
   clubes_habilitados   clubes_habilitados @relation(fields: [id_club_habilitado], references: [id_club_habilitado], onDelete: NoAction, onUpdate: NoAction, map: "clubes_habilitados_pases_socio_fk")
   socio                socio              @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_pases_socio_fk")
 }
@@ -135,9 +138,10 @@ model reservas {
 }
 
 model roles_usuario {
-  id_rol_usuario  BigInt            @id(map: "roles_usuario_pk") @default(autoincrement())
-  descripcion_rol String            @db.VarChar(255)
-  accesos_usuario accesos_usuario[]
+  id_rol_usuario     BigInt            @id(map: "roles_usuario_pk") @default(autoincrement())
+  descripcion_rol    String            @db.VarChar(255)
+  estado_rol_usuario Int?              @db.SmallInt
+  accesos_usuario    accesos_usuario[]
 }
 
 model socio {
@@ -148,6 +152,9 @@ model socio {
   numero_telefono    String?              @db.VarChar(255)
   direccion          String?              @db.VarChar(255)
   ruc                String?              @db.VarChar(255)
+  estado_socio       Int?                 @db.SmallInt
+  creadoen           DateTime?            @db.Date
+  editadoen          DateTime?            @db.Date
   agendamiento_clase agendamiento_clase[]
   cuotas_socio       cuotas_socio[]
   inscripciones      inscripciones[]
@@ -191,19 +198,23 @@ model tipo_reserva {
 }
 
 model tipo_socio {
-  id_tipo_socio   BigInt  @id(map: "tipo_socio_pk") @default(autoincrement())
-  desc_tipo_socio String  @db.VarChar
-  socio           socio[]
+  id_tipo_socio     BigInt  @id(map: "tipo_socio_pk") @default(autoincrement())
+  desc_tipo_socio   String  @db.VarChar
+  estado_tipo_socio Int?    @db.SmallInt
+  socio             socio[]
 }
 
 model usuario {
-  id_usuario      BigInt          @id(map: "usuario_pk") @default(autoincrement())
-  id_socio        BigInt
-  id_acceso       BigInt
-  tipo_usuario    String          @db.VarChar(255)
-  nombre_usuario  String          @db.VarChar(255)
-  contrasea       String          @db.VarChar(255)
-  gastos_club     gastos_club[]
-  accesos_usuario accesos_usuario @relation(fields: [id_acceso], references: [id_acceso], onDelete: NoAction, onUpdate: NoAction, map: "accesos_usuario_usuario_fk")
-  socio           socio           @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_usuario_fk")
+  id_usuario       BigInt          @id(map: "usuario_pk") @default(autoincrement())
+  id_socio         BigInt
+  id_acceso        BigInt
+  usuariocreadoen  DateTime?       @db.Date
+  usuarioeditadoen DateTime?       @db.Date
+  tipo_usuario     String          @db.VarChar(255)
+  nombre_usuario   String          @db.VarChar(255)
+  contrasea        String          @db.VarChar(255)
+  estado_usuario   Int?            @db.SmallInt
+  gastos_club      gastos_club[]
+  accesos_usuario  accesos_usuario @relation(fields: [id_acceso], references: [id_acceso], onDelete: NoAction, onUpdate: NoAction, map: "accesos_usuario_usuario_fk")
+  socio            socio           @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_usuario_fk")
 }
