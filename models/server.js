@@ -13,6 +13,7 @@ const tipo_socio_router = require ( '../routes/tipo_socio_route' );
 const router_accesos = require( '../routes/accesos_routes' );
 const router_reservas_club = require( '../routes/reservas_club_routes' );
 const router_pagos = require( '../routes/pago_cuotas_routes' );
+const router_cargo_gastos = require( '../routes/gastos_club_routes' );
 
 //----------------------------------------------------------------------------
 
@@ -59,6 +60,8 @@ class Server {
         this.app.use( rutas.reserva_club.ruta, router_reservas_club );
 
         this.app.use( rutas.pagos_socio.ruta, router_pagos );
+
+        this.app.use( rutas.Gastos_club.ruta, router_cargo_gastos );
     }
 
 
