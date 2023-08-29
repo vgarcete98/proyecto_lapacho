@@ -1,6 +1,8 @@
 
 const express = require( 'express' );
 
+const cors = require( 'cors' );
+
 const rutas = require( '../routes/routes' );
 
 //----------------------------------------------------------------------------
@@ -36,6 +38,8 @@ class Server {
         //Modo de lectura de datos usando JSON
         this.app.use( express.json() );
 
+        //Agregando el paquete para peticiones desde cualquier lugar
+        app.use( cors() );
         
         this.app.use( express.static( 'public' ) );
 
