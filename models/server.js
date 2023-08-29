@@ -39,7 +39,7 @@ class Server {
         this.app.use( express.json() );
 
         //Agregando el paquete para peticiones desde cualquier lugar
-        app.use( cors() );
+        this.app.use( cors() );
         
         this.app.use( express.static( 'public' ) );
 
