@@ -16,6 +16,7 @@ const router_accesos = require( '../routes/accesos_routes' );
 const router_reservas_club = require( '../routes/reservas_club_routes' );
 const router_pagos = require( '../routes/pago_cuotas_routes' );
 const router_cargo_gastos = require( '../routes/gastos_club_routes' );
+const router_eventos = require( '../routes/calendario_eventos_routes' );
 
 //----------------------------------------------------------------------------
 
@@ -52,6 +53,8 @@ class Server {
         this.app.use( rutas.Usuarios.ruta, router_usuario );        
         
         this.app.use( rutas.tipo_reserva.ruta, router_tipo_reserva );
+
+        this.app.use( rutas.Eventos.ruta, router_eventos );
         
         this.app.use( rutas.roles_club.ruta, router_rol );
         

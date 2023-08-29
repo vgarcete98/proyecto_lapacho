@@ -5,7 +5,8 @@ const { actualizar_socio,
         borrar_socio, 
         crear_socio, 
         obtener_socio, 
-        obtener_socios } = require( '../controlers/socio_controler' );
+        obtener_socios,
+        obtener_socios_detallados } = require( '../controlers/socio_controler' );
 
 const validar_token = require( '../middlewares/validar_token' );
 const validar_rol_usuario = require('../middlewares/validar_rol_usuario');
@@ -15,6 +16,8 @@ const router_socio = Router();
 
 
 router_socio.get( '/',[ validar_token, validar_rol_usuario ], obtener_socios );
+
+router_socio.get( '/socios_detalle',[ validar_token, validar_rol_usuario ], obtener_socios_detallados );
 
 router_socio.get( '/:id',[ validar_token, validar_rol_usuario, validar_existe_usuario ], obtener_socio );
 

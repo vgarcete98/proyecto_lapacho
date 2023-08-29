@@ -118,6 +118,39 @@ const obtener_socios = async ( req = request, res = response ) => {
 
 }
 
+
+
+
+const obtener_socios_detallados = async ( req = request, res = response ) => {
+
+    // OBTIENE LOS SOCIOS DETALLADOS ACTIVOS DEL CLUB
+    const socios_detallados = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS NOMBRE_SOCIO, A.CEDULA,
+                                                    B.ID_TIPO_SOCIO, B.NUMERO_TELEFONO, B.ESTADO_SOCIO
+                                                FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
+                                            WHERE B.EDITADOEN IS NOT NULL;`
+
+    if ( socios_detallados.length === 0 ){
+
+        res.status(200).json({
+            status: false,
+            msg: 'no existen socios activos en el club',
+            cant : socios_detallados.length,
+            data : socios_detallados
+        });
+    }else {
+
+        res.status(200).json({
+            status: true,
+            msg: 'Socios del club',
+            cant : socios_detallados.length,
+            data : socios_detallados
+        });
+    }
+
+
+}
+
+
 const obtener_socio = async ( req = request, res = response ) => {
 
     //OBTENER EL SOCIO PASANDOLE UN ID
@@ -145,6 +178,7 @@ const obtener_socio = async ( req = request, res = response ) => {
 module.exports = { crear_socio, 
                     actualizar_socio, 
                     obtener_socio, 
-                    obtener_socios, 
+                    obtener_socios,
+                    obtener_socios_detallados, 
                     borrar_socio 
                 };
