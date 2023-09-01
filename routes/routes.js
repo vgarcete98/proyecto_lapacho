@@ -64,6 +64,16 @@ const rutas = {
     tipo_cuotas : {
 
         ruta : "/tipo_cuotas"
+    },
+
+    calendario_eventos : {
+
+        ruta : "/calendario_eventos"
+    },
+    
+    pases_socios : {
+
+        ruta : "/pases_jugadores"
     }
 
 }
