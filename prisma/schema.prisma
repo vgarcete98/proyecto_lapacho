@@ -28,8 +28,11 @@ model calendario_eventos {
   id_evento_calendario BigInt          @id(map: "calendario_eventos_pk") @default(autoincrement())
   id_tipo_evento       BigInt
   fecha_desde_evento   DateTime        @db.Date
+  eventocreadoen       DateTime?       @db.Date
+  eventoeditadoen      DateTime?       @db.Date
   fecha_hasta_evento   DateTime?       @db.Date
   costo                BigInt?
+  estadoevento         String?         @db.VarChar(20)
   eventos              eventos         @relation(fields: [id_tipo_evento], references: [id_tipo_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_calendario_eventos_fk")
   inscripciones        inscripciones[]
 }
@@ -83,6 +86,9 @@ model inscripciones {
   desc_inscripcion     String?            @db.VarChar(255)
   fecha_inscripcion    DateTime           @db.Date
   abonado              Boolean
+  inscripcioncreadoen  DateTime?          @db.Date
+  estadoinscripcion    String?            @db.VarChar(20)
+  inscripcioneditadoen DateTime?          @db.Date
   calendario_eventos   calendario_eventos @relation(fields: [id_evento_calendario], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_inscripciones_fk")
   socio                socio              @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_inscripciones_fk")
 }
