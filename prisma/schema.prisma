@@ -18,7 +18,7 @@ model accesos_usuario {
 model agendamiento_clase {
   id_agendamiento    BigInt     @id(map: "agendamiento_clase_pk") @default(autoincrement())
   id_socio           BigInt
-  id_profesor        String     @db.VarChar
+  id_profesor        Int
   fecha_agendamiento DateTime   @db.Date
   horario_inicio     String     @db.VarChar(10)
   horario_hasta      String     @db.VarChar(10)
@@ -233,7 +233,7 @@ model usuario {
 }
 
 model profesores {
-  id_profesor        String               @id(map: "profesores_pk") @default(dbgenerated("nextval('profesores_id_profesor_seq_1'::regclass)")) @db.VarChar
+  id_profesor        Int                  @id(map: "profesores_pk") @default(autoincrement())
   creadoen           DateTime             @db.Date
   editadoen          String?              @db.VarChar
   estado_profesor    String?              @db.VarChar
