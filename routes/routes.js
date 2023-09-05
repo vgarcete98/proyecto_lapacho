@@ -74,6 +74,11 @@ const rutas = {
     pases_socios : {
 
         ruta : "/pases_jugadores"
+    },
+
+    profesores : {
+
+        ruta : "/profesores"
     }
 
 }

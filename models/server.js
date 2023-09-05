@@ -19,6 +19,7 @@ const router_cargo_gastos = require( '../routes/gastos_club_routes' );
 const router_eventos = require( '../routes/calendario_eventos_routes' );
 const router_inscripciones = require( '../routes/inscripciones_route' );
 const router_pases_jugadores = require('../routes/pases_jugadores_routes');
+const router_profesores = require('../routes/profesores_routes');
 
 //----------------------------------------------------------------------------
 
@@ -77,6 +78,8 @@ class Server {
         this.app.use( rutas.Inscripciones.ruta, router_inscripciones );
         
         this.app.use ( rutas.pases_socios.ruta, router_pases_jugadores );
+
+        this.app.use( rutas.profesores.ruta, router_profesores );
     }
 
 

@@ -16,12 +16,17 @@ model accesos_usuario {
 }
 
 model agendamiento_clase {
-  id_agendamiento    BigInt   @id(map: "agendamiento_clase_pk") @default(autoincrement())
+  id_agendamiento    BigInt     @id(map: "agendamiento_clase_pk") @default(autoincrement())
   id_socio           BigInt
-  fecha_agendamiento DateTime @db.Date
-  horario_inicio     String   @db.VarChar(10)
-  horario_hasta      String   @db.VarChar(10)
-  socio              socio    @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_agendamiento_clase_fk")
+  id_profesor        String     @db.VarChar
+  fecha_agendamiento DateTime   @db.Date
+  horario_inicio     String     @db.VarChar(10)
+  horario_hasta      String     @db.VarChar(10)
+  creadoen           String     @db.VarChar
+  editadoen          String?    @db.VarChar
+  clase_eliminada    Boolean
+  profesores         profesores @relation(fields: [id_profesor], references: [id_profesor], onDelete: NoAction, onUpdate: NoAction, map: "profesores_agendamiento_clase_fk")
+  socio              socio      @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_agendamiento_clase_fk")
 }
 
 model calendario_eventos {
@@ -138,6 +143,7 @@ model reservas {
   horario_reserva_desde String?        @db.VarChar(20)
   horario_reserva_hasta String?        @db.VarChar(20)
   fecha_reserva         DateTime       @db.Date
+  reserva_eliminada     Boolean?
   mesas                 mesas          @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reservas_fk")
   socio_reservas        socio_reservas @relation(fields: [id_socio_reserva], references: [id_socio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "socio_reservas_reservas_fk")
   tipo_reserva          tipo_reserva   @relation(fields: [id_tipo_reserva], references: [id_tipo_reserva], onDelete: NoAction, onUpdate: NoAction, map: "tipo_reserva_reservas_fk")
@@ -154,6 +160,7 @@ model socio {
   id_socio           BigInt               @id(map: "socio_pk") @default(autoincrement())
   id_tipo_socio      BigInt
   id_persona         BigInt
+  nombre_cmp         String?              @db.VarChar(255)
   correo_electronico String?              @db.VarChar(255)
   numero_telefono    String?              @db.VarChar(255)
   direccion          String?              @db.VarChar(255)
@@ -223,4 +230,15 @@ model usuario {
   gastos_club      gastos_club[]
   accesos_usuario  accesos_usuario @relation(fields: [id_acceso], references: [id_acceso], onDelete: NoAction, onUpdate: NoAction, map: "accesos_usuario_usuario_fk")
   socio            socio           @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_usuario_fk")
+}
+
+model profesores {
+  id_profesor        String               @id(map: "profesores_pk") @default(dbgenerated("nextval('profesores_id_profesor_seq_1'::regclass)")) @db.VarChar
+  creadoen           DateTime             @db.Date
+  editadoen          String?              @db.VarChar
+  estado_profesor    String?              @db.VarChar
+  nombre_profesor    String               @db.VarChar(50)
+  costo_x_hora       Int?
+  contacto_profesor  String?              @db.VarChar
+  agendamiento_clase agendamiento_clase[]
 }
