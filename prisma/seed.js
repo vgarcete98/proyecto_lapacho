@@ -179,6 +179,61 @@ async function main() {
                                                         VALUES ( 1, 1, 1, ${ nombre_admin }, ${ pass_admin } )`;
   //---------------------------------------------------------------------------------
 
+  const profesores_creados = new Date();
+  const profesores_activos = await prisma.profesores.createMany( { data : [
+                                                                            { 
+                                                                              nombre_profesor : 'ECHAGUE', 
+                                                                              creadoen : profesores_creados, 
+                                                                              contacto_profesor : 'XXXX-XXXXXX',
+                                                                              costo_x_hora : 70000,
+                                                                              estado_profesor : 'ACTIVO'
+                                                                            },
+
+                                                                            { 
+                                                                              nombre_profesor : 'AXEL GAVILAN', 
+                                                                              creadoen : profesores_creados, 
+                                                                              contacto_profesor : 'XXXX-XXXXXX',
+                                                                              costo_x_hora : 80000,
+                                                                              estado_profesor : 'ACTIVO'
+                                                                            },
+
+                                                                            { 
+                                                                              nombre_profesor : 'JUANMA MIERES', 
+                                                                              creadoen : profesores_creados, 
+                                                                              contacto_profesor : 'XXXX-XXXXXX',
+                                                                              costo_x_hora : 80000,
+                                                                              estado_profesor : 'ACTIVO'
+                                                                            },
+
+                                                                            { 
+                                                                              nombre_profesor : 'TERESA', 
+                                                                              creadoen : profesores_creados, 
+                                                                              contacto_profesor : 'XXXX-XXXXXX',
+                                                                              costo_x_hora : 60000,
+                                                                              estado_profesor : 'ACTIVO'
+                                                                            },
+
+                                                                            { 
+                                                                              nombre_profesor : 'PRUEBA', 
+                                                                              creadoen : profesores_creados, 
+                                                                              contacto_profesor : 'XXXX-XXXXXX',
+                                                                              costo_x_hora : 170000,
+                                                                              estado_profesor : 'SUSPENDIDO'
+                                                                            },
+
+                                                                            { 
+                                                                              nombre_profesor : 'PRUEBA 2', 
+                                                                              creadoen : profesores_creados, 
+                                                                              contacto_profesor : 'XXXX-XXXXXX',
+                                                                              costo_x_hora : 10000,
+                                                                              estado_profesor : 'BORRADO'
+                                                                            },
+                                                                          ] 
+                                                                } );
+
+
+
+
 }
 
 
