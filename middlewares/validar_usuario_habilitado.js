@@ -8,6 +8,7 @@ const prisma = new PrismaClient();
 
 const validar_usuario_habilitado = async ( req = request, res = response, next ) =>{
 
+    // VOY A VERIFICAR POR SI ACASO EL USUARIO TIENE UN ROL VALIDO PARA REALIZAR PETICIONES Y SI ES QUE ESTA DENTRO DEL RANGO
     const { token_trad } = req;
 
     const { id_usuario } = token_trad;

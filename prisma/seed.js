@@ -1,6 +1,9 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
+const { generar_fecha } = require( '../helpers/generar_fecha' )
+
+
 async function main() {
   
   //----------------------
@@ -161,22 +164,80 @@ async function main() {
 
   // PERSONA QUE MANEJA EL USUARIO
   //---------------------------------------------------------------------------------
-  const persona_admin = await prisma.$executeRaw`INSERT INTO public.persona( nombre, apellido, cedula, fecha_nacimiento)
-                                                        VALUES ( ${nombre_admin}, ${apellido_admin}, ${cedula_admin}, ${fecha_admin_nac} )`;
+
+  const personas_demo = await prisma.persona.createMany( { data : [ 
+                                                                    { 
+                                                                      nombre : "Victor", apellido : "Garcete", 
+                                                                      cedula : '4365710', fecha_nacimiento : generar_fecha( '29/05/2023' ) 
+                                                                    },
+                                                                    { 
+                                                                      nombre : "ADMINISTRADOR_CLUB", apellido : "----------------", 
+                                                                      cedula : '12345678', fecha_nacimiento : new Date() 
+                                                                    },
+                                                                    { 
+                                                                      nombre : "Lucas", apellido : "Torres", 
+                                                                      cedula : '1111111', fecha_nacimiento : generar_fecha( '13/05/2000' ) 
+                                                                    }
+
+                                                                  ] 
+                                                        } );
   //---------------------------------------------------------------------------------
 
   //---------------------------------------------------------------------------------
-  const socio_admin = await prisma.$executeRaw`INSERT INTO public.socio( id_tipo_socio, id_persona, correo_electronico, nombre_cmp,
-                                                                          numero_telefono, direccion, ruc, creadoen, estado_socio)
-                                                      VALUES ( 4, 1, ${ correo_electronico }, ${ nombre_admin + ' COMPLETO' },
-                                                              ${ numero_telefono }, ${ direccion }, ${ ruc }, ${ new Date() }, 1 )`;
+  const socios = await prisma.socio.createMany( { data : [  
+                                                            { 
+                                                              id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
+                                                              nombre_cmp : "Victor Garcete", numero_telefono : "0985552004", id_persona : 1
+                                                            },
+
+                                                            { 
+                                                              id_tipo_socio : 4, creadoen : new Date(), estado_socio : 1,
+                                                              nombre_cmp : "ADMINISTRADOR CLUB", numero_telefono : "----------", id_persona : 2
+                                                            },
+
+                                                            { 
+                                                              id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
+                                                              nombre_cmp : "Lucas Torres", numero_telefono : "------------", id_persona : 3
+                                                            }
+                                                          ] 
+                                              } );
   //---------------------------------------------------------------------------------
 
   //---------------------------------------------------------------------------------
   const pass_admin = process.env.C0NTR4SEN1A_4DM1N;
 
-  const usuario_admin = await prisma.$executeRaw`INSERT INTO public.usuario( id_socio, id_acceso, tipo_usuario, nombre_usuario, contrasea)
-                                                        VALUES ( 1, 1, 1, ${ nombre_admin }, ${ pass_admin } )`;
+  const usuarios = await prisma.usuario.createMany( { data : [
+                                                                {  
+                                                                  id_socio : 2, 
+                                                                  id_acceso : 1, 
+                                                                  tipo_usuario : 'ACCESO_ADMIN', 
+                                                                  nombre_usuario : nombre_admin, 
+                                                                  contrasea : pass_admin,
+                                                                  estado_usuario : 1,
+                                                                  usuariocreadoen : new Date()
+                                                                }, 
+                                                                
+                                                                {
+                                                                  id_socio : 1, 
+                                                                  id_acceso : 2, 
+                                                                  tipo_usuario : 'ACCESO_SOCIO_NORMAL', 
+                                                                  nombre_usuario : "vgarcete", 
+                                                                  contrasea : pass_admin,
+                                                                  estado_usuario : 1,
+                                                                  usuariocreadoen : new Date() 
+                                                                },
+
+                                                                {
+                                                                  id_socio : 3, 
+                                                                  id_acceso : 3, 
+                                                                  tipo_usuario : 'ACCESO_PROFE', 
+                                                                  nombre_usuario : "lucas_torres", 
+                                                                  contrasea : pass_admin,
+                                                                  estado_usuario : 1,
+                                                                  usuariocreadoen : new Date() 
+                                                                }
+                                                              ] 
+                                                  } );
   //---------------------------------------------------------------------------------
 
   const profesores_creados = new Date();
