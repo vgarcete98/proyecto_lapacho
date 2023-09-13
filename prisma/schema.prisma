@@ -25,6 +25,8 @@ model agendamiento_clase {
   creadoen           String     @db.VarChar
   editadoen          String?    @db.VarChar
   clase_eliminada    Boolean
+  clase_abonada      Boolean?
+  monto_abonado      Int?
   profesores         profesores @relation(fields: [id_profesor], references: [id_profesor], onDelete: NoAction, onUpdate: NoAction, map: "profesores_agendamiento_clase_fk")
   socio              socio      @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_agendamiento_clase_fk")
 }
