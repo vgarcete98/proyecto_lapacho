@@ -94,7 +94,7 @@ model inscripciones {
   fecha_inscripcion    DateTime           @db.Date
   abonado              Boolean
   inscripcioncreadoen  DateTime?          @db.Date
-  estadoinscripcion    String?            @db.VarChar(20)
+  estadoinscripcion    Int?               @db.SmallInt
   inscripcioneditadoen DateTime?          @db.Date
   calendario_eventos   calendario_eventos @relation(fields: [id_evento_calendario], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_inscripciones_fk")
   socio                socio              @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_inscripciones_fk")

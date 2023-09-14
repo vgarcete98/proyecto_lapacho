@@ -43,13 +43,56 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
         } );
     }
 
-    
-
-
-
 
 
 }
+
+
+
+
+const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>{
+
+    const { id_profesor } = req.query;
+
+    const clase_hoy = new Date();
+    // voy a devolver las clases del dia para ese profesor
+    try {
+        const clases_del_dia = await prisma.agendamiento_clase.findMany( { 
+                                                                            where : {
+                                                                                id_profesor,
+                                                                                fecha_agendamiento : clases_del_dia
+                                                                            }
+                                                                        } );
+        if ( clases_del_dia === null ) {
+            res.status( 200 ).json( {
+                status : false,
+                msg : "No se han encontrado registros",
+                clases_del_dia
+            } );
+
+        }else {
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Clases del dia para profesor " + id_profesor,
+                clases_del_dia,
+                cantidad : clases_del_dia.length
+            } );
+        }
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : "Ha ocurrido un error al consultar los registros",
+            error
+        } );
+    }
+
+}
+
+
+
+
+
 
 
 
@@ -114,6 +157,8 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
 
 const editar_una_clase = async ( req = request, res = response ) =>{
 
+    // Voy a cambiar en todo caso la hora en que se desea agendar ya que por diseño de la BD no se puede cambiar de profesor
+    // En todo caso generar una nueva
     const {  } = req.body;
 
 
@@ -187,6 +232,43 @@ const abonar_una_clase = async ( req = request, res = response ) =>{
 }
 
 
+const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
+
+    const { id_de_clase } = req.query;
+
+    try {
+
+        const clase_para_eliminar = await prisma.agendamiento_clase.update( { 
+            where : { id_agendamiento : id_de_clase },
+            data : {
+                clase_eliminada : true
+            }
+        } );
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Clase eliminada exitosamente",
+            clase_para_eliminar
+        } );
+
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : "Ocurrio un error al eliminar la clase",
+            error
+        } );
+    }
+
+
+
+
+}
+
+
+
+
+
+
 
 
 
@@ -195,6 +277,8 @@ module.exports = {
     agendar_una_clase,
     editar_una_clase,
     abonar_una_clase,
-    obtener_clases_del_dia
+    obtener_clases_del_dia,
+    obtener_clases_x_profesor_dia,
+    eliminar_clase_con_profesor
 
 }
