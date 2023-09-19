@@ -52,11 +52,11 @@ const obtener_profesor = async ( req = request, res = response ) =>{
 
     // VOY A OBTENER UN PROFESOR DADO SU ID
 
-    const { id_profesor_cons } = req.query;
+    const { id_profesor_cons } = req.params;
 
     const profesor = await prisma.profesores.findUnique( { 
                                                             where : {
-                                                                id_profesor : id_profesor_cons
+                                                                id_profesor : Number(id_profesor_cons)
                                                             } 
                                                         } );
     if ( profesor === null ) {
@@ -101,7 +101,7 @@ const crear_profesor = async ( req = request, res = response ) =>{
 const actualizar_profesor = async ( req = request, res = response ) =>{
 
     // SERIA MEJOR METER EL ID DEL PROFESOR EN EL QUERY PARAM Y EN EL BODY LOS DATOS NUEVOS
-    const { id_profesor_update } = req.query;
+    const { id_profesor_update } = req.params;
     const { contacto_nuevo, nuevo_costo } = req.body;
     const fecha_edicion = new Date();
     
@@ -145,14 +145,14 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
     // SERIA MEJOR METER EL ID DEL PROFESOR EN EL QUERY PARAM Y EN EL BODY LOS DATOS NUEVOS
     // LO MISMO PARA EDITAR SOLO QUE AQUI EDITO UN SOLO CAMPO
 
-    const { id_profesor_update } = req.query;
+    const { id_profesor_delete } = req.params;
     //const { contacto_nuevo, nuevo_costo } = req.body;
     const fecha_edicion = new Date();
     
     try {
         const profesor_editado = await prisma.profesores.update( {
             where : {
-                id_profesor : id_profesor_update
+                id_profesor : id_profesor_delete
             },
 
             data : {

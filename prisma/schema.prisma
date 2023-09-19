@@ -32,16 +32,17 @@ model agendamiento_clase {
 }
 
 model calendario_eventos {
-  id_evento_calendario BigInt          @id(map: "calendario_eventos_pk") @default(autoincrement())
-  id_tipo_evento       BigInt
-  fecha_desde_evento   DateTime        @db.Date
-  eventocreadoen       DateTime?       @db.Date
-  eventoeditadoen      DateTime?       @db.Date
-  fecha_hasta_evento   DateTime?       @db.Date
-  costo                BigInt?
-  estadoevento         String?         @db.VarChar(20)
-  eventos              eventos         @relation(fields: [id_tipo_evento], references: [id_tipo_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_calendario_eventos_fk")
-  inscripciones        inscripciones[]
+  id_evento_calendario    BigInt                    @id(map: "calendario_eventos_pk") @default(autoincrement())
+  id_tipo_evento          BigInt
+  fecha_desde_evento      DateTime                  @db.Date
+  eventocreadoen          DateTime?                 @db.Date
+  eventoeditadoen         DateTime?                 @db.Date
+  fecha_hasta_evento      DateTime?                 @db.Date
+  costo                   BigInt?
+  estadoevento            String?                   @db.VarChar(20)
+  eventos                 eventos                   @relation(fields: [id_tipo_evento], references: [id_tipo_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_calendario_eventos_fk")
+  inscripciones           inscripciones[]
+  inscripciones_no_socios inscripciones_no_socios[]
 }
 
 model clubes_habilitados {
@@ -82,6 +83,7 @@ model gastos_club {
   monto_gasto    BigInt
   ingreso        Boolean?   @default(false)
   egreso         Boolean?   @default(false)
+  gasto_borrado  Boolean?
   tipo_pagos     tipo_pagos @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "tipo_pagos_pagos_club_fk")
   usuario        usuario    @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "usuario_gastos_club_fk")
 }
@@ -243,4 +245,17 @@ model profesores {
   costo_x_hora       Int?
   contacto_profesor  String?              @db.VarChar
   agendamiento_clase agendamiento_clase[]
+}
+
+model inscripciones_no_socios {
+  id_inscripcion_no_socio       Int                @id(map: "inscripciones_no_socios_pk") @default(autoincrement())
+  id_evento_calendario_no_socio BigInt
+  nombre_jugador                String             @db.VarChar(255)
+  club_jugador                  String?            @db.VarChar(255)
+  desc_inscripcion              String?            @db.VarChar(255)
+  fecha_inscripcion             DateTime           @db.Date
+  abonado                       Boolean
+  estado_inscripcion            Int?               @db.SmallInt
+  editadoen                     DateTime?          @db.Date
+  calendario_eventos            calendario_eventos @relation(fields: [id_evento_calendario_no_socio], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_inscripciones_no_socios_fk")
 }

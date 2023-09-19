@@ -19,9 +19,9 @@ router_profesores.get( '/', );
 
 router_profesores.get( '/', [ validar_token, validar_rol_usuario ], obtener_nomina_profesores );
 
-router_profesores.post( '/', [ validar_token, validar_rol_usuario ], obtener_profesor );
+router_profesores.get( '/:id_profesor_cons', [ validar_token, validar_rol_usuario ], obtener_profesor );
 
-router_profesores.put( '/', [ validar_token, validar_rol_usuario ], actualizar_profesor );
+router_profesores.put( '/:id_profesor_delete', [ validar_token, validar_rol_usuario ], actualizar_profesor );
 
 
 router_profesores.delete( '/', [ validar_token, validar_rol_usuario ], eliminar_profesor );

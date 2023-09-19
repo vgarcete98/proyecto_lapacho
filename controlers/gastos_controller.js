@@ -142,7 +142,36 @@ const editar_gasto_club = async ( req = request, res = response ) =>{
 }
 
 
+const borrar_gasto = async ( req = request, res = response ) => {
 
+    const { id_gasto } = req.query;
+
+    try {
+        const gasto_editado = await prisma.gastos_club.update ( { 
+            where : { id_pago_club : id_gasto },
+            data : {
+                gasto_borrado : true
+            }
+            
+        } );
+
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Registro eliminado exitosamente",
+            gasto_editado
+        } );
+
+    } catch (error) {
+        console.log ( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : "No se pudo eliminar el registro "
+        } )          
+    }
+
+
+
+}
 
 
 
@@ -152,7 +181,8 @@ module.exports = {
 
     obtener_gastos_x_mes,
     cargar_gasto_club ,
-    editar_gasto_club
+    editar_gasto_club , 
+    borrar_gasto
 }
 
 

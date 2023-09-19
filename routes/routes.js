@@ -79,6 +79,10 @@ const rutas = {
     profesores : {
 
         ruta : "/profesores"
+    },
+
+    clases_particulares : {
+        ruta : "/agendamiento_clases"
     }
 
 }

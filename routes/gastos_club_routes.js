@@ -19,9 +19,9 @@ const {
 //----------------------------------------------------------------------------
 
 
-router_cargo_gastos.get( '/',[  ], cargar_gasto_club );
+router_cargo_gastos.get( '/',[  ], obtener_gastos_x_mes );
 
-router_cargo_gastos.get( '/',[  ], cargar_gasto_club );
+router_cargo_gastos.put( '/',[  ], editar_gasto_club );
 
 router_cargo_gastos.post( '/',[  ], cargar_gasto_club );
 
