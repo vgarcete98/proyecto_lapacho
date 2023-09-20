@@ -239,7 +239,7 @@ model usuario {
 model profesores {
   id_profesor        Int                  @id(map: "profesores_pk") @default(autoincrement())
   creadoen           DateTime             @db.Date
-  editadoen          String?              @db.VarChar
+  editadoen          DateTime?            @db.Date
   estado_profesor    String?              @db.VarChar
   nombre_profesor    String               @db.VarChar(50)
   costo_x_hora       Int?

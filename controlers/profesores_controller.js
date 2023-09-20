@@ -9,9 +9,9 @@ const prisma = new PrismaClient();
 
 const estado_profesor = {
 
-    activo : 1,
-    suspendido : 2,
-    ya_no_es_profesor : 3
+    activo : 'ACTIVO',
+    suspendido : 'SUSPENDIDO',
+    ya_no_es_profesor : 'BORRADO'
 }
 
 
@@ -108,7 +108,7 @@ const actualizar_profesor = async ( req = request, res = response ) =>{
     try {
         const profesor_editado = await prisma.profesores.update( {
             where : {
-                id_profesor : id_profesor_update
+                id_profesor : Number(id_profesor_update)
             },
 
             data : {
@@ -125,10 +125,11 @@ const actualizar_profesor = async ( req = request, res = response ) =>{
         } );
 
     } catch ( error ) {
+        console.log( error );
         res.status( 400 ).json( {
             status : true,
             msg : "El profesor no se pudo actualizar correctamente",
-            mensaje_error : "Id de profesor no existe",
+            //mensaje_error : "Id de profesor no existe",
             error,
             id_profesor_update
         } );
@@ -152,7 +153,7 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
     try {
         const profesor_editado = await prisma.profesores.update( {
             where : {
-                id_profesor : id_profesor_delete
+                id_profesor : Number(id_profesor_delete)
             },
 
             data : {
@@ -170,12 +171,13 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
         } );
 
     } catch ( error ) {
+        console.log( error );
         res.status( 400 ).json( {
             status : false,
             msg : "El profesor no se pudo eliminar correctamente",
             mensaje_error : "Id de profesor no existe",
             error,
-            id_profesor_update
+            id_profesor_delete
         } );
 
     }

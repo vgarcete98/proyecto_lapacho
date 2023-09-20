@@ -21,9 +21,9 @@ router_profesores.get( '/', [ validar_token, validar_rol_usuario ], obtener_nomi
 
 router_profesores.get( '/:id_profesor_cons', [ validar_token, validar_rol_usuario ], obtener_profesor );
 
-router_profesores.put( '/:id_profesor_delete', [ validar_token, validar_rol_usuario ], actualizar_profesor );
+router_profesores.put( '/:id_profesor_update', [ validar_token, validar_rol_usuario ], actualizar_profesor );
 
 
-router_profesores.delete( '/', [ validar_token, validar_rol_usuario ], eliminar_profesor );
+router_profesores.delete( '/:id_profesor_delete', [ validar_token, validar_rol_usuario ], eliminar_profesor );
 
 module.exports = router_profesores;

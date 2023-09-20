@@ -17,7 +17,7 @@ const validar_rol_usuario = async ( req = request, res = response, next ) =>{
                                                 WHERE A.ID_USUARIO = ${ id_usuario };`
     //console.log( rol_usuario );
     const { descripcion_acceso } = rol_usuario;
-    console.log( rol_usuario );  
+    //console.log( rol_usuario );  
     if( descripcion_acceso === 'ACCESO_TOTAL' ){
         next(); 
     }else{
