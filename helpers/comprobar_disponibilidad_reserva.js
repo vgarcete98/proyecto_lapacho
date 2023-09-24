@@ -36,3 +36,4 @@ const comprobar_disponibilidad_reserva = async ( req = request, res = response, 
 
 }
 
+module.exports = comprobar_disponibilidad_reserva;

@@ -247,7 +247,8 @@ async function main() {
                                                                               creadoen : profesores_creados, 
                                                                               contacto_profesor : 'XXXX-XXXXXX',
                                                                               costo_x_hora : 70000,
-                                                                              estado_profesor : 'ACTIVO'
+                                                                              estado_profesor : 'ACTIVO',
+                                                                              cedula : '3768266'
                                                                             },
 
                                                                             { 
@@ -255,7 +256,8 @@ async function main() {
                                                                               creadoen : profesores_creados, 
                                                                               contacto_profesor : 'XXXX-XXXXXX',
                                                                               costo_x_hora : 80000,
-                                                                              estado_profesor : 'ACTIVO'
+                                                                              estado_profesor : 'ACTIVO',
+                                                                              cedula : '3768266'
                                                                             },
 
                                                                             { 
@@ -263,7 +265,8 @@ async function main() {
                                                                               creadoen : profesores_creados, 
                                                                               contacto_profesor : 'XXXX-XXXXXX',
                                                                               costo_x_hora : 80000,
-                                                                              estado_profesor : 'ACTIVO'
+                                                                              estado_profesor : 'ACTIVO',
+                                                                              cedula : '2126262'
                                                                             },
 
                                                                             { 
@@ -271,7 +274,8 @@ async function main() {
                                                                               creadoen : profesores_creados, 
                                                                               contacto_profesor : 'XXXX-XXXXXX',
                                                                               costo_x_hora : 60000,
-                                                                              estado_profesor : 'ACTIVO'
+                                                                              estado_profesor : 'ACTIVO',
+                                                                              cedula : '1823226'
                                                                             },
 
                                                                             { 
@@ -279,7 +283,8 @@ async function main() {
                                                                               creadoen : profesores_creados, 
                                                                               contacto_profesor : 'XXXX-XXXXXX',
                                                                               costo_x_hora : 170000,
-                                                                              estado_profesor : 'SUSPENDIDO'
+                                                                              estado_profesor : 'SUSPENDIDO',
+                                                                              cedula : '7467289'
                                                                             },
 
                                                                             { 
@@ -287,7 +292,8 @@ async function main() {
                                                                               creadoen : profesores_creados, 
                                                                               contacto_profesor : 'XXXX-XXXXXX',
                                                                               costo_x_hora : 10000,
-                                                                              estado_profesor : 'BORRADO'
+                                                                              estado_profesor : 'BORRADO',
+                                                                              cedula : '1111111'
                                                                             },
                                                                           ] 
                                                                 } );
