@@ -78,24 +78,44 @@ const obtener_profesor = async ( req = request, res = response ) =>{
 
 const crear_profesor = async ( req = request, res = response ) =>{
 
-    const { nombre_profe, precio_x_hora, contacto_profesor } = req.body;
-    const fecha_creacion = new Date();
-    // OPCIONAL SERIA EL PRECIO X HORA
-    let nuevo_profesor;
-    if ( precio_x_hora === undefined ){
-        nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
-                                                    creadoen, estado_profesor, nombre_profesor, 
-                                                    costo_x_hora, contacto_profesor)
-                                                VALUES ( ${ fecha_creacion } ,  ${ estado_profesor.activo } ,  
-                                                        ${ nombre_profe } ,  ${ 0 } ,  ${ contacto_profesor } );`
-    }else {
-        nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
-                                                    creadoen, estado_profesor, nombre_profesor, 
-                                                    costo_x_hora, contacto_profesor)
-                                                VALUES ( ${ fecha_creacion } ,  ${ estado_profesor.activo } ,  
-                                                        ${ nombre_profe } ,  ${ precio_x_hora } ,  ${ contacto_profesor } );`
+    try {
 
+        const { nombre_profe, precio_x_hora, contacto_profesor, numero_cedula } = req.body;
+        const fecha_creacion = new Date();
+        // OPCIONAL SERIA EL PRECIO X HORA
+        let nuevo_profesor;
+        if ( precio_x_hora === undefined ){
+            nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
+                                                        creadoen, estado_profesor, nombre_profesor, 
+                                                        costo_x_hora, contacto_profesor, cedula)
+                                                    VALUES ( ${ fecha_creacion } ,  ${ estado_profesor.activo } ,  
+                                                            ${ nombre_profe } ,  ${ 0 } ,  ${ contacto_profesor }, ${ numero_cedula } );`
+        }else {
+            nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
+                                                        creadoen, estado_profesor, nombre_profesor, 
+                                                        costo_x_hora, contacto_profesor)
+                                                    VALUES ( ${ fecha_creacion } ,  ${ estado_profesor.activo } ,  
+                                                            ${ nombre_profe } ,  ${ precio_x_hora } ,  ${ contacto_profesor } );`
+    
+        }
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Profesor creado con exito",
+            nuevo_profesor
+        } );
+
+
+    } catch (error) {
+
+        console.log( error );
+
+        res.status( 500 ).json( {
+            status : false,
+            msg : "Ha ocurrido un error al crear un profesor",
+            error
+        } );
     }
+
 }
 
 const actualizar_profesor = async ( req = request, res = response ) =>{
