@@ -93,9 +93,9 @@ const crear_profesor = async ( req = request, res = response ) =>{
         }else {
             nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
                                                         creadoen, estado_profesor, nombre_profesor, 
-                                                        costo_x_hora, contacto_profesor)
+                                                        costo_x_hora, contacto_profesor, cedula)
                                                     VALUES ( ${ fecha_creacion } ,  ${ estado_profesor.activo } ,  
-                                                            ${ nombre_profe } ,  ${ precio_x_hora } ,  ${ contacto_profesor } );`
+                                                            ${ nombre_profe } ,  ${ precio_x_hora } ,  ${ contacto_profesor }, ${ numero_cedula } );`
     
         }
         res.status( 200 ).json( {
