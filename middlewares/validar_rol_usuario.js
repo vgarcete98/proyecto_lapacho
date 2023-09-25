@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 const validar_rol_usuario = async ( req = request, res = response, next ) =>{
 
-
+    // ESTA FUNCION VALIDA SI EL USUARIO ES UN USUARIO ADMIN PARA REALIZAR PETICIONES
     const { token_trad } = req;
     //console.log( token_trad );
     const { id_usuario } = token_trad;
@@ -28,6 +28,9 @@ const validar_rol_usuario = async ( req = request, res = response, next ) =>{
     }
   
 }
+
+
+
 
 
 

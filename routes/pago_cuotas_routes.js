@@ -8,11 +8,12 @@ const {
         realizar_pago_socio } = require( '../controlers/socio_pagos_controller' );
         
 const validar_token = require( '../middlewares/validar_token' );
+//const { validar_usuario_administrador, validar_usuario_profesor, validar_usuario_socio } = require( '../middlewares/validar_roles_usuario' )
 
 const router_pagos = Router();
 
 
-router_pagos.get( '/', [ validar_token ], obtener_pagos_x_mes );
+router_pagos.get( '/', [ validar_token,  ], obtener_pagos_x_mes );
 
 router_pagos.get( '/socio', [ validar_token ], obtener_pagos_x_socio );
 

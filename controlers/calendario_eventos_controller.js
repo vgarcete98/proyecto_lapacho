@@ -11,6 +11,38 @@ const estados_evento = [ 'ACTIVO', 'ELIMINADO', 'SUSPENDIDO' ]
 const asignar_evento_calendario = async ( req = request, res = response ) =>{
 
     // CREA UN NUEVO EVENTO EN EL CALENDARIO
+    const { tipo_evento, fecha_desde, fecha_hasta, costo } = req.body;
+
+    try {
+        const fecha_creacion = new Date();
+        const nuevo_evento = await prisma.calendario_eventos.create( { 
+                                                                        data : {
+                                                                            id_tipo_evento : tipo_evento,
+                                                                            fecha_desde_evento : fecha_desde,
+                                                                            fecha_hasta_evento : fecha_hasta,
+                                                                            costo,
+                                                                            eventocreadoen : fecha_creacion
+                                                                        } 
+                                                                    } );
+        res.status( 200 ).json( {
+            status : true, 
+            msg : 'Evento insertado en calendario',
+            nuevo_evento
+        } );
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'Ha ocurrido un error al crear el evento en el calendario',
+            error
+        } );        
+    }
+
+
+
+
+
+
 
 }
 
@@ -19,8 +51,8 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
 const obtener_eventos_x_fecha_calendario = async ( req = request, res = response ) =>{
 
     // OBTIENE TODOS LOS EVENTOS DEL MES EN EL CALENDARIO
-
-    const eventos_del_mes = await prisma.$queryRaw`SELECT B.DESC_TIPO_EVENTO AS DESC_EVENTO, A.COSTO AS COSTO_INSCRIPCION,
+    try {
+            const eventos_del_mes = await prisma.$queryRaw`SELECT A.ID_EVENTO_CALENDARIO, B.DESC_TIPO_EVENTO AS DESC_EVENTO, A.COSTO AS COSTO_INSCRIPCION,
                                                             A.FECHA_DESDE_EVENTO AS FECHA_INICIO, A.FECHA_HASTA_EVENTO AS FECHA_FIN
                                                         FROM CALENDARIO_EVENTOS A JOIN EVENTOS B ON A.ID_TIPO_EVENTO = B.ID_TIPO_EVENTO
                                                     WHERE EXTRACT ( MONTH FROM A.FECHA_DESDE_EVENTO ) = EXTRACT ( MONTH FROM CURRENT_DATE )
@@ -45,7 +77,16 @@ const obtener_eventos_x_fecha_calendario = async ( req = request, res = response
 
         } );
 
+    }      
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {  
+            status : false,
+            msg : 'Ha ocurrido un error al procesar la consulta',
+            error
+        } );
     }
+
 
 }
 
@@ -55,7 +96,7 @@ const obtener_eventos_x_fecha_calendario = async ( req = request, res = response
 const obtener_eventos_calendario = async ( req = request, res = response ) =>{
 
     // OBTIENE TODOS LOS EVENTOS DEL AÑO
-    const eventos_del_mes = await prisma.$queryRaw`SELECT B.DESC_TIPO_EVENTO AS DESC_EVENTO, A.COSTO AS COSTO_INSCRIPCION,
+    const eventos_del_mes = await prisma.$queryRaw`SELECT A.ID_EVENTO_CALENDARIO, B.DESC_TIPO_EVENTO AS DESC_EVENTO, A.COSTO AS COSTO_INSCRIPCION,
                                                             A.FECHA_DESDE_EVENTO AS FECHA_INICIO, A.FECHA_HASTA_EVENTO AS FECHA_FIN
                                                         FROM CALENDARIO_EVENTOS A JOIN EVENTOS B ON A.ID_TIPO_EVENTO = B.ID_TIPO_EVENTO
                                                     WHERE EXTRACT ( YEAR FROM A.FECHA_DESDE_EVENTO ) = EXTRACT ( YEAR FROM CURRENT_DATE )
