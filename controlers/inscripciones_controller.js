@@ -89,9 +89,46 @@ const inscribirse_a_evento_no_socios = async ( req = request, res = response ) =
 
 const editar_inscripcion = async ( req = request, res = response ) =>{
 
+    const { id_inscripcion } = req.params;
+
+    const { descripcion, estado_inscripcion, abonado } = req.body;
+
+    try {
+        
+        const inscripcion_editada = await prisma.inscripciones.update( { 
+                                                                            where : { id_inscripcion }, 
+                                                                            data : {
+                                                                                abonado,
+                                                                                desc_inscripcion : descripcion,
+                                                                                estadoinscripcion : estado_inscripcion
+                                                                            }
+                                                                        } );
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Inscripcion editada con exito",
+            inscripcion_editada
+        } );
+
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false, 
+            msg : 'No se pudo editar la inscripcion',
+            error
+        } );
+    }
+
 
 }
 
+
+
+const editar_inscripcion_no_socio = async ( req = request, res = response ) =>{
+
+    const { id_inscripcion } = req.params;
+        
+
+}
 
 
 const abonar_x_inscripcion = async ( req = request, res = response ) =>{
@@ -124,7 +161,70 @@ const abonar_x_inscripcion = async ( req = request, res = response ) =>{
 
 }
 
+const abonar_x_inscripcion_no_socio = async ( req = request, res = response ) =>{
+
+    const { id_inscripcion } = req.query;
+    
+    try {
+        const inscripcion_abonada = await prisma.inscripciones.update( { 
+                                                                            where : { id_inscripcion }, 
+                                                                            data : {
+                                                                                abonado : true
+                                                                            }
+                                                                    } );
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Inscripcion editada con exito",
+            inscripcion_abonada
+        } );    
+
+    } catch (error) {
+
+        console.log ( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : "No se pudo actualizar el registro",
+            inscripcion_abonada
+        } );
+                
+    }
+
+}
+
+
+
 const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
+
+    const { id_evento } = req.params;
+
+    try {
+        
+        const inscripciones = await prisma.inscripciones.findMany( {
+                                                                    where : { id_evento_calendario : id_evento }
+                                                                } );
+        const cant_inscripciones = inscripciones.length;
+
+        res.status( 200 ).json( { 
+                                    status : true,
+                                    msg : "Inscripciones de ese evento",
+                                    cant_inscripciones,
+                                    inscripciones
+                                } );
+
+    } catch (error) {
+        console.log ( error );  
+        res.status( 500 ).json( { 
+            status : false,
+            msg : "No se ha podido obtener las inscripciones de ese evento",
+            cant_inscripciones : 0
+        } );
+
+    }
+
+
+}
+
+const ver_inscripciones_x_evento_no_socio = async ( req = request, res = response ) =>{
 
     const { id_evento } = req.query;
 
@@ -156,12 +256,14 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
 }
 
 
-
 module.exports = {
 
     abonar_x_inscripcion,
     editar_inscripcion,
     inscribirse_a_evento,
     ver_inscripciones_x_evento,
-    inscribirse_a_evento_no_socios
+    inscribirse_a_evento_no_socios,
+    abonar_x_inscripcion_no_socio,
+    editar_inscripcion_no_socio,
+    ver_inscripciones_x_evento_no_socio
 }

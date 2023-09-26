@@ -39,11 +39,6 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
     }
 
 
-
-
-
-
-
 }
 
 
