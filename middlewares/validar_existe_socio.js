@@ -14,16 +14,22 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
 
     try {
         const persona = await prisma.persona.findFirst( { where : { cedula } } );
-
+        //console.log( persona );
+        
         if ( persona === null || persona === undefined ) {
             // QUIERE DECIR QUE NO SE ENCONTRO POR TANTO NO EXISTE
             next();
         }else {
-
+            const { nombre, apellido, fecha_nacimiento } = persona;
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Ya existe un socio con esos datos',
-                persona
+                persona_encontrada : {
+                    nombre, 
+                    apellido, 
+                    fecha_nacimiento,
+                    cedula
+                }
             } );
         }
     } catch (error) {
@@ -40,4 +46,4 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
 }
 
 
-
+module.exports = validar_existe_socio;

@@ -7,6 +7,15 @@ const prisma = new PrismaClient()
 
 
 
+const estados_socio = {
+
+    activo : { descripcion :'ACTIVO', id_estado : 1 },
+    suspendido : { descripcion :'SUSPENDIDO', id_estado : 2 },
+    eliminado : { descripcion :'ELIMINADO', id_estado : 3 }
+
+}
+
+
 const crear_socio = async ( req = request, res = response ) => {
 
 
@@ -20,6 +29,8 @@ const crear_socio = async ( req = request, res = response ) => {
 
         //primero debo de crear una persona y el sgte codigo devuelve el id de la persona creada
 
+        //------------------------------------------------------------------------------------------
+        /*
         const persona = await prisma.persona.create( { 
                                                         data : {
                                                             nombre,
@@ -28,24 +39,25 @@ const crear_socio = async ( req = request, res = response ) => {
                                                             fecha_nacimiento : fecha_db
                                                         } 
                                                     } );
-        /*
+        */
+        //------------------------------------------------------------------------------------------       
         const persona = await prisma.$executeRaw`INSERT INTO public.persona(
                                                         apellido, nombre, cedula, fecha_nacimiento)
                                                     VALUES ( ${apellido}, ${nombre}, ${cedula}, ${fecha_db});`;
-        */
+        
         //OBTENER EL SOCIO INSERTADO
         
         //------------------------------------------------------------------------------------------
-        /*
+        
         const result  =  await prisma.$queryRaw`SELECT CAST ( id_persona AS INTEGER ) AS id_persona 
                                                     FROM  public.persona
                                                 WHERE cedula = CAST( ${ cedula } AS VARCHAR )` ;
-        */
-        //const { id_persona } = result[0];
+        
+        const { id_persona } = result[0];
         //console.log ( result )
         //------------------------------------------------------------------------------------------
 
-        const { id_persona } = persona;
+        //const { id_persona } = persona;
 
         //------------------------------------------------------------------------------------------
         /*       
@@ -64,16 +76,26 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                 numero_telefono : numeroTel,
                                                                 direccion,
                                                                 ruc,
-                                                                creadoen : fecha_creacion_socio
+                                                                nombre_cmp : `${ nombre } ${ apellido }`,
+                                                                creadoen : fecha_creacion_socio,
+                                                                estado_socio : estados_socio.activo.id_estado
                                                             } 
                                                     
                                                     } );
+        const { nombre_cmp, correo_electronico, creadoen, estado_socio  } = nuevo_socio;
+        const direccion_socio = nuevo_socio.direccion;
         res.status( 200 ).json(
             {
 
                 status : true,
                 msj : 'Socio Creado',
-                nuevo_socio
+                socio_nuevo : {
+                    nombre_cmp, 
+                    correo_electronico, 
+                    creadoen, 
+                    estado_socio,
+                    direccion_socio
+                }
             }
         );   
 
@@ -82,10 +104,9 @@ const crear_socio = async ( req = request, res = response ) => {
         res.status( 500 ).json(
 
             {
-
                 status : false,
                 msj : 'No se puede crear al socio solicitado',
-
+                error
             }
 
         );
@@ -98,27 +119,46 @@ const crear_socio = async ( req = request, res = response ) => {
 
 const actualizar_socio = async ( req = request, res = response ) => {
 
-    const { correo, telefono, ruc } = req.body;
-    const { id } = req.params;
-    console.log( id );
+    const { correo, telefono, ruc, estadoSocio, direccion } = req.body;
+    const { id_socio } = req.params;
+    //console.log( id );
 
-    const socio_actualizado = prisma.$executeRaw`UPDATE public.socio
-                                                        SET correo_electronico=${correo}, 
-                                                            numero_telefono=${telefono}, 
-                                                            direccion=${direccion}
-                                                WHERE id_socio = ${id}`;
+    try {
+        //------------------------------------------------------------------------------------------
+        /*const socio_actualizado = prisma.$executeRaw`UPDATE public.socio
+                                                            SET correo_electronico=${correo}, 
+                                                                numero_telefono=${telefono}, 
+                                                                direccion=${direccion}
+                                                    WHERE id_socio = ${id}`;*/
+        //------------------------------------------------------------------------------------------
+        const fecha_socio_actualizado = new Date();
+        const socio_actualizado = await prisma.socio.update( { 
+                                                                where : { id_socio },
+                                                                data : {
 
-    res.status( 200 ).json(
+                                                                    editadoen : fecha_socio_actualizado,
+                                                                    correo_electronico : correo,
+                                                                    telefono,
+                                                                    ruc,
+                                                                    estado_socio : estadoSocio,
+                                                                    direccion
+                                                                }
+                                                            } );
 
-        {
+        res.status( 200 ).json({
+                                    status : true,
+                                    msj : 'Socio Actualizado',
+                                    socio_actualizado
 
-            status : 'OK',
-            msj : 'Socio Actualizado',
-            socio_actualizado
+                                });        
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'No se pudo actualizar al Socio'
+        } );
+    }
 
-        }
-
-    );
 
 }
 
@@ -126,25 +166,61 @@ const actualizar_socio = async ( req = request, res = response ) => {
 
 const borrar_socio = async ( req = request, res = response ) => {
 
-
-    const { id } = req.params;
+    // SE IMPLEMENTA EL BORRADO DEL SOCIO ACTUALIZANDO NADA MAS CIERTOS CAMPOS DE LA TABLA
+    const { id_socio } = req.params;
     //console.log( id );
+    //const { estadoSocio, correoElectronico, numeroTel, ruc } = req.body;
 
-    const socio_actualizado = prisma.$executeRaw`UPDATE public.socio
-                                                        SET socio_activo = false
-                                                WHERE id_socio = ${id}`;
+    try {
+        //----------------------------------------------------------------------------
+        /*
+        const socio_actualizado = prisma.$executeRaw`UPDATE public.socio
+                                                            SET socio_activo = false
+                                                    WHERE id_socio = ${id}`;
+        */
+        //----------------------------------------------------------------------------
+        const fecha_edicion = new Date();
+        const socio_actualizado = await prisma.socio.update( { 
+                                                                data : {
+                                                                    estado_socio : estados_socio.eliminado.id_estado,
+                                                                    editadoen : fecha_edicion
+                                                                },
+                                                                where : { id_socio }
+                                                            } );
+        const { editadoen, direccion, correo_electronico, numero_telefono, estado_socio, ruc } = socio_actualizado;
+        res.status( 200 ).json(
 
-    res.status( 200 ).json(
+            {
 
-        {
+                status : true,
+                msj : 'Socio Borrado',
+                socio_borrado : {
+                    editadoen, 
+                    direccion, 
+                    correo_electronico, 
+                    numero_telefono, 
+                    estado_socio, 
+                    ruc
+                }
 
-            status : 'OK',
-            msj : 'Socio Borrado',
-            socio_actualizado
+            }
 
-        }
+        );        
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json(
 
-    );
+            {
+
+                status : false,
+                msj : 'No se logro borrar al socio',
+                error
+
+            }
+
+        );
+    }
+
 
 
 
@@ -154,11 +230,13 @@ const borrar_socio = async ( req = request, res = response ) => {
 
 
 const obtener_socios = async ( req = request, res = response ) => {
-
-    const socios = await prisma.$queryRaw`SELECT CAST ( id_socio AS INTEGER ) AS id_socio, 
-                                                CAST ( id_tipo_socio AS INTEGER ) AS id_tipo_socio, 
-                                                correo_electronico, direccion, ruc 
-                                            FROM SOCIO`;
+    
+    //SE OBTIENEN TODOS LOS SOCIOS DEL CLUB YA SEA ACTIVOS, ELIMINADOS, SUSPENDIDOS
+    const socios = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS NOMBRE_SOCIO, A.CEDULA, 
+                                                    CAST ( B.ID_SOCIO AS INTEGER ) AS ID_SOCIO,
+                                                    C.DESC_TIPO_SOCIO , B.NUMERO_TELEFONO, B.ESTADO_SOCIO 
+                                                FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
+                                                JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO`;
 
     //console.log ( socios );
 
@@ -176,28 +254,41 @@ const obtener_socios = async ( req = request, res = response ) => {
 const obtener_socios_detallados = async ( req = request, res = response ) => {
 
     // OBTIENE LOS SOCIOS DETALLADOS ACTIVOS DEL CLUB
-    const socios_detallados = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS NOMBRE_SOCIO, A.CEDULA,
-                                                    B.ID_TIPO_SOCIO, B.NUMERO_TELEFONO, B.ESTADO_SOCIO
-                                                FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
-                                            WHERE B.EDITADOEN IS NOT NULL;`
+    try {
+        const socios_detallados = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS NOMBRE_SOCIO, A.CEDULA,
+                                                        CAST ( B.ID_SOCIO AS INTEGER ) AS ID_SOCIO,
+                                                        B.NUMERO_TELEFONO, B.ESTADO_SOCIO, C.DESC_TIPO_SOCIO
+                                                    FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
+                                                    JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
+                                                WHERE B.ESTADO_SOCIO = ${ estados_socio.activo.id_estado };`
 
-    if ( socios_detallados.length === 0 ){
+        if ( socios_detallados.length === 0 ){
 
-        res.status(200).json({
-            status: false,
-            msg: 'no existen socios activos en el club',
-            cant : socios_detallados.length,
-            data : socios_detallados
+            res.status(200).json({
+                status: false,
+                msg: 'no existen socios activos en el club',
+                cant : socios_detallados.length,
+                data : socios_detallados
+            });
+        }else {
+
+            res.status(200).json({
+                status: true,
+                msg: 'Socios del club',
+                cant : socios_detallados.length,
+                data : socios_detallados
+            });
+        }        
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+           status : false,
+           msg : 'No se pudo obtener el detalle de los socios',
+           error 
         });
-    }else {
-
-        res.status(200).json({
-            status: true,
-            msg: 'Socios del club',
-            cant : socios_detallados.length,
-            data : socios_detallados
-        });
+        
     }
+
 
 
 }
@@ -207,19 +298,40 @@ const obtener_socio = async ( req = request, res = response ) => {
 
     //OBTENER EL SOCIO PASANDOLE UN ID
 
-    const { id } = req.params;
+    const { id_socio } = req.params;
+    try {
+        const socio = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS NOMBRE_SOCIO, A.CEDULA,
+                                                    CAST ( B.ID_SOCIO AS INTEGER ) AS ID_SOCIO,
+                                                    B.NUMERO_TELEFONO, B.ESTADO_SOCIO, C.DESC_TIPO_SOCIO
+                                                FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
+                                                JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
+                                            WHERE B.ID_SOCIO = ${ Number(id_socio) }`;
 
-    const socio = await prisma.$queryRaw`SELECT id_socio, id_tipo_socio, correo_electronico, direccion, ruc 
-                                            FROM SOCIO
-                                        WHERE id_socio = ${id}`;
+        //console.log ( socios );
+        if ( socio.length === 0 ){
 
-    //console.log ( socios );
+            res.status(200).json({
+                status: false,
+                msg: 'no existe ese socio en el club',
+            });
+        }else {
 
-    res.status(200).json({
-        status: 'ok',
-        msg: 'Socio del club',
-        data : socio
-    });
+            res.status(200).json({
+                status: true,
+                msg: 'Socio del club',
+                cant : socio.length,
+                data : socio
+            });
+        }        
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json({
+            status: false,
+            msg: 'No se pudo obtener al socio del club',
+        });
+    }
+
+  
 
 }
 
