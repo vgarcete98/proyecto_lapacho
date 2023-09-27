@@ -7,12 +7,12 @@ const prisma = new PrismaClient();
 const comprobar_disponibilidad_evento = async ( req = request, res = response, next )=> {
 
     try {
-        const { fecha_desde, fecha_hasta } = req.body;
+        const { fechaDesde, fechaHasta } = req.body;
         const evento = await prisma.calendario_eventos.findFirst( { 
                                                                     where : {  
                                                                         AND : [
-                                                                            { fecha_desde_evento : fecha_desde },
-                                                                            { fecha_hasta_evento : fecha_hasta }
+                                                                            { fecha_desde_evento : fechaDesde },
+                                                                            { fecha_hasta_evento : fechaHasta }
                                                                         ]                  
                                                                     } 
                                                                 } );

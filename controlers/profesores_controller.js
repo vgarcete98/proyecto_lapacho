@@ -102,7 +102,7 @@ const crear_profesor = async ( req = request, res = response ) =>{
         const fecha_creacion = new Date();
         // OPCIONAL SERIA EL PRECIO X HORA
         let nuevo_profesor;
-        if ( precio_x_hora === undefined ){
+        if ( precioXHora === undefined ){
             nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
                                                         creadoen, estado_profesor, nombre_profesor, 
                                                         costo_x_hora, contacto_profesor, cedula)

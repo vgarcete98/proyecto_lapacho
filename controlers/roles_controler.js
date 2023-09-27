@@ -7,11 +7,11 @@ const prisma = new PrismaClient();
 
 const crear_rol = async ( req = request, res = response ) => {
 
-    const { descripcion_rol } = req.body;
+    const { descripcionRol } = req.body;
 
     const rol_nuevo = await prisma.$executeRaw`INSERT INTO public.roles_usuario(
                                                     descripcion_rol )
-                                                VALUES ( ${ descripcion_rol });`;
+                                                VALUES ( ${ descripcionRol });`;
 
     res.status( 200 ).json(
 
@@ -29,10 +29,10 @@ const crear_rol = async ( req = request, res = response ) => {
 const actualizar_rol = async ( req = request, res = response ) => {
 
     const { id } = req.params;
-    const { descripcion_rol } = req.body;
+    const { descripcionRol } = req.body;
 
     const rol_editado = await prisma.$executeRaw`UPDATE public.roles_usuario
-                                                    SET descripcion_rol= ${ descripcion_rol }
+                                                    SET descripcion_rol= ${ descripcionRol }
                                                 WHERE id_rol_usuario = ${id}`;
 
     res.status( 200 ).json(

@@ -9,37 +9,89 @@ const prisma = new PrismaClient()
 
 const crear_socio = async ( req = request, res = response ) => {
 
-    //console.log ( req.body)
-    const { nombre, apellido, fecha_nacimiento, cedula, correo, numero_tel, direccion, ruc, tipo_socio } = req.body;
 
-    //console.log ( nombre, apellido, fecha_nacimiento );
-    //convertir la fecha de nacimiento a fecha
-    const fecha_db = generar_fecha( fecha_nacimiento );
+    try {
+        //console.log ( req.body)
+        const { nombre, apellido, fechaNacimiento, cedula, correo, numeroTel, direccion, ruc, tipoSocio } = req.body;
 
-    //primero debo de crear una persona y el sgte codigo devuelve el id de la persona creada
-    const persona = await prisma.$executeRaw`INSERT INTO public.persona(
-                                                    apellido, nombre, cedula, fecha_nacimiento)
-                                                VALUES ( ${apellido}, ${nombre}, ${cedula}, ${fecha_db});`;
-    //OBTENER EL ULTIMO INSERTADO
-    const result  =  await prisma.$queryRaw`SELECT CAST ( id_persona AS INTEGER ) AS id_persona 
-                                                FROM  public.persona
-                                            WHERE cedula = CAST( ${ cedula } AS VARCHAR )` ;
-    const { id_persona } = result[0];
-    //console.log ( result )
+        //console.log ( nombre, apellido, fecha_nacimiento );
+        //convertir la fecha de nacimiento a fecha
+        const fecha_db = generar_fecha( fechaNacimiento );
 
-    const socio = await prisma.$executeRaw`INSERT INTO public.socio(
-                                                id_tipo_socio, id_persona, correo_electronico, numero_telefono, direccion, ruc)
-                                            VALUES ( ${ tipo_socio }, ${ id_persona },${correo} , ${numero_tel}, ${direccion}, ${ruc} )`;
-    res.status( 200 ).json(
+        //primero debo de crear una persona y el sgte codigo devuelve el id de la persona creada
 
-        {
+        const persona = await prisma.persona.create( { 
+                                                        data : {
+                                                            nombre,
+                                                            apellido,
+                                                            cedula,
+                                                            fecha_nacimiento : fecha_db
+                                                        } 
+                                                    } );
+        /*
+        const persona = await prisma.$executeRaw`INSERT INTO public.persona(
+                                                        apellido, nombre, cedula, fecha_nacimiento)
+                                                    VALUES ( ${apellido}, ${nombre}, ${cedula}, ${fecha_db});`;
+        */
+        //OBTENER EL SOCIO INSERTADO
+        
+        //------------------------------------------------------------------------------------------
+        /*
+        const result  =  await prisma.$queryRaw`SELECT CAST ( id_persona AS INTEGER ) AS id_persona 
+                                                    FROM  public.persona
+                                                WHERE cedula = CAST( ${ cedula } AS VARCHAR )` ;
+        */
+        //const { id_persona } = result[0];
+        //console.log ( result )
+        //------------------------------------------------------------------------------------------
 
-            status : 'OK',
-            msj : 'Socio Creado',
+        const { id_persona } = persona;
 
-        }
+        //------------------------------------------------------------------------------------------
+        /*       
+        const socio = await prisma.$executeRaw`INSERT INTO public.socio(
+                                                    id_tipo_socio, id_persona, correo_electronico, numero_telefono, direccion, ruc)
+                                                VALUES ( ${ tipoSocio }, ${ id_persona },${correo} , ${numeroTel}, ${direccion}, ${ruc} )`;
+        */
+        //------------------------------------------------------------------------------------------
 
-    );
+        const fecha_creacion_socio = new Date();
+        const nuevo_socio = await prisma.socio.create( { 
+                                                            data : {
+                                                                id_tipo_socio : tipoSocio,
+                                                                id_persona,
+                                                                correo,
+                                                                numero_telefono : numeroTel,
+                                                                direccion,
+                                                                ruc,
+                                                                creadoen : fecha_creacion_socio
+                                                            } 
+                                                    
+                                                    } );
+        res.status( 200 ).json(
+            {
+
+                status : true,
+                msj : 'Socio Creado',
+                nuevo_socio
+            }
+        );   
+
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json(
+
+            {
+
+                status : false,
+                msj : 'No se puede crear al socio solicitado',
+
+            }
+
+        );
+
+    }
+
 }
 
 
