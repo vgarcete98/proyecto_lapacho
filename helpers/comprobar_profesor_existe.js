@@ -10,8 +10,10 @@ const comprobar_profesor_existe = async ( req = request, res = response, next )=
     try {
         const existe = await prisma.profesores.findFirst( { where : { cedula : numeroCedula } } );
         if ( existe === undefined || existe === null ) {
+            console.log ( existe );
             next();
         }else {
+            console.log( existe );
             res.status( 400 ).json( {
                 status : false,
                 msg : "Ese profesor ya existe",

@@ -19,7 +19,26 @@ const estado_profesor = {
 const obtener_nomina_profesores = async ( req = request, res = response ) =>{
 
     try {
-        const todos_los_profesores = await prisma.profesores.findMany(); 
+        const todos_los_profesores = await prisma.profesores.findMany( );
+        
+        let profesoresFormateado = [];
+        todos_los_profesores.forEach( ( elemento )=>{
+            
+            const { cedula, contacto_profesor, costo_x_hora, 
+                    creadoen, editadoen, estado_profesor, 
+                    id_profesor, nombre_profesor } = elemento;
+            profesoresFormateado.push( { 
+                cedula,
+                contactoProfesor : contacto_profesor,
+                costoXHora : costo_x_hora,
+                creadoEn : creadoen,
+                editadoEn : editadoen,
+                estadoProfesor : estado_profesor,
+                idProfesor : id_profesor,
+                nombreProfesor : nombre_profesor
+            } )
+        } );
+
         const cantidad_registros = todos_los_profesores.length;
         if ( cantidad_registros === 0 ){
     
@@ -33,10 +52,10 @@ const obtener_nomina_profesores = async ( req = request, res = response ) =>{
         } else {
             res.status( 200 ).json( 
                 {
-                    status : false,
+                    status : true,
                     msg : "Profesores del club",
-                    cantidad_registros,
-                    todos_los_profesores
+                    cantidadRegistros : cantidad_registros,
+                    profesoresFormateado
                 }
             );
     
@@ -78,7 +97,7 @@ const obtener_profesor = async ( req = request, res = response ) =>{
             } );
         }else {
             res.status( 200 ).json( {
-                status : false,
+                status : true,
                 msg : "Profesor Buscado",
                 profesor
             } );
@@ -202,10 +221,23 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
             }
         } );
 
+        const { cedula, contacto_profesor, 
+                costo_x_hora, creadoen,
+                editadoen, estado_profesor, nombre_profesor } = profesor_editado;
+
+        const nuevo_profesor_editado = {
+            cedula,
+            contactoProfesor : contacto_profesor,
+            costoXHora :costo_x_hora,
+            creadoEn : creadoen,
+            editadoEn : editadoen,
+            estadoProfesor : estado_profesor,
+            nombreProfesor : nombre_profesor
+        }
         res.status( 200 ).json( {
             status : true,
             msg : "Profesor eliminado correctamente",
-            profesor_editado
+            nuevo_profesor_editado
         } );
 
     } catch ( error ) {
