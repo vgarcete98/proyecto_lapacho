@@ -11,15 +11,15 @@ const estados_evento = [ 'ACTIVO', 'ELIMINADO', 'SUSPENDIDO' ]
 const asignar_evento_calendario = async ( req = request, res = response ) =>{
 
     // CREA UN NUEVO EVENTO EN EL CALENDARIO
-    const { tipo_evento, fecha_desde, fecha_hasta, costo } = req.body;
+    const { tipoEvento, fechaDesde, fechaHasta, costo } = req.body;
 
     try {
         const fecha_creacion = new Date();
         const nuevo_evento = await prisma.calendario_eventos.create( { 
                                                                         data : {
-                                                                            id_tipo_evento : tipo_evento,
-                                                                            fecha_desde_evento : fecha_desde,
-                                                                            fecha_hasta_evento : fecha_hasta,
+                                                                            id_tipo_evento : tipoEvento,
+                                                                            fecha_desde_evento : fechaDesde,
+                                                                            fecha_hasta_evento : fechaHasta,
                                                                             costo,
                                                                             eventocreadoen : fecha_creacion
                                                                         } 
@@ -124,7 +124,7 @@ const obtener_eventos_calendario = async ( req = request, res = response ) =>{
 const borrar_evento_calendario = async ( req = request, res = response ) =>{
 
     // HABRIA QUE VER COMO PROCEDER PARA EL BORRADO PERO EN SINTESIS MEJOR POR UN QUERY PARAM
-    const { evento_a_borrar } = req.query;
+    const { evento_a_borrar } = req.params;
 
     const fecha_borrado = new Date();
 
@@ -153,30 +153,43 @@ const actualizar_evento_calendario = async ( req = request, res = response ) =>{
 
 
     // HABRIA QUE VER COMO PROCEDER PARA EL BORRADO PERO EN SINTESIS MEJOR POR UN QUERY PARAM
-    const { id_evento, fecha_nueva_desde, fecha_nueva_hasta,
-            estado_evento, costo_nuevo } = req.body;
+    const { idEvento, fechaNuevaDesde, fechaNuevaHasta,
+            estadoEvento, costoNuevo } = req.body;
 
     const fecha_actualizacion = new Date();
 
-    const actualizacion_evento = await prisma.$executeRaw`UPDATE public.calendario_eventos
-                                                        SET eventoeditadoen= ${ fecha_actualizacion }, estadoevento= ${ estado_evento },
-                                                            costo = ${ costo_nuevo }, fecha_desde_evento = ${ fecha_nueva_desde },
-                                                            fecha_hasta_evento = ${ fecha_nueva_hasta }
-                                                    WHERE id_evento_calendario = ${ id_evento };`
+    try {
+        const actualizacion_evento = await prisma.$executeRaw`UPDATE public.calendario_eventos
+                                                    SET eventoeditadoen= ${ fecha_actualizacion }, estadoevento= ${ estadoEvento },
+                                                        costo = ${ costoNuevo }, fecha_desde_evento = ${ fechaNuevaDesde },
+                                                        fecha_hasta_evento = ${ fechaNuevaHasta }
+                                                WHERE id_evento_calendario = ${ idEvento };`
 
-    if( actualizacion_evento > 0 ){
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Evento ACTUALIZADO",
-            cantidad_registros : borrado_evento
-        } );
-    }else {
+        if( actualizacion_evento > 0 ){
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Evento ACTUALIZADO",
+                cantidad_registros : borrado_evento
+            } );
+        }else {
+            res.status( 200 ).json( {
+                status : false,
+                msg : "Evento no ACTUALIZADO",
+                cantidad_registros : borrado_evento
+            } );
+        }   
+    } catch (error) {
+
+        console.log ( error );
+
         res.status( 200 ).json( {
             status : false,
             msg : "Evento no ACTUALIZADO",
-            cantidad_registros : borrado_evento
-        } );
+            error
+        } );    
     }
+
+
 
 }
 

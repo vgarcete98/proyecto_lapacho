@@ -9,15 +9,15 @@ const prisma = new PrismaClient();
 const inscribirse_a_evento = async ( req = request, res = response ) =>{
 
     // NECESITO REGISTRAR UNA INSCRIPCION 
-    const { id_socio, id_evento, abonado } = req.body;
+    const { idSocio, idEvento, abonado } = req.body;
     const fecha_inscripcion = new Date(); // La fecha en la que se inscribio el socio
     
     // Voy a manejar que se abona entero por la inscripcion y no por partes como sucede con las clases particulares
     try {
         const nueva_inscripcion = await prisma.inscripciones.create( { 
                                                                         data : {
-                                                                            id_socio,
-                                                                            id_evento_calendario : id_evento,
+                                                                            id_socio : idSocio,
+                                                                            id_evento_calendario : idEvento,
                                                                             abonado,
                                                                             inscripcioncreadoen : fecha_inscripcion,
 
@@ -49,15 +49,15 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
 const inscribirse_a_evento_no_socios = async ( req = request, res = response ) =>{
 
     // NECESITO REGISTRAR UNA INSCRIPCION 
-    const { id_evento, nombre_jugador, abonado,  } = req.body;
+    const { idEvento, nombreJugador, abonado,  } = req.body;
     const fecha_inscripcion = new Date(); // La fecha en la que se inscribio el socio
     
     // Voy a manejar que se abona entero por la inscripcion y no por partes como sucede con las clases particulares
     try {
         const nueva_inscripcion = await prisma.inscripciones_no_socios.create( { 
                                                                                     data : {
-                                                                                        id_evento_calendario_no_socio : id_evento,
-                                                                                        nombre_jugador,
+                                                                                        id_evento_calendario_no_socio : idEvento,
+                                                                                        nombre_jugador : nombreJugador,
                                                                                         abonado,
                                                                                         fecha_inscripcion ,
 
@@ -91,7 +91,7 @@ const editar_inscripcion = async ( req = request, res = response ) =>{
 
     const { id_inscripcion } = req.params;
 
-    const { descripcion, estado_inscripcion, abonado } = req.body;
+    const { descripcion, estadoInscripcion, abonado } = req.body;
 
     try {
         
@@ -100,7 +100,7 @@ const editar_inscripcion = async ( req = request, res = response ) =>{
                                                                             data : {
                                                                                 abonado,
                                                                                 desc_inscripcion : descripcion,
-                                                                                estadoinscripcion : estado_inscripcion
+                                                                                estadoinscripcion : estadoInscripcion
                                                                             }
                                                                         } );
         res.status( 200 ).json( {
@@ -126,6 +126,33 @@ const editar_inscripcion = async ( req = request, res = response ) =>{
 const editar_inscripcion_no_socio = async ( req = request, res = response ) =>{
 
     const { id_inscripcion } = req.params;
+
+    try {
+        const { descripcion, estadoInscripcion, abonado } = req.body;
+
+        const inscripcion_editada = await prisma.inscripciones_no_socios.update ( { 
+                                                                                    where :  { id_inscripcion_no_socio : id_inscripcion },
+                                                                                    data : {
+                                                                                        abonado,
+                                                                                        desc_inscripcion : descripcion,
+                                                                                        estado_inscripcion : estadoInscripcion
+                                                                                    }
+                                                                                } );
+        res.status( 200 ).json( {
+            status : true,
+            msg : 'Inscripcion editada con exito',
+            inscripcion_editada
+
+        } );
+    } catch (error) {
+
+        console.log( error )
+
+        res.status( 500 ).json( {
+
+        } );
+        
+    }
         
 
 }
@@ -133,7 +160,7 @@ const editar_inscripcion_no_socio = async ( req = request, res = response ) =>{
 
 const abonar_x_inscripcion = async ( req = request, res = response ) =>{
 
-    const { id_inscripcion } = req.query;
+    const { id_inscripcion } = req.params;
     
     try {
         const inscripcion_abonada = await prisma.inscripciones.update( { 
@@ -163,13 +190,14 @@ const abonar_x_inscripcion = async ( req = request, res = response ) =>{
 
 const abonar_x_inscripcion_no_socio = async ( req = request, res = response ) =>{
 
-    const { id_inscripcion } = req.query;
+    const { id_inscripcion } = req.params;
     
     try {
-        const inscripcion_abonada = await prisma.inscripciones.update( { 
-                                                                            where : { id_inscripcion }, 
+        const inscripcion_abonada = await prisma.inscripciones_no_socios.update( { 
+                                                                            where : { id_inscripcion_no_socio : id_inscripcion }, 
                                                                             data : {
                                                                                 abonado : true
+
                                                                             }
                                                                     } );
         res.status( 200 ).json( {
@@ -226,12 +254,12 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
 
 const ver_inscripciones_x_evento_no_socio = async ( req = request, res = response ) =>{
 
-    const { id_evento } = req.query;
+    const { id_evento } = req.params;
 
     try {
         
-        const inscripciones = await prisma.inscripciones.findMany( {
-                                                                    where : { id_evento_calendario : id_evento }
+        const inscripciones = await prisma.inscripciones_no_socios.findMany( {
+                                                                    where : { id_evento_calendario_no_socio : id_evento }
                                                                 } );
         const cant_inscripciones = inscripciones.length;
 

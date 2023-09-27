@@ -52,7 +52,7 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
 
 const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>{
 
-    const { id_profesor } = req.query;
+    const { id_profesor } = req.params;
 
     const clase_hoy = new Date();
     // voy a devolver las clases del dia para ese profesor
@@ -60,7 +60,7 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
         const clases_del_dia = await prisma.agendamiento_clase.findMany( { 
                                                                             where : {
                                                                                 id_profesor,
-                                                                                fecha_agendamiento : clases_del_dia
+                                                                                fecha_agendamiento : clase_hoy
                                                                             }
                                                                         } );
         if ( clases_del_dia === null ) {
@@ -99,7 +99,7 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
 const agendar_una_clase = async ( req = request, res = response ) =>{
 
 
-    const { id_socio, id_profesor, fecha_para_la_clase, inicio, fin } = req.body;
+    const { idSocio, idProfesor, fechaParaLaClase, inicio, fin } = req.body;
 
     // VOY A COMPROBAR LAS CLASES QUE HAY EN EL DIA PRIMERO PARA PODER VER SI SE PUEDE RESERVAR O NO
     const disponibilidad = await comprobar_horario_profesor( fecha_para_la_clase, inicio, fin, id_profesor );
@@ -108,9 +108,9 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
         try {
             const agendar_clase = await prisma.agendamiento_clase.create( { 
                                                                             data : { 
-                                                                                        id_socio,
-                                                                                        id_profesor,
-                                                                                        fecha_agendamiento : fecha_para_la_clase,
+                                                                                        id_socio : idSocio,
+                                                                                        id_profesor : idProfesor,
+                                                                                        fecha_agendamiento : fechaParaLaClase,
                                                                                         horario_inicio : inicio,
                                                                                         horario_hasta : fin,
                                                                                         creadoen : new Date(),
@@ -159,12 +159,34 @@ const editar_una_clase = async ( req = request, res = response ) =>{
 
     // Voy a cambiar en todo caso la hora en que se desea agendar ya que por diseño de la BD no se puede cambiar de profesor
     // En todo caso generar una nueva
-    const {  } = req.body;
+    const id_clase = req.params;
+    const { horarioInicio, horarioHasta } = req.body;
+    const fecha_editada = new Date();
 
+    try {
+        const clase_editada = await prisma.agendamiento_clase.update( { 
+                                                                        where : { id_agendamiento : id_clase },
+                                                                        data : {
 
-
-
-
+                                                                            editadoen : fecha_editada,
+                                                                            horario_inicio : horarioInicio,
+                                                                            horario_hasta : horarioHasta
+                                                                        }
+                                                                    } );
+        res.status( 200 ).json( {
+            status : true,
+            msg : 'Clase editada con exito',
+            clase_editada
+        } );
+    } catch (error) {
+        console.log ( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'No se pudo editar la clase',
+            error
+        } );
+        
+    }
 
 
 }
@@ -173,7 +195,9 @@ const editar_una_clase = async ( req = request, res = response ) =>{
 
 const abonar_una_clase = async ( req = request, res = response ) =>{
 
-    const { id_de_clase, monto_abonado_x_clase } = req.body;
+    const { id_de_clase } = req.params;
+
+    const { montoAbonadoXClase } = req.body;
 
     try {
         
@@ -182,7 +206,7 @@ const abonar_una_clase = async ( req = request, res = response ) =>{
 
         const { monto_abonado, clase_abonada, id_profesor } = clase_a_abonar;
 
-        if ( monto_abonado === monto_abonado_x_clase || clase_abonada === true ) {  
+        if ( monto_abonado === montoAbonadoXClase || clase_abonada === true ) {  
             res.status( 400 ).json( {
                 status : false,
                 msg : "Ya se ha abonado la totalidad de esta clase",
@@ -197,7 +221,7 @@ const abonar_una_clase = async ( req = request, res = response ) =>{
                 abonar_x_clase = await prisma.agendamiento_clase.update( { 
                     where : { id_agendamiento : id_de_clase },
                     data : {
-                                clase_abonada : monto_abonado_x_clase,
+                                clase_abonada : montoAbonadoXClase,
                                 clase_abonada : true
                             } 
                 } );
@@ -206,7 +230,7 @@ const abonar_una_clase = async ( req = request, res = response ) =>{
                 abonar_x_clase = await prisma.agendamiento_clase.update( { 
                     where : { id_agendamiento : id_de_clase },
                     data : {
-                                clase_abonada : monto_abonado_x_clase,
+                                clase_abonada : montoAbonadoXClase,
                             } 
                 } );
             }
@@ -234,7 +258,7 @@ const abonar_una_clase = async ( req = request, res = response ) =>{
 
 const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
 
-    const { id_de_clase } = req.query;
+    const { id_de_clase } = req.params;
 
     try {
 
