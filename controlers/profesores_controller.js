@@ -119,6 +119,8 @@ const crear_profesor = async ( req = request, res = response ) =>{
 
         const { nombreProfe, precioXHora, contactoProfesor, numeroCedula } = req.body;
         const fecha_creacion = new Date();
+        if( typeof( precioXHora ) !== Number ){ precio = Number( precioXHora ) };
+
         // OPCIONAL SERIA EL PRECIO X HORA
         let nuevo_profesor;
         if ( precioXHora === undefined ){
@@ -132,7 +134,7 @@ const crear_profesor = async ( req = request, res = response ) =>{
                                                         creadoen, estado_profesor, nombre_profesor, 
                                                         costo_x_hora, contacto_profesor, cedula)
                                                     VALUES ( ${ fecha_creacion } ,  ${ estado_profesor.activo } ,  
-                                                            ${ nombreProfe } ,  ${ precioXHora } ,  ${ contactoProfesor }, ${ numeroCedula } );`
+                                                            ${ nombreProfe } ,  ${ precio } ,  ${ contactoProfesor }, ${ numeroCedula } );`
     
         }
         res.status( 200 ).json( {
