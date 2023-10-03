@@ -214,26 +214,41 @@ const actualizar_profesor = async ( req = request, res = response ) =>{
 
     // SERIA MEJOR METER EL ID DEL PROFESOR EN EL QUERY PARAM Y EN EL BODY LOS DATOS NUEVOS
     const { id_profesor_update } = req.params;
-    const { contactoNuevo, nuevoCosto } = req.body;
+    const { numeroCedula, precioXHora, contactoProfesor, nombreProfe } = req.body;
     const fecha_edicion = new Date();
     
     try {
+
         const profesor_editado = await prisma.profesores.update( {
             where : {
                 id_profesor : Number(id_profesor_update)
             },
 
             data : {
-                contacto_profesor : contactoNuevo,
-                costo_x_hora : nuevoCosto,
-                editadoen : fecha_edicion
+                contacto_profesor : contactoProfesor,
+                costo_x_hora : precioXHora,
+                editadoen : fecha_edicion,
+                cedula : numeroCedula,
+                nombre_profesor : nombreProfe
             }
         } );
+
+        const { cedula, contacto_profesor, costo_x_hora, creadoen, editadoen, 
+                estado_profesor, id_profesor, nombre_profesor } = profesor_editado;
 
         res.status( 200 ).json( {
             status : true,
             msg : "Profesor actualizado correctamente",
-            profesor_editado
+            profesorEditado : {
+                nombreProfe : nombre_profesor, 
+                precioXHora : costo_x_hora, 
+                contactoProfesor : contacto_profesor, 
+                numeroCedula : cedula,
+                creadoEn : creadoen,
+                editadoEn : editadoen,
+                idProfesor : id_profesor,
+                estadoProfesor : estado_profesor
+            }
         } );
 
     } catch ( error ) {
