@@ -88,18 +88,33 @@ const obtener_profesor = async ( req = request, res = response ) =>{
                                                                     id_profesor : Number(id_profesor_cons)
                                                                 } 
                                                             } );
-        if ( profesor === null ) {
+        if ( profesor === null || profesor === undefined ) {
 
             res.status( 200 ).json( {
                 status : false,
                 msg : "No se encontro el profesor mencionado",
                 profesor
             } );
+
         }else {
+            const { cedula, contacto_profesor, costo_x_hora, 
+                    creadoen, editadoen, estado_profesor, 
+                    id_profesor, nombre_profesor } = profesor;
+
+            const profesorFormateado = {
+                cedula,
+                contactoProfesor : contacto_profesor,
+                costoXHora : costo_x_hora,
+                creadoEn : creadoen,
+                editadoEn : editadoen,
+                estadoProfesor : estado_profesor,
+                idProfesor : id_profesor,
+                nombreProfe : nombre_profesor
+            }
             res.status( 200 ).json( {
                 status : true,
                 msg : "Profesor Buscado",
-                profesor
+                profesorFormateado
             } );
         }
     } catch (error) {
@@ -124,23 +139,61 @@ const crear_profesor = async ( req = request, res = response ) =>{
         // OPCIONAL SERIA EL PRECIO X HORA
         let nuevo_profesor;
         if ( precioXHora === undefined ){
-            nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
+            //----------------------------------------------------------------------------------------------------------------------------------
+            /*nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
                                                         creadoen, estado_profesor, nombre_profesor, 
                                                         costo_x_hora, contacto_profesor, cedula)
                                                     VALUES ( ${ fecha_creacion } ,  ${ estado_profesor.activo } ,  
-                                                            ${ nombreProfe } ,  ${ 0 } ,  ${ contactoProfesor }, ${ numeroCedula } );`
+                                                            ${ nombreProfe } ,  ${ 0 } ,  ${ contactoProfesor }, ${ numeroCedula } );`*/
+            nuevo_profesor = await prisma.profesores.create( { 
+                                                                data : {
+                                                                    cedula : numeroCedula,
+                                                                    creadoen : fecha_creacion,
+                                                                    nombre_profesor : nombreProfe,
+                                                                    contacto_profesor : contactoProfesor,
+                                                                    costo_x_hora : 0,
+                                                                    estado_profesor : estado_profesor.activo
+                                                                } 
+                                                            } );
+            //----------------------------------------------------------------------------------------------------------------------------------
+
         }else {
-            nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
+
+            //----------------------------------------------------------------------------------------------------------------------------------    
+            /*nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
                                                         creadoen, estado_profesor, nombre_profesor, 
                                                         costo_x_hora, contacto_profesor, cedula)
                                                     VALUES ( ${ fecha_creacion } ,  ${ estado_profesor.activo } ,  
-                                                            ${ nombreProfe } ,  ${ precio } ,  ${ contactoProfesor }, ${ numeroCedula } );`
-    
+                                                            ${ nombreProfe } ,  ${ precio } ,  ${ contactoProfesor }, ${ numeroCedula } );`*/
+            //----------------------------------------------------------------------------------------------------------------------------------
+            nuevo_profesor = await prisma.profesores.create( { 
+                data : {
+                    cedula : numeroCedula,
+                    creadoen : fecha_creacion,
+                    nombre_profesor : nombreProfe,
+                    contacto_profesor : contactoProfesor,
+                    costo_x_hora : precio,
+                    estado_profesor : estado_profesor.activo
+                } 
+            } );        
+
         }
+
+        const { cedula, contacto_profesor, costo_x_hora, 
+                creadoen, id_profesor, nombre_profesor } = nuevo_profesor;
+        const nuevoProfesorFormateado = {
+            cedula,
+            contactoProfesor : contacto_profesor,
+            costoXHora : costo_x_hora,
+            creadoEn : creadoen,
+            idProfesor : id_profesor,
+            nombreProfe : nombre_profesor
+        }
+        
         res.status( 200 ).json( {
             status : true,
             msg : "Profesor creado con exito",
-            nuevo_profesor
+            nuevoProfesorFormateado
         } );
 
 

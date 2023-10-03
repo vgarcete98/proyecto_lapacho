@@ -66,12 +66,15 @@ const crear_usuario = async ( req = request, res = response ) => {
 const borrar_usuario = async ( req = request, res = response ) => {
 
     const { id_usuario } = req.params;
+    
+    let idUsuarioConvertido = 1;
+    if ( typeof( id_usuario ) !== Number ){ idUsuarioConvertido = id_usuario };
 
     const fecha_edicion_usuario = new Date();
 
     try {
         const usuario_borrado = await prisma.usuario.update( { 
-                                                                where :{ id_usuario },
+                                                                where :{ id_usuario : idUsuarioConvertido },
                                                                 data : {
                                                                     estado_usuario : estados_usuario.eliminado.id_estado,
                                                                     usuarioeditadoen : fecha_edicion_usuario
@@ -83,10 +86,10 @@ const borrar_usuario = async ( req = request, res = response ) => {
             status : true,
             msg : 'Usuario eliminado con exito',
             usuario : {
-                nombre_usuario, 
-                id_usuario, 
-                estado_usuario,
-                tipo_usuario
+                nombreUsuario : nombre_usuario, 
+                idUsuario : id_usuario, 
+                estadoUsuario : estado_usuario,
+                tipoUsuario : tipo_usuario
             }
         } );
     } catch (error) {
@@ -126,10 +129,10 @@ const actualizar_usuario = async ( req = request, res = response ) => {
             status : true,
             msg : 'Usuario actualizado con exito',
             usuario : {
-                nombre_usuario, 
-                id_usuario, 
-                estado_usuario,
-                tipo_usuario
+                nombreUsuario : nombre_usuario, 
+                idUsuario : id_usuario, 
+                estadoUsuario : estado_usuario,
+                tipoUsuario : tipo_usuario
             }
         } );
     } catch (error) {
@@ -154,9 +157,12 @@ const obtener_usuarios = async ( req = request, res = response ) => {
     // OBTENGO TODOS LOS USUARIOS SIN IMPORTAR SU ESTADO
 
     try {
-        const usuarios = await prisma.$queryRaw`SELECT CAST ( id_usuario AS INTEGER ) AS id_usuario, 
-                                                        CAST ( id_acceso AS INTEGER ) AS id_acceso, 
-                                                        CAST ( id_socio AS INTEGER ) AS id_socio, tipo_usuario, nombre_usuario, contrasea
+        const usuarios = await prisma.$queryRaw`SELECT CAST ( id_usuario AS INTEGER ) AS idUsuario, 
+                                                        CAST ( id_acceso AS INTEGER ) AS idAcceso, 
+                                                        CAST ( id_socio AS INTEGER ) AS id_socio, 
+                                                        tipo_usuario AS tipoUsuario, 
+                                                        nombre_usuario AS nombreUsuario, 
+                                                        contrasea as contrasennia
                                                     FROM public.Usuario;`;
 
         res.status( 200 ).json(
@@ -185,10 +191,13 @@ const obtener_usuario = async ( req = request, res = response ) => {
 
     const { id_usuario } = req.params;
     try {
-        const usuario = await prisma.$queryRaw`SELECT CAST( A.ID_USUARIO AS INTEGER ) AS ID_USUARIO, 
-                                                        CAST ( A.ID_ACCESO AS INTEGER ) AS ID_ACCESO, B.DESCRIPCION_ACCESO,
-                                                        CAST ( A.ID_SOCIO AS INTEGER ) AS ID_SOCIO,
-                                                        A.TIPO_USUARIO, A.NOMBRE_USUARIO, A.CONTRASEA
+        const usuario = await prisma.$queryRaw`SELECT CAST( A.ID_USUARIO AS INTEGER ) AS idUsuario, 
+                                                        CAST ( A.ID_ACCESO AS INTEGER ) AS idAcceso, 
+                                                        B.DESCRIPCION_ACCESO AS descripcionAcceso,
+                                                        CAST ( A.ID_SOCIO AS INTEGER ) AS idSocio,
+                                                        A.TIPO_USUARIO AS tipoUsuario, 
+                                                        A.NOMBRE_USUARIO AS nombreUsuario , 
+                                                        A.CONTRASEA AS contrasennia
                                                     FROM USUARIO A JOIN ACCESOS_USUARIO B ON A.ID_ACCESO = B.ID_ACCESO
                                                 WHERE ID_USUARIO = ${ Number(id_usuario) };`;
 
@@ -219,11 +228,13 @@ const obtener_accesos_usuario = async ( req = request, res = response ) => {
 
     //const { descripcion_rol } = req.body;
 
+    // OBTENGO LOS ACCESOS QUE POSEEN CADA UNO DE LOS USUARIOS DE LA APLICACION
     try {
-        const usuarios_acceso = await prisma.$queryRaw`SELECT A.ID_USUARIO, A.ID_SOCIO, A.TIPO_USUARIO, A.NOMBRE_USUARIO,
-                                                    B.ID_ACCESO, B.DESCRIPCION_ACCESO
-                                                FROM USUARIO A JOIN ACCESOS_USUARIO B
-                                                    ON A.ID_USUARIO = B.ID_USUARIO;`;
+        const usuarios_acceso = await prisma.$queryRaw`SELECT A.ID_USUARIO AS idUsuario, A.ID_SOCIO AS idSocio, 
+                                                                A.TIPO_USUARIO AS tipoUsuario, A.NOMBRE_USUARIO AS nombreUsuario,
+                                                                B.ID_ACCESO AS idAcceso, B.DESCRIPCION_ACCESO AS descripcionAcceso
+                                                        FROM USUARIO A JOIN ACCESOS_USUARIO B
+                                                            ON A.ID_USUARIO = B.ID_USUARIO;`;
 
         res.status( 200 ).json(
 

@@ -12,8 +12,8 @@ const validar_existe_usuario = async ( req = request, res = response, next ) =>{
 
     try {
         //const { id_usuario } = req.params;
-        const { cedula } = req.body;
-        const comprobar_usuario = await prisma.usuario.findFirst( { where : { cedula } } ); 
+        const { nombreUsuario } = req.body;
+        const comprobar_usuario = await prisma.usuario.findFirst( { where : { nombre_usuario : nombreUsuario } } ); 
         if ( comprobar_usuario === null || comprobar_usuario === undefined ) {
             next();
         }else {
