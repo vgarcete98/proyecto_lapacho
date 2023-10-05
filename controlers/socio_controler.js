@@ -52,8 +52,8 @@ const crear_socio = async ( req = request, res = response ) => {
         const result  =  await prisma.$queryRaw`SELECT CAST ( id_persona AS INTEGER ) AS id_persona 
                                                     FROM  public.persona
                                                 WHERE cedula = CAST( ${ cedula } AS VARCHAR )` ;
-        
-        const { id_persona } = result[0];
+        const [ primer_resultado,...resto ] = result;
+        const { id_persona } = primer_resultado;
         //console.log ( result )
         //------------------------------------------------------------------------------------------
 
@@ -66,16 +66,16 @@ const crear_socio = async ( req = request, res = response ) => {
                                                 VALUES ( ${ tipoSocio }, ${ id_persona },${correo} , ${numeroTel}, ${direccion}, ${ruc} )`;
         */
         //------------------------------------------------------------------------------------------
-
+        const [ correoSocio, direccionSocio, rucSocio, idPersona ]= [ correo , direccion, ruc, id_persona ];
         const fecha_creacion_socio = new Date();
         const nuevo_socio = await prisma.socio.create( { 
                                                             data : {
                                                                 id_tipo_socio : tipoSocio,
-                                                                id_persona,
-                                                                correo,
+                                                                id_persona : idPersona,
+                                                                correo_electronico : correoSocio,
                                                                 numero_telefono : numeroTel,
-                                                                direccion,
-                                                                ruc,
+                                                                direccion : direccionSocio,
+                                                                ruc : rucSocio,
                                                                 nombre_cmp : `${ nombre } ${ apellido }`,
                                                                 creadoen : fecha_creacion_socio,
                                                                 estado_socio : estados_socio.activo.id_estado
@@ -99,7 +99,7 @@ const crear_socio = async ( req = request, res = response ) => {
             }
         );   
 
-    } catch (error) {
+    } catch ( error ) {
         console.log( error );
         res.status( 500 ).json(
 
@@ -119,11 +119,11 @@ const crear_socio = async ( req = request, res = response ) => {
 
 const actualizar_socio = async ( req = request, res = response ) => {
 
-    const { correoNuevo, telefonoNuevo, rucNuevo, estadoSocio, direccionNuevo } = req.body;
+    const { correo, numeroTel, estadoSocio, direccion } = req.body;
     //console.log( correoNuevo, telefonoNuevo, rucNuevo, estadoSocio, direccionNuevo );
     const { id_socio } = req.params;
     //console.log( id );
-
+    const direccionNuevo = direccion;
     try {
         //------------------------------------------------------------------------------------------
         /*const socio_actualizado = prisma.$executeRaw`UPDATE public.socio
@@ -138,9 +138,8 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                                 data : {
 
                                                                     editadoen : fecha_socio_actualizado,
-                                                                    correo_electronico : correoNuevo,
-                                                                    numero_telefono : telefonoNuevo,
-                                                                    ruc : rucNuevo,
+                                                                    correo_electronico : correo,
+                                                                    numero_telefono : numeroTel,
                                                                     estado_socio : estadoSocio,
                                                                     direccion : direccionNuevo
                                                                 }
@@ -149,8 +148,8 @@ const actualizar_socio = async ( req = request, res = response ) => {
         const { editadoen, correo_electronico, telefono, ruc, estado_socio, direccion, nombre_cmp } = socio_actualizado;
         res.status( 200 ).json({
             status : true,
-            msj : 'Socio Actualizado',
-            socioActualizadoConvertido : {
+            msj : 'Socio Actualizado con exito',
+            socio : {
                 editadoEn : editadoen, 
                 correoElectronico : correo_electronico, 
                 telefono, 
@@ -165,7 +164,8 @@ const actualizar_socio = async ( req = request, res = response ) => {
         console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : 'No se pudo actualizar al Socio'
+            msg : 'No se pudo actualizar al Socio',
+            error
         } );
     }
 
@@ -197,7 +197,9 @@ const borrar_socio = async ( req = request, res = response ) => {
                                                                 },
                                                                 where : { id_socio }
                                                             } );
-        const { editadoen, direccion, correo_electronico, numero_telefono, estado_socio, ruc } = socio_actualizado;
+        const { editadoen, direccion, correo_electronico, 
+                numero_telefono, estado_socio, ruc,
+                nombre_cmp } = socio_actualizado;
         res.status( 200 ).json(
 
             {
@@ -210,7 +212,8 @@ const borrar_socio = async ( req = request, res = response ) => {
                     correoElectronico : correo_electronico, 
                     numeroTel : numero_telefono, 
                     estadoSocio : estado_socio, 
-                    ruc
+                    ruc,
+                    nombreSocio : nombre_cmp
                 }
 
             }
@@ -363,19 +366,65 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
 const obtener_socio_cedula = async ( req = request, res = response ) =>{
 
     //console.log( req.query );
-    const { cedula } = req.query;
-
+    //const { cedula } = req.query;
+    const { socio_cedula } = req.query;
+    console.log( socio_cedula )
 
     try {
-        const socioCedula = await prisma.socio.findFirst( { where : { cedula } } );        
-        res.status( 200 ).json( {
-            status : true,
-            msg : 'Socio con cedula',
-            socioCedula
-        } );
+
+        //------------------------------------------------------------------------------------------------
+        
+        //const socioPersona = await prisma.persona.findFirst( { where : { cedula : socio_cedula } } );
+        const socioPersona = await prisma.$queryRaw`SELECT CAST ( ID_PERSONA AS INTEGER ) AS ID_PERSONA 
+                                                        FROM  PERSONA 
+                                                    WHERE CEDULA = ${ socio_cedula }`;
+        //------------------------------------------------------------------------------------------------       
+        //console.log( socioPersona );
+        const [ primer_resultado,...resto ] = socioPersona;
+        const { id_persona } = primer_resultado;
+        
+        const socioCedula = await prisma.socio.findFirst( { where : { id_persona } } );
+        //console.log( socioCedula );
+
+        if ( socioCedula === null || socioCedula === undefined ){
+
+            res.status( 200 ).json( {
+                status : true,
+                msg : `No se logro encontrar al socio con cedula ${ socio_cedula }`,
+                socio : null
+            } );
+
+        } else {
+            //nombre_cmp, correo_electronico, creadoen, estado_socio
+            const { id_socio, id_tipo_socio, nombre_cmp,
+                    estado_socio, id_persona, creadoen,
+                    correo_electronico, editadoen } = socioCedula;
+
+            const socio = {
+                //idSocio : id_socio,
+                //idTipoSocio : id_tipo_socio,
+                nombreCmp : nombre_cmp,
+                estadoSocio : estado_socio,
+                creadoEn : creadoen,
+                correoElectronico : correo_electronico,
+                editadoEn : editadoen
+                //idPersona : id_persona
+            }
+            res.status( 200 ).json( {
+                status : true,
+                msg : `Socio con cedula ${ socio_cedula }`,
+                socio
+            } );
+        }
+
 
     } catch (error) {
-        console.log( error )
+        console.log( error );
+        res.status( 500 ).json( {
+            status : true,
+            msg : `Ha ocurrido un error al buscar al socio`,
+            error
+        } );
     }
 
 

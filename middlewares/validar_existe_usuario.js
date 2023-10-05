@@ -4,7 +4,7 @@ const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient();
 
-
+const USUARIO_ELIMINADO = 3;
 
 const validar_existe_usuario = async ( req = request, res = response, next ) =>{
 
@@ -64,6 +64,34 @@ const comprobar_usuario_valido = async ( req = request, res = response, next ) =
     
 }
 
+const comprobar_usuario_borrado = async ( req = request, res = response, next ) =>{
+
+    // ESTO SERIA PARA EL CASO DE UN PUT Y DELETE 
+    const { id_usuario } = req.params;
+    const id_usuario_valido = Number( id_usuario );
+    try {
+        const comprobar_usuario = await prisma.usuario.findFirst( { where : { id_usuario : id_usuario_valido } } );
+        const { estado_usuario } = comprobar_usuario;
+        if ( estado_usuario === USUARIO_ELIMINADO ) {
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'Ese usuario ya fue eliminado',
+            } );
+        }else {
+            next();
+        }
+
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'Ha ocurrido un error al comprobar si el usuario existe',
+            error
+        } );        
+    }
+
+    
+}
 
 
 
@@ -73,5 +101,4 @@ const comprobar_usuario_valido = async ( req = request, res = response, next ) =
 
 
 
-
-module.exports = { validar_existe_usuario, comprobar_usuario_valido };
+module.exports = { validar_existe_usuario, comprobar_usuario_valido, comprobar_usuario_borrado };

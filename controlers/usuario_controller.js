@@ -80,16 +80,18 @@ const borrar_usuario = async ( req = request, res = response ) => {
                                                                     usuarioeditadoen : fecha_edicion_usuario
                                                                 } 
                                                             } );
-        const { nombre_usuario, id_usuario, estado_usuario, tipo_usuario } = usuario_borrado;
+        const { nombre_usuario, id_usuario, estado_usuario, tipo_usuario, usuariocreadoen, usuarioeditadoen } = usuario_borrado;
 
         res.status( 200 ).json( { 
             status : true,
             msg : 'Usuario eliminado con exito',
             usuario : {
                 nombreUsuario : nombre_usuario, 
-                idUsuario : id_usuario, 
+                //idUsuario : id_usuario, 
                 estadoUsuario : estado_usuario,
-                tipoUsuario : tipo_usuario
+                tipoUsuario : tipo_usuario,
+                usuarioCreadoEn : usuariocreadoen,
+                usuarioEditadoEn : usuarioeditadoen
             }
         } );
     } catch (error) {
@@ -108,31 +110,40 @@ const borrar_usuario = async ( req = request, res = response ) => {
 const actualizar_usuario = async ( req = request, res = response ) => {
 
     const { id_usuario } = req.params;
-
+    const idUsuarioEditar = Number(id_usuario);
     const { nombreUsuario, contraseñaNueva, estadoUsuario } = req.body;
 
     const fecha_edicion_usuario = new Date();
 
     try {
+
+        //const usuario_viejo = await prisma.usuario.findFirst( { where :{ id_usuario : idUsuarioEditar } } );
+
+        //const { nombre_usuario, id_usuario, estado_usuario, tipo_usuario, usuariocreadoen,usuarioeditadoen,   } = usuario_viejo
+
         const usuario_actualizado = await prisma.usuario.update( { 
-                                                                where :{ id_usuario },
-                                                                data : {
-                                                                    estado_usuario : estadoUsuario,
-                                                                    usuarioeditadoen : fecha_edicion_usuario,
-                                                                    nombre_usuario : nombreUsuario,
-                                                                    contrasea : contraseñaNueva
-                                                                } 
-                                                            } );
-        const { nombre_usuario, id_usuario, estado_usuario, tipo_usuario } = usuario_actualizado;
+                                                                    where :{ id_usuario : idUsuarioEditar },
+                                                                    data : {
+                                                                        estado_usuario : estadoUsuario,
+                                                                        usuarioeditadoen : fecha_edicion_usuario,
+                                                                        nombre_usuario : nombreUsuario,
+                                                                        contrasea : contraseñaNueva
+                                                                    } 
+                                                                } );
+        const { nombre_usuario, id_usuario, estado_usuario, tipo_usuario, usuariocreadoen,usuarioeditadoen,  } = usuario_actualizado;
 
         res.status( 200 ).json( { 
             status : true,
             msg : 'Usuario actualizado con exito',
+            //usuarioViejo,
             usuario : {
                 nombreUsuario : nombre_usuario, 
-                idUsuario : id_usuario, 
+                //idUsuario : id_usuario, 
                 estadoUsuario : estado_usuario,
-                tipoUsuario : tipo_usuario
+                tipoUsuario : tipo_usuario,
+                creadoEn : usuariocreadoen,
+                editadoEn : usuarioeditadoen
+
             }
         } );
     } catch (error) {
@@ -164,13 +175,25 @@ const obtener_usuarios = async ( req = request, res = response ) => {
                                                         nombre_usuario AS nombreUsuario, 
                                                         contrasea as contrasennia
                                                     FROM public.Usuario;`;
+        const usuariosSistema = usuarios.map( ( element ) =>{
+            
+            const { idusuario, idacceso, id_socio, tipousuario, nombreusuario, contrasennia } = element;
+            return {
+                idUsuario : idusuario,  
+                idAcceso : idacceso, 
+                idSocio : id_socio, 
+                tipoUsuario : tipousuario, 
+                nombreUsuario : nombreusuario, 
+                contraseña : contrasennia
+            }
 
+        });
         res.status( 200 ).json(
 
             {
                 status : true,
                 msj : 'Usuarios del sistema',
-                usuarios
+                usuariosSistema
             }
 
         );        
@@ -224,37 +247,6 @@ const obtener_usuario = async ( req = request, res = response ) => {
 }
 
 
-const obtener_accesos_usuario = async ( req = request, res = response ) => {
-
-    //const { descripcion_rol } = req.body;
-
-    // OBTENGO LOS ACCESOS QUE POSEEN CADA UNO DE LOS USUARIOS DE LA APLICACION
-    try {
-        const usuarios_acceso = await prisma.$queryRaw`SELECT A.ID_USUARIO AS idUsuario, A.ID_SOCIO AS idSocio, 
-                                                                A.TIPO_USUARIO AS tipoUsuario, A.NOMBRE_USUARIO AS nombreUsuario,
-                                                                B.ID_ACCESO AS idAcceso, B.DESCRIPCION_ACCESO AS descripcionAcceso
-                                                        FROM USUARIO A JOIN ACCESOS_USUARIO B
-                                                            ON A.ID_USUARIO = B.ID_USUARIO;`;
-
-        res.status( 200 ).json(
-
-            {
-                status : 'OK',
-                msj : 'Accesos de usuario',
-                usuarios_acceso
-            }
-
-        );        
-    } catch (error) {
-        console.log( error );
-        res.status( 500 ).json( {
-            status : false
-        } );
-    }
-
-
-}
-
 
 
 module.exports = {
@@ -262,7 +254,6 @@ module.exports = {
     actualizar_usuario,
     borrar_usuario,
     crear_usuario,
-    obtener_accesos_usuario,
     obtener_usuario,
     obtener_usuarios
 };

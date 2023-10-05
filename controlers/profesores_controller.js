@@ -295,7 +295,7 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
                 costo_x_hora, creadoen,
                 editadoen, estado_profesor, nombre_profesor } = profesor_editado;
 
-        const nuevo_profesor_editado = {
+        const profesorEditado = {
             cedula,
             contactoProfesor : contacto_profesor,
             costoXHora :costo_x_hora,
@@ -307,7 +307,7 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
         res.status( 200 ).json( {
             status : true,
             msg : "Profesor eliminado correctamente",
-            nuevo_profesor_editado
+            profesorEditado
         } );
 
     } catch ( error ) {

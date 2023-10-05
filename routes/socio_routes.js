@@ -20,7 +20,7 @@ router_socio.get( '/',[ validar_token, validar_rol_usuario ], obtener_socios );
 
 router_socio.get( '/socios_detalle',[ validar_token, validar_rol_usuario ], obtener_socios_detallados );
 
-router_socio.get( '/socio_cedula',[ validar_token, validar_rol_usuario, ], obtener_socio_cedula )
+router_socio.get( '/socio_cedula/',[ validar_token, validar_rol_usuario, ], obtener_socio_cedula )
 
 
 
