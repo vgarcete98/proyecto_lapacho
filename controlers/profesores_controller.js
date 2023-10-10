@@ -315,9 +315,9 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
         res.status( 400 ).json( {
             status : false,
             msg : "El profesor no se pudo eliminar correctamente",
-            mensaje_error : "Id de profesor no existe",
+            //mensaje_error : "Id de profesor no existe",
             error,
-            id_profesor_delete
+            //id_profesor_delete
         } );
 
     }

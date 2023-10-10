@@ -47,7 +47,8 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
                                                                                 monto_gasto : montoGasto,
                                                                                 ingreso : ingresoXegreso,
                                                                                 egreso : false,
-                                                                                gastocreadoen : fecha_creacion_gasto
+                                                                                gastocreadoen : fecha_creacion_gasto,
+                                                                                gasto_borrado : false
                                                                             } 
                                                                     } );
             //------------------------------------------------------------------------------------------------------                                                               
@@ -68,7 +69,8 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
                                                                                 monto_gasto : montoGasto,
                                                                                 egreso : true,
                                                                                 ingreso : false,
-                                                                                gastocreadoen : fecha_creacion_gasto
+                                                                                gastocreadoen : fecha_creacion_gasto,
+                                                                                gasto_borrado : false
                                                                             } 
                                                                     } );
             //------------------------------------------------------------------------------------------------------
@@ -132,7 +134,8 @@ const obtener_gastos_x_mes = async ( req = request, res = response ) =>{
                                                                                     ELSE 'EGRESO'
                                                                                 END AS INGRESOxEGRESO, CAST ( B.ID_PAGO_CLUB AS INTEGER ) AS ID_PAGO_CLUB
                                             FROM USUARIO A JOIN GASTOS_CLUB B ON A.ID_USUARIO = B.ID_USUARIO
-                                            WHERE EXTRACT ( MONTH FROM GASTOCREADOEN ) = EXTRACT( MONTH FROM CURRENT_DATE )`;
+                                            WHERE EXTRACT ( MONTH FROM GASTOCREADOEN ) = EXTRACT( MONTH FROM CURRENT_DATE )
+                                            AND B.GASTO_BORRADO = false`;
         
         const gastosDelMes = gastos_del_mes.map ( ( element )=>{
 
@@ -185,53 +188,93 @@ const obtener_gastos_x_mes = async ( req = request, res = response ) =>{
 }
 
 
+
+/*  Yo le paso esto a mi post y tendria que ser igual para todos
+    "idTipoPago" : 1,
+    "nroFactura" : "XXXX-XXXXXX-XXXXXX2",
+    "descripcion": "PAGO ALQUILER MES NOVIEMBRE",
+    "montoGasto" : 4400000,
+    "ingresoXegreso" : true */
 const editar_gasto_club = async ( req = request, res = response ) =>{
 
-    const { nro_factura } = req.params;
+    const { id_gasto } = req.params;
 
-    const { nuevoNumeroFactura, 
-            nuevaDescripcion, 
-            nuevoMontoGasto, 
-            nuevoIngreso,
-            nuevoEgreso } = req.body;
+    const { nroFactura, 
+            descripcion, 
+            montoGasto, 
+            ingresoXegreso,
+            idTipoPago } = req.body;
     // VAMOS A REALIZAR UNA EDICION EN EL NUMERO DE LA FACTURA SI ES QUE LA MISMA VIENE EN LA REQUEST
+    const fecha_edicion_gasto = new Date();
+    const descripcionNueva = descripcion;
 
+    const [ nuevo_ingreso, nuevo_egreso ] = [ false, false ];
+    // Se trata de un ingreso
+    //condición ? expr1 : expr2
+    ingresoXegreso === true ? ingreso = true : egreso = false;
+    //Se trata de un egreso 
+    ingresoXegreso === false ? ingreso = false : egreso = true;    
     try {
         let gasto_editado;
-    
-        if ( nuevoNumeroFactura !== '' ){
-            gasto_editado = await prisma.$executeRaw`UPDATE public.gastos_club
+        const { token_trad } = req;
+        //console.log( token_trad );
+        //const [ rol_usuario,...resto ] = token_trad;
+        const { id_usuario } = token_trad;
+        const idUsuario = id_usuario;
+        if ( nroFactura !== '' || nroFactura === undefined || nroFactura === null ){
+            //----------------------------------------------------------------------------------------------------------------------
+            /*gasto_editado = await prisma.$executeRaw`UPDATE public.gastos_club
                                                         SET  nro_factura= ${ nuevoNumeroFactura }, gastoeditadoen= ${ new Date() }, 
                                                         descripcion= ${ nuevaDescripcion }, monto_gasto= ${ nuevoMontoGasto }, 
                                                         ingreso= ${ nuevoIngreso }, egreso= ${ nuevoEgreso }
-                                                    WHERE nro_factura = ${ nro_factura };`
-    
-        } else if ( nuevoIngreso === true ){
-            // SE QUIERE CAMBIAR UN TIPO DE GASTO DE INGRESO A EGRESO
-            gasto_editado = await prisma.$executeRaw`UPDATE public.gastos_club
-                                                        SET gastoeditadoen= ${ new Date() }, descripcion= ${ descripcion }, 
-                                                        monto_gasto= ${ nuevoMontoGasto }, ingreso= ${ nuevoIngreso }, egreso= ${ nuevoEgreso }
-                                                    WHERE nro_factura = ${ nro_factura };`
-    
-    
+                                                    WHERE nro_factura = ${ nro_factura };`*/
+            gasto_editado = await prisma.gastos_club.update( {
+                                                                where : { id_pago_club : Number(id_gasto) },
+                                                                data : {
+                                                                    monto_gasto : montoGasto,
+                                                                    descripcion : descripcionNueva,
+                                                                    gastoeditadoen : fecha_edicion_gasto,
+                                                                    ingreso : nuevo_ingreso,
+                                                                    egreso : nuevo_egreso,
+                                                                    id_tipo_pago : idTipoPago,
+                                                                    id_usuario : idUsuario
+                                                                }
+                                                            } );
+            //----------------------------------------------------------------------------------------------------------------------    
         } else { 
             //EDICION NORMAL DE UN GASTO/INGRESO 
-            gasto_editado = await prisma.$executeRaw`UPDATE public.gastos_club
+            /*gasto_editado = await prisma.$executeRaw`UPDATE public.gastos_club
                                                         SET gastoeditadoen= ${ new Date() }, descripcion= ${ descripcion }, 
                                                         monto_gasto= ${ nuevoMontoGasto }, ingreso= ${ nuevoIngreso }, egreso= ${ nuevoEgreso }
-                                                    WHERE nro_factura = ${ nro_factura };`
+                                                    WHERE nro_factura = ${ nro_factura };`*/
+            gasto_editado = await prisma.gastos_club.update( {
+                                                                where : { id_pago_club : Number(id_gasto) },
+                                                                data : {
+                                                                    monto_gasto : montoGasto,
+                                                                    descripcion : descripcionNueva,
+                                                                    gastoeditadoen : fecha_edicion_gasto,
+                                                                    ingreso : nuevo_ingreso,
+                                                                    egreso : nuevo_egreso,
+                                                                    nro_factura : nroFactura,
+                                                                    id_tipo_pago : idTipoPago,
+                                                                    id_usuario : idUsuario
+                                                                }
+                                                            } );
         }
+        const { monto_gasto, descripcion, gastoeditadoen, 
+                ingreso, egreso, nro_factura, id_pago_club, id_tipo_pago } = gasto_editado;
 
         res.status( 200 ).json( {
             status : true,
             msg : 'Gasto editado con exito',
             gasto : {
-                nro_factura,
-                nuevoNumeroFactura, 
-                nuevaDescripcion, 
-                nuevoMontoGasto, 
-                nuevoIngreso,
-                nuevoEgreso
+                nroFactura : nro_factura,
+                id_usuario , 
+                descripcion , 
+                idTipoPago , 
+                ingreso ,
+                egreso,
+                montoGasto : monto_gasto
 
             }
         } );
@@ -243,12 +286,13 @@ const editar_gasto_club = async ( req = request, res = response ) =>{
             status : false,
             msg : 'No se pudo editar el gasto',
             gasto : {
-                nro_factura,
-                nuevoNumeroFactura, 
-                nuevaDescripcion, 
-                nuevoMontoGasto, 
-                nuevoIngreso,
-                nuevoEgreso
+                nroFactura ,
+                id_usuario , 
+                descripcion , 
+                idTipoPago , 
+                ingreso ,
+                egreso,
+                montoGasto 
 
             }
         } );
@@ -262,21 +306,38 @@ const editar_gasto_club = async ( req = request, res = response ) =>{
 
 const borrar_gasto = async ( req = request, res = response ) => {
 
-    const { id_gasto } = req.query;
-
+    const { id_gasto } = req.params;
+    const fecha_edicion_gasto = new Date();
     try {
         const gasto_editado = await prisma.gastos_club.update ( { 
             where : { id_pago_club : id_gasto },
             data : {
-                gasto_borrado : true
+                gasto_borrado : true,
+                gastoeditadoen : fecha_edicion_gasto
             }
             
         } );
 
+        const { descripcion, gastoeditadoen, monto_gasto, 
+                nro_factura, gastocreadoen } = gasto_editado;
+        /*"idTipoPago": 1,
+        "idUsuario": 1,
+        "nroFactura": "XXXX-XXXXXX-XXXXXX2",
+        "descripcion": "PAGO ALQUILER MES NOVIEMBRE",
+        "montoGasto": 4400000,
+        "gastoCreadoEn": "2023-10-09T00:00:00.000Z",
+        "egreso": false,
+        "ingreso": true*/
         res.status( 200 ).json( {
             status : true,
             msg : "Registro eliminado exitosamente",
-            gasto_editado
+            gastoRegistrado : {
+                descripcion, 
+                gastoEditadoEn : gastoeditadoen,
+                gastoCreadoEn : gastocreadoen, 
+                montoGasto : monto_gasto, 
+                nroFactura : nro_factura
+            }
         } );
 
     } catch (error) {

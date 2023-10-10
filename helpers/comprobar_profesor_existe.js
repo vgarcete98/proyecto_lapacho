@@ -13,11 +13,18 @@ const comprobar_profesor_existe = async ( req = request, res = response, next )=
             console.log ( existe );
             next();
         }else {
+            //const { cedula, contacto_profesor, costo_x_hora, creadoen, nombre_profesor } = existe;
             console.log( existe );
             res.status( 400 ).json( {
                 status : false,
                 msg : "Ese profesor ya existe",
-                existe
+                /*profesor : {
+                    cedula, 
+                    contacto_profesor, 
+                    costo_x_hora, 
+                    creadoen, 
+                    nombre_profesor
+                }*/
             } );
         }
 
@@ -27,7 +34,7 @@ const comprobar_profesor_existe = async ( req = request, res = response, next )=
         res.status( 500 ).json( {
             status : false,
             msg : "Ha ocurrido un error al buscar al profesor",
-            existe
+            //existe
         } );
     }
 

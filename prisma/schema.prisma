@@ -38,8 +38,9 @@ model calendario_eventos {
   eventocreadoen          DateTime?                 @db.Date
   eventoeditadoen         DateTime?                 @db.Date
   fecha_hasta_evento      DateTime?                 @db.Date
-  costo                   BigInt?
+  costo                   Int
   estadoevento            String?                   @db.VarChar(20)
+  decripcion_evento       String?                   @db.VarChar(255)
   eventos                 eventos                   @relation(fields: [id_tipo_evento], references: [id_tipo_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_calendario_eventos_fk")
   inscripciones           inscripciones[]
   inscripciones_no_socios inscripciones_no_socios[]
