@@ -316,7 +316,7 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
             status : false,
             msg : "El profesor no se pudo eliminar correctamente",
             //mensaje_error : "Id de profesor no existe",
-            error,
+            //error,
             //id_profesor_delete
         } );
 
