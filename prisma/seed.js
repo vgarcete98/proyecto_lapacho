@@ -184,60 +184,36 @@ async function main() {
   //---------------------------------------------------------------------------------
 
   //---------------------------------------------------------------------------------
+  const pass_admin = process.env.C0NTR4SEN1A_4DM1N; 
+
   const socios = await prisma.socio.createMany( { data : [  
                                                             { 
                                                               id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
-                                                              nombre_cmp : "Victor Garcete", numero_telefono : "0985552004", id_persona : 1
+                                                              nombre_cmp : "Victor Garcete", numero_telefono : "0985552004", id_persona : 1,
+                                                              nombre_usuario : "v_garcete", contrasea : "12345678", estado_usuario : 1, 
+                                                              creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "ACTIVO" 
                                                             },
 
                                                             { 
                                                               id_tipo_socio : 4, creadoen : new Date(), estado_socio : 1,
-                                                              nombre_cmp : "ADMINISTRADOR CLUB", numero_telefono : "----------", id_persona : 2
+                                                              nombre_cmp : "ADMINISTRADOR CLUB", numero_telefono : "----------", id_persona : 2,
+                                                              nombre_usuario : "ADMINISTRADOR_CLUB", contrasea : pass_admin , estado_usuario : 1, 
+                                                              creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "ACTIVO" 
                                                             },
 
                                                             { 
                                                               id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
-                                                              nombre_cmp : "Lucas Torres", numero_telefono : "------------", id_persona : 3
+                                                              nombre_cmp : "Lucas Torres", numero_telefono : "------------", id_persona : 2,
+                                                              nombre_usuario : "lucas.torres", contrasea : "12345678", estado_usuario : 2, 
+                                                              creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "SUSPENDIDO" 
                                                             }
                                                           ] 
                                               } );
   //---------------------------------------------------------------------------------
 
   //---------------------------------------------------------------------------------
-  const pass_admin = process.env.C0NTR4SEN1A_4DM1N;
 
-  const usuarios = await prisma.usuario.createMany( { data : [
-                                                                {  
-                                                                  id_socio : 2, 
-                                                                  id_acceso : 1, 
-                                                                  tipo_usuario : 'ACCESO_ADMIN', 
-                                                                  nombre_usuario : nombre_admin, 
-                                                                  contrasea : pass_admin,
-                                                                  estado_usuario : 1,
-                                                                  usuariocreadoen : new Date()
-                                                                }, 
-                                                                
-                                                                {
-                                                                  id_socio : 1, 
-                                                                  id_acceso : 2, 
-                                                                  tipo_usuario : 'ACCESO_SOCIO_NORMAL', 
-                                                                  nombre_usuario : "vgarcete", 
-                                                                  contrasea : pass_admin,
-                                                                  estado_usuario : 1,
-                                                                  usuariocreadoen : new Date() 
-                                                                },
 
-                                                                {
-                                                                  id_socio : 3, 
-                                                                  id_acceso : 3, 
-                                                                  tipo_usuario : 'ACCESO_PROFE', 
-                                                                  nombre_usuario : "lucas_torres", 
-                                                                  contrasea : pass_admin,
-                                                                  estado_usuario : 1,
-                                                                  usuariocreadoen : new Date() 
-                                                                }
-                                                              ] 
-                                                  } );
   //---------------------------------------------------------------------------------
 
   const profesores_creados = new Date();
