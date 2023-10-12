@@ -169,12 +169,12 @@ const obtener_usuarios = async ( req = request, res = response ) => {
 
     try {
         const usuarios = await prisma.$queryRaw`SELECT CAST ( id_usuario AS INTEGER ) AS idUsuario, 
-                                                        CAST ( id_acceso AS INTEGER ) AS idAcceso, 
+                                                        CAST ( id_acceso_soio AS INTEGER ) AS idAcceso, 
                                                         CAST ( id_socio AS INTEGER ) AS id_socio, 
                                                         tipo_usuario AS tipoUsuario, 
                                                         nombre_usuario AS nombreUsuario, 
                                                         contrasea as contrasennia
-                                                    FROM public.Usuario;`;
+                                                    FROM public.Socio;`;
         const usuariosSistema = usuarios.map( ( element ) =>{
             
             const { idusuario, idacceso, id_socio, tipousuario, nombreusuario, contrasennia } = element;
@@ -215,13 +215,13 @@ const obtener_usuario = async ( req = request, res = response ) => {
     const { id_usuario } = req.params;
     try {
         const usuario = await prisma.$queryRaw`SELECT CAST( A.ID_USUARIO AS INTEGER ) AS idUsuario, 
-                                                        CAST ( A.ID_ACCESO AS INTEGER ) AS idAcceso, 
+                                                        CAST ( A.ID_ACCESO_SOCIO AS INTEGER ) AS idAcceso, 
                                                         B.DESCRIPCION_ACCESO AS descripcionAcceso,
                                                         CAST ( A.ID_SOCIO AS INTEGER ) AS idSocio,
                                                         A.TIPO_USUARIO AS tipoUsuario, 
                                                         A.NOMBRE_USUARIO AS nombreUsuario , 
                                                         A.CONTRASEA AS contrasennia
-                                                    FROM USUARIO A JOIN ACCESOS_USUARIO B ON A.ID_ACCESO = B.ID_ACCESO
+                                                    FROM SOCIO A JOIN ACCESOS_USUARIO B ON A.ID_ACCESO = B.ID_ACCESO
                                                 WHERE ID_USUARIO = ${ Number(id_usuario) };`;
 
         res.status( 200 ).json(

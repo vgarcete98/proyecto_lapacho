@@ -13,8 +13,8 @@ const validar_rol_usuario = async ( req = request, res = response, next ) =>{
     //console.log( token_trad );
     const { id_usuario } = token_trad;
     const [ rol_usuario, rest ] = await prisma.$queryRaw`SELECT A.NOMBRE_USUARIO, B.DESCRIPCION_ACCESO
-                                                    FROM USUARIO A JOIN ACCESOS_USUARIO B ON A.ID_ACCESO = B.ID_ACCESO
-                                                WHERE A.ID_USUARIO = ${ id_usuario };`
+                                                    FROM SOCIO A JOIN ACCESOS_USUARIO B ON A.ID_ACCESO_SOCIO = B.ID_ACCESO
+                                                WHERE A.ID_SOCIO = ${ id_usuario };`
     //console.log( rol_usuario );
     const { descripcion_acceso } = rol_usuario;
     //console.log( rol_usuario );  

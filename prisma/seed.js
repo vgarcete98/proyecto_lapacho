@@ -1,6 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-
 const { generar_fecha } = require( '../helpers/generar_fecha' )
 
 
