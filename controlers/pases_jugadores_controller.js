@@ -93,8 +93,8 @@ const generar_pase_jugador = async ( req = request, res = response ) =>{
         res.status( 500 ).json({
             status : false,
             msg : "No se puede realizar el fichaje",
-            jugador_traspasado,
-            error
+            //jugador_traspasado,
+            //error
         });
     }
 
@@ -142,7 +142,7 @@ const obtener_pases_pendientes = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo obtener la lista de pagos pendientes',
-            error
+            //error
         } )
         
     }
@@ -190,7 +190,7 @@ const obtener_pases_completados = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo obtener la lista de pagados',
-            error
+            //error
         } );
         
     }
@@ -267,18 +267,42 @@ const abonar_pase_jugador = async ( req = request, res = response ) =>{
         res.status( 500 ).json({
             status : false,
             msg : "No se pudo actualizar el fichaje ",
-            error
+            //error
+        });  
+    }
+
+}
+
+const obtener_clubes_disponibles = async ( req = request, res = response ) =>{
+
+    
+    try {
+
+        const clubes_disponibles = await prisma.clubes_habilitados.findMany( { where : { esta_habilitado : true } } );
+
+
+        res.status( 200 ).json({
+            status : true,
+            msg : "Fichaje Actualizado",
+            clubesDisponibles : clubes_disponibles
+        });  
+        
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json({
+            status : false,
+            msg : "No se pudo actualizar el fichaje ",
+            //error
         });  
     }
 
 }
 
 
-
-
 module.exports = {
     abonar_pase_jugador,
     generar_pase_jugador,
     obtener_pases_completados,
-    obtener_pases_pendientes
+    obtener_pases_pendientes,
+    obtener_clubes_disponibles
 }

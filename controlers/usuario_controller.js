@@ -39,7 +39,7 @@ const crear_usuario = async ( req = request, res = response ) => {
         res.status( 200 ).json(
 
             {
-                status : 'OK',
+                status : true,
                 msj : 'Rol Creado',
                 usuario_creado : {
                     id_acceso,
@@ -56,7 +56,7 @@ const crear_usuario = async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo crear al usuario',
-            error
+            //error
         } );
     }
 
@@ -99,7 +99,7 @@ const borrar_usuario = async ( req = request, res = response ) => {
         res.status( 500 ).json({
             status : false,
             msg : 'No se pudo borrar al usuario',
-            error
+            //error
         });
     }
 }
@@ -151,7 +151,7 @@ const actualizar_usuario = async ( req = request, res = response ) => {
         res.status( 500 ).json({
             status : false,
             msg : 'No se pudo actualizar al usuario',
-            error
+            //error
         });
     }
 
@@ -238,7 +238,7 @@ const obtener_usuario = async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo encontrar al usuario',
-            error
+            //error
         } )
     }
 

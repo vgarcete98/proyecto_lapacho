@@ -44,7 +44,7 @@ const comprobar_disponibilidad_evento = async ( req = request, res = response, n
         res.status( 500 ).json( {
             status : false,
             msg : 'Ha ocurrido un error al buscar fecha libre',
-            error
+            //error
         } );
     }
 }
@@ -88,7 +88,7 @@ const comprobar_evento_borrado = async ( req = request, res = response, next )=>
         res.status( 500 ).json( {
             status : false,
             msg : 'Ha ocurrido un error al comprobar la disponibilidad del evento',
-            error
+            //error
         } );
     }
 }
@@ -128,7 +128,7 @@ const comprobar_existe_evento = async ( req = request, res = response, next )=> 
         res.status( 500 ).json( {
             status : false,
             msg : 'Ha ocurrido un error al buscar si el evento existe',
-            error
+            //error
         } );
     }
 }

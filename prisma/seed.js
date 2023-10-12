@@ -285,7 +285,13 @@ async function main() {
                                                                     ] 
                                                         } );
   //--------------------------------------------------------------------------------------------------------------
-
+  
+  const clubes_para_pases = await prisma.clubes_habilitados.createMany( { 
+                                                                          data : [  
+                                                                            { nombre_club_habilitado : 'SPIN', esta_habilitado : true, creadoen : new Date() },
+                                                                            { nombre_club_habilitado : 'SALESIANO', esta_habilitado : true, creadoen : new Date() }
+                                                                          ] 
+                                                                      } );
 
 }
 

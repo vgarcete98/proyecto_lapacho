@@ -34,7 +34,7 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo obtener las reservas del club',
-            error
+            //error
         } );
 
     }
@@ -77,7 +77,7 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : "Reserva no generada",
-            error
+            //error
         } );
         
     }
@@ -121,7 +121,7 @@ const editar_reserva_en_club = async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : "Ha ocurrido un error al editar la reserva",
-            error
+            //error
         } );
     }
 
@@ -155,7 +155,7 @@ const borrar_reserva_en_club = async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : "Ha ocurrido un error al eliminar la reserva",
-            error
+            //error
         } );
         
     }

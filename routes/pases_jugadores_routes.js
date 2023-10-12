@@ -12,7 +12,8 @@ const {
         abonar_pase_jugador,
         generar_pase_jugador,
         obtener_pases_completados,
-        obtener_pases_pendientes } = require( '../controlers/pases_jugadores_controller' );
+        obtener_pases_pendientes, 
+        obtener_clubes_disponibles} = require( '../controlers/pases_jugadores_controller' );
 
 
 
@@ -27,5 +28,10 @@ router_pases_jugadores.get ( '/', [ validar_token, validar_rol_usuario ], obtene
 router_pases_jugadores.post ( '/', [ validar_token, validar_rol_usuario ], generar_pase_jugador );
 
 router_pases_jugadores.put ( '/', [ validar_token, validar_rol_usuario ], abonar_pase_jugador );
+
+router_pases_jugadores.get ( '/clubes_disponibles', [ validar_token, validar_rol_usuario ], obtener_clubes_disponibles );
+
+
+router_pases_jugadores.post ( '/clubes_disponibles', [ validar_token, validar_rol_usuario ], obtener_clubes_disponibles );
 
 module.exports = router_pases_jugadores;

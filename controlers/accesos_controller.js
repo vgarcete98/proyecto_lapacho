@@ -15,7 +15,7 @@ const obtener_accesos = async ( req = request, res = response ) => {
 
         res.status( 200 ).json(
             {
-                status : 'OK',
+                status : true,
                 msj : 'Accesos para usuarios',
                 accesos
 
@@ -27,7 +27,7 @@ const obtener_accesos = async ( req = request, res = response ) => {
         res.status( 500 ).json( { 
             status : false,
             msg : 'No se pudo obtener la lista de roles',
-            error
+            //error
         } );
         
     }
@@ -48,7 +48,7 @@ const crear_accesos = async ( req = request, res = response ) => {
             VALUES ( ${ idRolUsuario }, ${ descripcionAcceso } );`
 
         res.status( 200 ).json({
-            status : 'OK',
+            status : true,
             msj : 'Acceso Creado',
             descripcionAcceso
 
@@ -58,7 +58,7 @@ const crear_accesos = async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : 'No se ha podido crear el acceso con exito',
-            error
+            //error
         } )
     }
 
@@ -122,7 +122,7 @@ const obtener_accesos_usuarios= async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : 'Ha ocurrido un error al consultar los accesos de usuario',
-            error
+            //error
         } );
     }
 
@@ -189,7 +189,7 @@ const obtener_acceso_usuario= async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : 'Ha ocurrido un error al consultar los accesos de usuario',
-            error
+            //error
         } );
     }
 

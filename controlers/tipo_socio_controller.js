@@ -15,7 +15,7 @@ const crear_tipo_socio = async ( req = request, res = response ) => {
     res.status( 200 ).json(
 
         {
-            status : 'OK',
+            status : true,
             msj : 'Tipo de Socio Creado',
             nuevo_tipo_socio
         }
@@ -34,7 +34,7 @@ const obtener_tipos_socios = async ( req = request, res = response ) => {
     res.status( 200 ).json(
 
         {
-            status : 'OK',
+            status : true,
             msj : 'Tipo de Socio Creado',
             tipos_socio
         }

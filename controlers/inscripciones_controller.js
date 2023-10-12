@@ -36,8 +36,8 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : "No se pudo ingresar el registro",
-            nueva_inscripcion,
-            error
+            //nueva_inscripcion,
+            //error
 
         } );
     }
@@ -114,7 +114,7 @@ const editar_inscripcion = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false, 
             msg : 'No se pudo editar la inscripcion',
-            error
+            //error
         } );
     }
 
@@ -181,7 +181,7 @@ const abonar_x_inscripcion = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : "No se pudo actualizar el registro",
-            inscripcion_abonada
+            //inscripcion_abonada
         } );
                 
     }
@@ -212,7 +212,7 @@ const abonar_x_inscripcion_no_socio = async ( req = request, res = response ) =>
         res.status( 500 ).json( {
             status : false,
             msg : "No se pudo actualizar el registro",
-            inscripcion_abonada
+            //inscripcion_abonada
         } );
                 
     }
@@ -244,7 +244,7 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
         res.status( 500 ).json( { 
             status : false,
             msg : "No se ha podido obtener las inscripciones de ese evento",
-            cant_inscripciones : 0
+            //cant_inscripciones : 0
         } );
 
     }
@@ -275,7 +275,7 @@ const ver_inscripciones_x_evento_no_socio = async ( req = request, res = respons
         res.status( 500 ).json( { 
             status : false,
             msg : "No se ha podido obtener las inscripciones de ese evento",
-            cant_inscripciones : 0
+            //cant_inscripciones : 0
         } );
 
     }

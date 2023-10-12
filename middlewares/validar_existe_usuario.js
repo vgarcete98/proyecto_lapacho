@@ -28,7 +28,7 @@ const validar_existe_usuario = async ( req = request, res = response, next ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : 'Ha ocurrido un error al comprobar si el usuario existe',
-            error
+            //error
         } );        
     }
 
@@ -57,7 +57,7 @@ const comprobar_usuario_valido = async ( req = request, res = response, next ) =
         res.status( 500 ).json( {
             status : false,
             msg : 'Ha ocurrido un error al comprobar si el usuario existe',
-            error
+            //error
         } );        
     }
 
@@ -86,7 +86,7 @@ const comprobar_usuario_borrado = async ( req = request, res = response, next ) 
         res.status( 500 ).json( {
             status : false,
             msg : 'Ha ocurrido un error al comprobar si el usuario existe',
-            error
+            //error
         } );        
     }
 

@@ -106,7 +106,7 @@ const crear_socio = async ( req = request, res = response ) => {
             {
                 status : false,
                 msj : 'No se puede crear al socio solicitado',
-                error
+                //error
             }
 
         );
@@ -165,7 +165,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo actualizar al Socio',
-            error
+            //error
         } );
     }
 
@@ -227,7 +227,7 @@ const borrar_socio = async ( req = request, res = response ) => {
 
                 status : false,
                 msj : 'No se logro borrar al socio',
-                error
+                //error
 
             }
 
@@ -294,7 +294,7 @@ const obtener_socios = async ( req = request, res = response ) => {
         res.status( 500 ).json({
             status: false,
             msg: 'No se pudo obtener la informacion de los socios del club',
-            data : socios
+            //data : socios
         });    
     }
 
@@ -351,7 +351,7 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
         res.status( 500 ).json( {
            status : false,
            msg : 'No se pudo obtener el detalle de los socios',
-           error 
+           //error 
         });
         
     }
@@ -423,7 +423,7 @@ const obtener_socio_cedula = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : true,
             msg : `Ha ocurrido un error al buscar al socio`,
-            error
+            //error
         } );
     }
 

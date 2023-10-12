@@ -47,9 +47,11 @@ model calendario_eventos {
 }
 
 model clubes_habilitados {
-  id_club_habilitado     BigInt        @id(map: "clubes_habilitados_pk") @default(autoincrement())
+  id_club_habilitado     Int           @id(map: "clubes_habilitados_pk") @default(autoincrement())
   nombre_club_habilitado String        @db.VarChar(255)
   esta_habilitado        Boolean       @default(false)
+  editadoen              DateTime?     @db.Date
+  creadoen               DateTime?     @db.Date
   pases_socio            pases_socio[]
 }
 
@@ -121,7 +123,7 @@ model pagos_socio {
 
 model pases_socio {
   id_pase              BigInt             @id(map: "pases_socio_pk") @default(autoincrement())
-  id_club_habilitado   BigInt
+  id_club_habilitado   Int
   id_socio             BigInt
   descripcion_traspaso String             @db.VarChar(255)
   monto_pase           Boolean            @default(false)

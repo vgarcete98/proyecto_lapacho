@@ -30,7 +30,7 @@ const crear_rol = async ( req = request, res = response ) => {
             {
                 status : false,
                 msj : 'No se pudo crear el Rol',
-                rol_nuevo : descripcionRol
+                //rol_nuevo : descripcionRol
             }
 
         );    
@@ -53,7 +53,7 @@ const actualizar_rol = async ( req = request, res = response ) => {
         res.status( 200 ).json(
 
             {
-                status : 'OK',
+                status : true,
                 msj : 'Rol Editado',
                 rol_editado
             }
@@ -66,7 +66,7 @@ const actualizar_rol = async ( req = request, res = response ) => {
             {
                 status : false,
                 msj : 'No se pudo actualizar el Rol',
-                rol_nuevo : descripcionRol
+                //rol_nuevo : descripcionRol
             }
 
         );    
@@ -95,7 +95,7 @@ const borrar_rol = async ( req = request, res = response ) => {
         res.status( 200 ).json(
 
             {
-                status : 'OK',
+                status : true,
                 msj : 'Rol Borrado',
                 rol_borrado
             }
@@ -108,7 +108,7 @@ const borrar_rol = async ( req = request, res = response ) => {
             {
                 status : false,
                 msj : 'No se pudo borrar el Rol',
-                rol_nuevo : descripcionRol
+                //rol_nuevo : descripcionRol
             }
 
         );    
@@ -127,7 +127,7 @@ const obtener_roles = async ( req = request, res = response ) => {
     res.status( 200 ).json(
 
         {
-            status : 'OK',
+            status : true,
             msj : 'Roles del sistema',
             roles_usuario
         }

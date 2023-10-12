@@ -13,7 +13,7 @@ const obtener_tipos_reserva = async ( req = request, res = response ) => {
     res.status( 200 ).json(
 
         {
-            status : 'OK',
+            status : true,
             msj : 'Tipos de reserva en el club',
             tipos_reserva
         }
@@ -34,7 +34,7 @@ const crear_tipo_reserva = async ( req = request, res = response ) => {
     res.status( 200 ).json(
 
         {
-            status : 'OK',
+            status : true,
             msj : 'Tipo de reserva creada',
             tipo_reserva
         }
@@ -56,7 +56,7 @@ const actualizar_tipo_reserva = async ( req = request, res = response ) => {
     res.status( 200 ).json(
 
         {
-            status : 'OK',
+            status : true,
             msj : 'Tipo de reserva actualizada',
             tipo_reserva
         }
@@ -79,7 +79,7 @@ const eliminar_tipo_reserva = async ( req = request, res = response ) => {
     res.status( 200 ).json(
 
         {
-            status : 'OK',
+            status : true,
             msj : 'Tipo de reserva Eliminada',
             tipo_reserva
         }

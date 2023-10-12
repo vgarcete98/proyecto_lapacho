@@ -22,7 +22,7 @@ const login = async ( req = request, res = response )=> {
         if ( consulta_usuario.length === 0 ) { 
             res.status( 400 ).json(
                 {
-                    status : 'OK',
+                    status : true,
                     msj : 'No existe el usuario, No se pudo generar el token',
                     //usuario,
                     token : false,
@@ -40,7 +40,7 @@ const login = async ( req = request, res = response )=> {
             //console.log ( consulta_acceso );
             res.status( 200 ).json(
                 {
-                    status : 'OK',
+                    status : true,
                     msj : 'Login OK',
                     //usuario,
                     token,
@@ -55,7 +55,7 @@ const login = async ( req = request, res = response )=> {
             {
                 status : false,
                 msj : 'Ha ocurrido un error al realizar la consulta, No se pudo generar el token',
-                mensaje_error : error
+                //mensaje_error : error
             }
     
         );

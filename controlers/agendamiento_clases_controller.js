@@ -39,7 +39,7 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : "Ocurrio un error al realizar la consulta",
-            error
+            //error
         } );
     }
 
@@ -83,7 +83,7 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
         res.status( 500 ).json( {
             status : false,
             msg : "Ha ocurrido un error al consultar los registros",
-            error
+            //error
         } );
     }
 
@@ -137,7 +137,7 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
             res.status( 500 ).json( {
                 status : false,
                 msg : "Ocurrio un error al insertar el registro",
-                error
+                //error
             } );
     
         }
@@ -183,7 +183,7 @@ const editar_una_clase = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo editar la clase',
-            error
+            //error
         } );
         
     }
@@ -248,7 +248,7 @@ const abonar_una_clase = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : "No se pudo abonar por la clase, ocurrio un error",
-            error
+            //error
         } );
     }
 
@@ -279,7 +279,7 @@ const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : "Ocurrio un error al eliminar la clase",
-            error
+            //error
         } );
     }
 

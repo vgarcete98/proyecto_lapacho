@@ -66,7 +66,7 @@ const obtener_nomina_profesores = async ( req = request, res = response ) =>{
             {
                 status : false,
                 msg : "No se pudo obtener los Profesores del club",
-                error
+                //error
             }
         );
         
@@ -204,7 +204,7 @@ const crear_profesor = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : "Ha ocurrido un error al crear un profesor",
-            error
+            //error
         } );
     }
 

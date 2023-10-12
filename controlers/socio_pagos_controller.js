@@ -98,7 +98,7 @@ const obtener_pagos_x_socio= async ( req = request, res = response ) => {
 
             res.status( 200 ).json(
                 {
-                    status : 'OK',
+                    status : true,
                     msj : 'El socio no registra pagos en el año',
                     nro_pagos : pagos_socio_annio.length,
                     pagos_socio_annio
@@ -176,7 +176,7 @@ const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response 
             res.status( 200 ).json(
 
                 {
-                    status : 'OK',
+                    status : true,
                     msj : 'Pagos pendientes del socio',
                     cantidad : cuotas_pendientes.length,
                     cuotasPendientes
@@ -188,7 +188,7 @@ const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response 
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo obtener los pagos del socio',
-            error
+            //error
         } );
         
     } 
@@ -275,7 +275,7 @@ const realizar_pago_socio = async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : 'No se finalizo el pago de cuota',
-            error
+            //error
         } );
     }
 

@@ -37,7 +37,7 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo verificar que haya un socio repetido',
-            persona
+            //persona
         } );
     }
 
@@ -72,7 +72,7 @@ const comprobar_existe_socio = async ( req = request, res = response, next ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo verificar que haya un socio repetido',
-            persona
+            //persona
         } );
     }
 

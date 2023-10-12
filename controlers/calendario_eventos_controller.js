@@ -47,7 +47,7 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : 'Ha ocurrido un error al crear el evento en el calendario',
-            error
+            //error
         } );        
     }
 
@@ -92,7 +92,7 @@ const obtener_eventos_x_fecha_calendario = async ( req = request, res = response
         res.status( 500 ).json( {  
             status : false,
             msg : 'Ha ocurrido un error al procesar la consulta',
-            error
+            //error
         } );
     }
 

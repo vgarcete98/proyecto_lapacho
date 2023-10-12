@@ -118,7 +118,7 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : 'No se ha podido procesar la insercion del registro',
-            error
+            //error
         } );
         
     }
@@ -180,7 +180,7 @@ const obtener_gastos_x_mes = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : "No se pudo procesar la consulta",
-            error
+            //error
         } );
 
     }
@@ -285,7 +285,7 @@ const editar_gasto_club = async ( req = request, res = response ) =>{
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo editar el gasto',
-            gasto : {
+            /*gasto : {
                 nroFactura ,
                 id_usuario , 
                 descripcion , 
@@ -294,7 +294,7 @@ const editar_gasto_club = async ( req = request, res = response ) =>{
                 egreso,
                 montoGasto 
 
-            }
+            }*/
         } );
         
     }
@@ -345,7 +345,7 @@ const borrar_gasto = async ( req = request, res = response ) => {
         res.status( 500 ).json( {
             status : false,
             msg : "No se pudo eliminar el registro "
-        } )          
+        } );         
     }
 
 

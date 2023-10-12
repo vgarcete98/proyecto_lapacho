@@ -12,7 +12,7 @@ const obtener_tipos_de_cuota = async ( req = request, res = response ) => {
     res.status( 200 ).json(
 
         {
-            status : 'OK',
+            status : true,
             msj : 'Pagos del mes en el club',
             
         }
@@ -35,7 +35,7 @@ const crear_tipo_de_cuota = async ( req = request, res = response ) => {
         res.status( 200 ).json(
 
             {
-                status : 'OK',
+                status : true,
                 msj : 'Nuevo tipo de cuota Creado',
                 status : true
             }
@@ -45,7 +45,7 @@ const crear_tipo_de_cuota = async ( req = request, res = response ) => {
         res.status( 200 ).json(
 
             {
-                status : 'OK',
+                status : true,
                 msj : 'No se pudo crear el tipo de cuota',
                 status : false
             }
@@ -70,7 +70,7 @@ const editar_tipo_de_cuota = async ( req = request, res = response ) => {
         res.status( 200 ).json(
 
             {
-                status : 'OK',
+                status : true,
                 msj : 'Pagos del mes en el club',
                 status : true
             }
@@ -81,7 +81,7 @@ const editar_tipo_de_cuota = async ( req = request, res = response ) => {
         res.status( 200 ).json(
 
             {
-                status : 'OK',
+                status : true,
                 msj : 'Editado tipo de cuota',
                 status : false
             }
@@ -97,7 +97,7 @@ const borrar_tipo_de_cuota = async ( req = request, res = response ) => {
     res.status( 200 ).json(
 
         {
-            status : 'OK',
+            status : true,
             msj : 'Pagos del mes en el club',
             
         }
