@@ -287,7 +287,8 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
                 //contacto_profesor : contacto_nuevo,
                 //costo_x_hora : nuevo_costo,
                 editadoen : fecha_edicion,
-                estado_profesor : estado_profesor.ya_no_es_profesor
+                //estado_profesor : estado_profesor.ya_no_es_profesor
+                profesor_borrado : true
             }
         } );
 

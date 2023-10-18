@@ -254,6 +254,7 @@ model profesores {
   costo_x_hora       Int?
   contacto_profesor  String?              @db.VarChar
   cedula             String               @db.VarChar(30)
+  profesor_borrado   Boolean?
   agendamiento_clase agendamiento_clase[]
 }
 
