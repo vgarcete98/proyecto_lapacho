@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 //VOY A MANEJAR LOS ESTADOS DE UN PROFESOR A NIVEL DE LOGICA
 //COMO LOS ESTADOS SON POCOS, CONVIENE TENERLO A NIVEL DE LOGICA NO A NIVEL DE BASE DE DATOS
 
-const estado_profesor = {
+const estadosProfesor = {
 
     activo : 'ACTIVO',
     suspendido : 'SUSPENDIDO',
@@ -173,7 +173,7 @@ const crear_profesor = async ( req = request, res = response ) =>{
                     nombre_profesor : nombreProfe,
                     contacto_profesor : contactoProfesor,
                     costo_x_hora : precio,
-                    estado_profesor : estado_profesor.activo
+                    estado_profesor : estadosProfesor.activo
                 } 
             } );        
 
