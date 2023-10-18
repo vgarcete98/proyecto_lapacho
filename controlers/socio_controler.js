@@ -23,7 +23,7 @@ const crear_socio = async ( req = request, res = response ) => {
         //console.log ( req.body)
         const { nombre, apellido, fechaNacimiento, cedula,
                 correo, numeroTel, direccion, ruc, tipoSocio,
-                contraseña, nombreUsuario } = req.body;
+                contraseña, nombreUsuario, idAcceso } = req.body;
 
         //console.log ( nombre, apellido, fecha_nacimiento );
         //convertir la fecha de nacimiento a fecha
@@ -83,7 +83,8 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                 estado_socio : estados_socio.activo.id_estado,
                                                                 contrasea : contraseña,
                                                                 nombre_usuario : nombreUsuario,
-                                                                
+                                                                id_acceso_socio : idAcceso
+
                                                             } 
                                                     
                                                     } );
