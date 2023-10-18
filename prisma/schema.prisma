@@ -22,8 +22,8 @@ model agendamiento_clase {
   fecha_agendamiento DateTime   @db.Date
   horario_inicio     String     @db.VarChar(10)
   horario_hasta      String     @db.VarChar(10)
-  creadoen           String     @db.VarChar
-  editadoen          String?    @db.VarChar
+  creadoen           DateTime?  @db.Date
+  editadoen          DateTime?  @db.Date
   clase_eliminada    Boolean
   clase_abonada      Boolean?
   monto_abonado      Int?
@@ -126,7 +126,7 @@ model pases_socio {
   id_club_habilitado   Int
   id_socio             BigInt
   descripcion_traspaso String             @db.VarChar(255)
-  monto_pase           Boolean            @default(false)
+  monto_pase           Int
   doc_adjunto          Boolean            @default(false)
   abonado              Boolean            @default(false)
   estado_pase_socio    Int?               @db.SmallInt
@@ -167,7 +167,7 @@ model socio {
   id_tipo_socio      BigInt
   id_persona         BigInt
   id_acceso_socio    BigInt
-  tipo_usuario       String               @db.VarChar(255)
+  tipo_usuario       String?              @db.VarChar(255)
   nombre_usuario     String               @db.VarChar(255)
   contrasea          String               @db.VarChar(255)
   estado_usuario     Int?                 @db.SmallInt

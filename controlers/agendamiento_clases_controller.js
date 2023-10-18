@@ -4,7 +4,8 @@ const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient();
 
-const { comprobar_horario_profesor } = require( '../helpers/comprobar_disponibilidad_profesor' )
+const { comprobar_horario_profesor } = require( '../helpers/comprobar_disponibilidad_profesor' );
+const { generar_fecha } = require( '../helpers/generar_fecha' );
 
 
 const obtener_clases_del_dia = async ( req = request, res = response ) =>{
@@ -12,8 +13,8 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
     // OBTENGO LAS CLASES DEL DIA Y LAS MANDO CON SU ID Y EL NOMBRE DEL PROFESOR ASOCIADO
 
     try {
-        const clases_del_dia = await prisma.$queryRaw`SELECT B.ID_AGENDAMIENTO, A.NOMBRE_PROFESOR, B.FECHA_AGENDAMIENTO, 
-                                                                B.HORARIO_INICIO, B.HORARIO_HASTA
+        const clases_del_dia = await prisma.$queryRaw`SELECT CAST ( B.ID_AGENDAMIENTO AS INTEGER ) AS ID_AGENDAMIENTO, A.NOMBRE_PROFESOR, 
+                                                                B.FECHA_AGENDAMIENTO, B.HORARIO_INICIO, B.HORARIO_HASTA
                                                             FROM AGENDAMIENTO_CLASE B JOIN PROFESORES A ON A.ID_PROFESOR = B.ID_PROFESOR
                                                         WHERE EXTRACT ( MONTH FROM B.FECHA_AGENDAMIENTO ) = EXTRACT ( MONTH FROM CURRENT_DATE) AND 	
                                                                 EXTRACT ( DAY FROM B.FECHA_AGENDAMIENTO ) = EXTRACT ( DAY FROM CURRENT_DATE) AND 
@@ -23,14 +24,26 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
                 status : false,
                 msg : "No se encontraron clases para el dia de hoy",
                 cantidad : clases_del_dia.length,
-                clases_del_dia
+                clasesDelDia : []
             } );
         }else {
+
+            const clasesDelDia = clases_del_dia.map( ( element )=>{
+                const { id_agendamiento, nombre_profesor,
+                        fecha_agendamiento, horario_inicio, horario_hasta } = element;
+                return {
+                    idAgendamiento : id_agendamiento, 
+                    nombreProfesor : nombre_profesor,
+                    fechaAgendamiento : fecha_agendamiento, 
+                    horarioInicio : horario_inicio, 
+                    horarioHasta : horario_hasta
+                }
+            } );
             res.status( 200 ).json( {
                 status : true,
                 msg : "Clases para el dia de hoy",
                 cantidad : clases_del_dia.length,
-                clases_del_dia
+                clasesDelDia
             } );
         }
     } catch (error) {
@@ -102,7 +115,9 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
     const { idSocio, idProfesor, fechaParaLaClase, inicio, fin } = req.body;
 
     // VOY A COMPROBAR LAS CLASES QUE HAY EN EL DIA PRIMERO PARA PODER VER SI SE PUEDE RESERVAR O NO
-    const disponibilidad = await comprobar_horario_profesor( fecha_para_la_clase, inicio, fin, id_profesor );
+    const disponibilidad = await comprobar_horario_profesor( fechaParaLaClase, inicio, fin, idProfesor );
+    const fecha_para_la_clase = generar_fecha( fechaParaLaClase );
+    //console.log( fecha_para_la_clase );
     if ( disponibilidad === true ) {
         
         try {
@@ -110,25 +125,35 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
                                                                             data : { 
                                                                                         id_socio : idSocio,
                                                                                         id_profesor : idProfesor,
-                                                                                        fecha_agendamiento : fechaParaLaClase,
+                                                                                        fecha_agendamiento : fecha_para_la_clase,
                                                                                         horario_inicio : inicio,
                                                                                         horario_hasta : fin,
                                                                                         creadoen : new Date(),
                                                                                         clase_eliminada : false
                                                                                     } 
                                                                         } );
+            const claseAgendada = {};
+
+            const { fecha_agendamiento, horario_hasta, horario_inicio } = agendar_clase;
+            const profesor = await prisma.profesores.findUnique( { where : { id_profesor : idProfesor } } );
+            const { nombre_profesor } = profesor;
             
+            claseAgendada.profesor = nombre_profesor;
+            claseAgendada.fechaAgendamiento = fecha_agendamiento;
+            claseAgendada.horarioHasta = horario_hasta;
+            claseAgendada.horarioInicio = horario_inicio;
+
             if ( agendar_clase === null ) {
                 res.status( 200 ).json( {
                     status : false,
                     msg : "No se pudo insertar el registro",
-                    agendar_clase
+                    claseAgendada : {}
                 } );
             }else {
                 res.status( 200 ).json( {
                     status : true,
                     msg : "registro insertado",
-                    agendar_clase
+                    claseAgendada
                 } );
             }
         } catch (error) {

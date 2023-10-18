@@ -13,7 +13,9 @@ const {
         generar_pase_jugador,
         obtener_pases_completados,
         obtener_pases_pendientes, 
-        obtener_clubes_disponibles} = require( '../controlers/pases_jugadores_controller' );
+        obtener_clubes_disponibles,
+        obtener_todos_los_clubes} = require( '../controlers/pases_jugadores_controller' );
+const comprobar_traspaso_activo = require('../helpers/comprobar_traspaso_activo');
 
 
 
@@ -21,17 +23,20 @@ const {
 const router_pases_jugadores = Router();
 
 
-router_pases_jugadores.get ( '/', [ validar_token, validar_rol_usuario ], obtener_pases_completados );
+router_pases_jugadores.get ( '/pases_abonados', [ validar_token, validar_rol_usuario ], obtener_pases_completados );
 
-router_pases_jugadores.get ( '/', [ validar_token, validar_rol_usuario ], obtener_pases_pendientes );
+router_pases_jugadores.get ( '/pases_pendientes', [ validar_token, validar_rol_usuario ], obtener_pases_pendientes );
 
-router_pases_jugadores.post ( '/', [ validar_token, validar_rol_usuario ], generar_pase_jugador );
+router_pases_jugadores.post ( '/', [ validar_token, validar_rol_usuario, comprobar_traspaso_activo ], generar_pase_jugador );
 
-router_pases_jugadores.put ( '/', [ validar_token, validar_rol_usuario ], abonar_pase_jugador );
+router_pases_jugadores.put ( '/abonar_pase/:id_pase', [ validar_token, validar_rol_usuario ], abonar_pase_jugador );
 
 router_pases_jugadores.get ( '/clubes_disponibles', [ validar_token, validar_rol_usuario ], obtener_clubes_disponibles );
 
 
-router_pases_jugadores.post ( '/clubes_disponibles', [ validar_token, validar_rol_usuario ], obtener_clubes_disponibles );
+router_pases_jugadores.post ( '/todos_los_clubes', [ validar_token, validar_rol_usuario ], obtener_todos_los_clubes );
+
+
+router_pases_jugadores.delete ( '/todos_los_clubes/:id_club', [ validar_token, validar_rol_usuario ], obtener_todos_los_clubes );
 
 module.exports = router_pases_jugadores;

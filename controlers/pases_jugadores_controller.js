@@ -52,42 +52,42 @@ const generar_pase_jugador = async ( req = request, res = response ) =>{
                                         montoTraspaso, docAdjuntado, abonado 
                                     };
 
-    const club_habilitado = await verificar_club_destino ( idClubDestino );
+        const club_habilitado = await verificar_club_destino ( idClubDestino );
 
-    if ( club_habilitado === true ) { 
-        //SE PUEDE REALIZAR ESE TRASPASO
-        const  estado_traspaso = abonado ? estado_pases.pendiente_federacion : estado_pases.pendiente_pago ;
+        if ( club_habilitado === true ) { 
+            //SE PUEDE REALIZAR ESE TRASPASO
+            const  estado_traspaso = abonado ? estado_pases.pendiente_federacion : estado_pases.pendiente_pago ;
 
-        const nuevo_traspaso = await prisma.$executeRaw`INSERT INTO public.pases_socio(
-                                                                        id_club_habilitado, id_socio, 
-                                                                        descripcion_traspaso, monto_pase, 
-                                                                        doc_adjunto, abonado, estado_pase_socio )
-                                                                        VALUES ( ${ idClubDestino }, ${ idSocio },
-                                                                                  ${ descripcion }, ${ montoTraspaso },  
-                                                                                  ${ docAdjuntado }, ${ abonado }, ${ estado_traspaso });`
-                                            
-        if ( nuevo_traspaso > 0 ) {
-            res.status( 200 ).json({
-                status : true,
-                msg : "Traspaso insertado con exito",
-                jugador_traspasado
-            });
+            const nuevo_traspaso = await prisma.$executeRaw`INSERT INTO public.pases_socio(
+                                                                            id_club_habilitado, id_socio, 
+                                                                            descripcion_traspaso, monto_pase, 
+                                                                            doc_adjunto, abonado, estado_pase_socio )
+                                                                            VALUES ( ${ idClubDestino }, ${ idSocio },
+                                                                                    ${ descripcion }, ${ montoTraspaso },  
+                                                                                    ${ docAdjuntado }, ${ abonado }, ${ estado_traspaso });`
+                                                
+            if ( nuevo_traspaso > 0 ) {
+                res.status( 200 ).json({
+                    status : true,
+                    msg : "Traspaso insertado con exito",
+                    jugadorTraspasado : jugador_traspasado
+                });
+            } else {
+                res.status( 200 ).json({
+                    status : false,
+                    msg : "No se pudo insertar el fichaje",
+                    jugador_traspasado
+                });
+            }
         } else {
+            // NO SE PUEDE REALIZAR ESE TRASPASO
             res.status( 200 ).json({
                 status : false,
-                msg : "No se pudo insertar el fichaje",
+                msg : "No se puede realizar el fichaje debido a que el club no esta habilitado",
                 jugador_traspasado
             });
+        
         }
-    } else {
-        // NO SE PUEDE REALIZAR ESE TRASPASO
-        res.status( 200 ).json({
-            status : false,
-            msg : "No se puede realizar el fichaje debido a que el club no esta habilitado",
-            jugador_traspasado
-        });
-    
-    }
     } catch (error) {
         console.log ( error );
         res.status( 500 ).json({
@@ -108,13 +108,17 @@ const obtener_pases_pendientes = async ( req = request, res = response ) =>{
 
     // OBTENGO LOS PASES PENDIENTES QUE DEBEN DE ABONARSE
     try {
-        const pases_pendientes = await prisma.$queryRaw`SELECT A.ID_PASE, B.ID_SOCIO, CONCAT ( C.NOMBRE, ' ', C.APELLIDO ) AS NOMBRE_SOCIO, C.CEDULA,
+        const pases_pendientes = await prisma.$queryRaw`SELECT CAST (A.ID_PASE AS INTEGER ) AS ID_PASE ,CAST ( B.ID_SOCIO AS INTEGER ) AS ID_SOCIO, 
+                                                                CONCAT ( C.NOMBRE, ' ', C.APELLIDO ) AS NOMBRE_SOCIO, C.CEDULA,
                                                                 A.DESCRIPCION_TRASPASO AS DESCRIPCION, A.MONTO_PASE, A.ABONADO, 
                                                                 D.NOMBRE_CLUB_HABILITADO AS NOMBRE_CLUB, A.ESTADO_PASE_SOCIO
                                                             FROM PASES_SOCIO A JOIN CLUBES_HABILITADOS D ON A.ID_CLUB_HABILITADO = D.ID_CLUB_HABILITADO
                                                             JOIN SOCIO B ON A.ID_SOCIO = B.ID_SOCIO
                                                             JOIN PERSONA C ON B.ID_PERSONA = C.ID_PERSONA
-                                                        WHERE A.ABONADO = FALSE AND D.ESTA_HABILITADO = TRUE AND A.ESTADO_PASE_SOCIO = ${ estado_pases.pendiente_pago }`;
+                                                        WHERE A.ABONADO = false AND D.ESTA_HABILITADO = true AND A.ESTADO_PASE_SOCIO = ${ estado_pases.pendiente_pago }`;
+        
+        var pasesPendientes = [];
+        
         if ( pases_pendientes.length === 0 ){
             res.status( 200 ).json(
 
@@ -122,17 +126,33 @@ const obtener_pases_pendientes = async ( req = request, res = response ) =>{
                     status : false,
                     msj : 'No se registran pagos pendientes de pases',
                     cantidad : pases_pendientes.length,
-                    pases_pendientes
+                    pasesPendientes
                 }
             );
         } else {
+            pasesPendientes = pases_pendientes.map( ( element ) => {
+                const { id_pase, id_socio, nombre_socio, 
+                        cedula, descripcion, monto_pase,
+                        abonado, estado_pase_socio, nombre_club } = element;
+                return {
+                    idPase : id_pase,
+                    idSocio : id_socio,
+                    nombreSocio : nombre_socio,
+                    cedula,
+                    descripcion,
+                    montoPase : monto_pase,
+                    abonado,
+                    estadoPaseSocio : estado_pase_socio,
+                    nombreClub : nombre_club
+                }
+            } );
             res.status( 200 ).json(
 
                 {
                     status : true,
                     msj : 'Pases pendientes de pagos',
                     cantidad : pases_pendientes.length,
-                    pases_pendientes
+                    pasesPendientes
                 }
             );
 
@@ -156,13 +176,16 @@ const obtener_pases_completados = async ( req = request, res = response ) =>{
 
     // OBTENGO LOS PASES ABONADOS Y QUE YA ESTARIAN REALIZADOS
     try {
-            const pases_pendientes = await prisma.$queryRaw`SELECT A.ID_PASE, B.ID_SOCIO, CONCAT ( C.NOMBRE, ' ', C.APELLIDO ) AS NOMBRE_SOCIO, C.CEDULA,
+            const pases_abonados = await prisma.$queryRaw`SELECT CAST (A.ID_PASE AS INTEGER ) AS ID_PASE ,CAST ( B.ID_SOCIO AS INTEGER ) AS ID_SOCIO 
+                                                            CONCAT ( C.NOMBRE, ' ', C.APELLIDO ) AS NOMBRE_SOCIO, C.CEDULA,
                                                             A.DESCRIPCION_TRASPASO AS DESCRIPCION, A.MONTO_PASE, A.ABONADO, 
                                                             D.NOMBRE_CLUB_HABILITADO AS NOMBRE_CLUB, A.ESTADO_PASE_SOCIO
                                                         FROM PASES_SOCIO A JOIN CLUBES_HABILITADOS D ON A.ID_CLUB_HABILITADO = D.ID_CLUB_HABILITADO
                                                         JOIN SOCIO B ON A.ID_SOCIO = B.ID_SOCIO
                                                         JOIN PERSONA C ON B.ID_PERSONA = C.ID_PERSONA
-                                                    WHERE A.ABONADO = TRUE AND D.ESTA_HABILITADO = TRUE AND A.ESTADO_PASE_SOCIO = ${ estado_pases.realizado }`;
+                                                    WHERE A.ABONADO = true AND D.ESTA_HABILITADO = true AND A.ESTADO_PASE_SOCIO = ${ estado_pases.realizado }`;
+        
+        var pasesAbonados = [];
         if ( pases_pendientes.length === 0 ){
             res.status( 200 ).json(
 
@@ -170,17 +193,37 @@ const obtener_pases_completados = async ( req = request, res = response ) =>{
                     status : false,
                     msj : 'No se registran traspasos realizados',
                     cantidad : pases_pendientes.length,
-                    pases_pendientes
+                    pasesAbonados
                 }
             );
         } else {
+
+            pasesAbonados = pases_abonados.map( ( element ) =>{
+                
+                const { id_pase, id_socio, nombre_socio,
+                        cedula, descripcion, monto_pase,
+                        abonado, estado_pase_socio, nombre_club } = element;
+                
+                return  {
+                    idPase : id_pase,
+                    idSocio : id_socio,
+                    nombreSocio : nombre_socio,
+                    cedula,
+                    descripcion,
+                    montoPase : monto_pase,
+                    abonado,
+                    estadoPaseSocio : estado_pase_socio,
+                    nombreClub : nombre_club
+                };
+            } );
+
             res.status( 200 ).json(
 
                 {
                     status : true,
                     msj : 'Pases pendientes de pagos',
                     cantidad : pases_pendientes.length,
-                    pases_pendientes
+                    pasesAbonados
                 }
             );
 
@@ -201,9 +244,10 @@ const obtener_pases_completados = async ( req = request, res = response ) =>{
 
 const abonar_pase_jugador = async ( req = request, res = response ) =>{
 
-    const { idPaseEditar, montoAbonado, descripcionNueva, 
+    const { id_pase } = req.params;
+    const { montoAbonado, descripcionNueva, 
             idClubNuevo, docAdjuntado } = req.body 
-    
+    const idPaseEditar = id_pase;
     try {
         const club_habilitado = await verificar_club_destino ( idClubNuevo );
 
@@ -223,7 +267,7 @@ const abonar_pase_jugador = async ( req = request, res = response ) =>{
                                                                             }
                                                                         });
         
-            } else if ( monto_abonado === 0 ){
+            } else if ( montoAbonado === 0 ){
                 // SI BRINDO LOS DOCUMENTOS PERO NO ABONO
                 registro_actualizado = await prisma.pases_socio.update ( {
                                                                             where : {
@@ -249,10 +293,12 @@ const abonar_pase_jugador = async ( req = request, res = response ) =>{
                                                                             }
                                                                         });
             }
+            console.log( registro_actualizado );
+            //const {  } = registro_actualizado;
             res.status( 200 ).json({
                 status : true,
                 msg : "Fichaje Actualizado",
-                registro_actualizado
+                registroActualizado : registro_actualizado
             });  
         
         } else {
@@ -280,18 +326,26 @@ const obtener_clubes_disponibles = async ( req = request, res = response ) =>{
 
         const clubes_disponibles = await prisma.clubes_habilitados.findMany( { where : { esta_habilitado : true } } );
 
-
+        const clubesDisponibles = clubes_disponibles.map( ( element ) =>{
+            const { creadoen, esta_habilitado, nombre_club_habilitado, id_club_habilitado } = element;
+            return {
+                creadoEn : creadoen,
+                nombreClub : nombre_club_habilitado,
+                idClubHabilidado : id_club_habilitado,
+            }
+        
+        } );
         res.status( 200 ).json({
             status : true,
-            msg : "Fichaje Actualizado",
-            clubesDisponibles : clubes_disponibles
+            msg : "Clubes Disponibles",
+            clubesDisponibles
         });  
         
     } catch (error) {
         console.log( error );
         res.status( 500 ).json({
             status : false,
-            msg : "No se pudo actualizar el fichaje ",
+            msg : "No se pudo obtener la lista de clubes disponibles",
             //error
         });  
     }
@@ -299,10 +353,97 @@ const obtener_clubes_disponibles = async ( req = request, res = response ) =>{
 }
 
 
+
+const obtener_todos_los_clubes = async ( req = request, res = response ) =>{
+
+    
+    try {
+
+        const clubes_disponibles = await prisma.clubes_habilitados.findMany( );
+
+        const clubesDisponibles = clubes_disponibles.map( ( element ) =>{
+            const { creadoen, esta_habilitado, nombre_club_habilitado, id_club_habilitado } = element;
+            return {
+                creadoEn : creadoen,
+                nombreClub : nombre_club_habilitado,
+                idClubHabilidado : id_club_habilitado,
+            }
+        
+        } );
+        res.status( 200 ).json({
+            status : true,
+            msg : "todos los Clubes",
+            clubesDisponibles
+        });  
+        
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json({
+            status : false,
+            msg : "No se pudo obtener la lista de clubes ",
+            //error
+        });  
+    }
+
+}
+
+const eliminar_club_habilitado = async ( req = request, res = response )=>{
+
+    try {
+        
+        const { id_club } = req.params;
+        const club_deshabilitado  = await prisma.clubes_habilitados.update( { 
+                                                                                where : { id_club_habilitado : id_club },
+                                                                                data : { esta_habilitado : false }
+                                                                            
+                                                                            } );
+
+        const { nombre_club_habilitado, id_club_habilitado } = club_deshabilitado;
+
+        if ( club_deshabilitado === null || club_deshabilitado === undefined ) {
+            res.status( 400 ).json({
+                status : true,
+                msg : "No se pudo eliminar el club solicitado",
+                clubDeshabilitado : {
+                    //nombreClubHabilitado : nombre_club_habilitado,
+                    idClubHabilitado : id_club
+                }
+                //error
+            });    
+            
+        } else {
+            res.status( 200 ).json({
+                status : true,
+                msg : "Club eliminado",
+                clubDeshabilitado : {
+                    nombreClubHabilitado : nombre_club_habilitado,
+                    idClubHabilitado : id_club_habilitado
+                }
+                //error
+            });    
+        }
+
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json({
+            status : false,
+            msg : "No se pudo eliminar al club",
+            //error
+        });
+    }
+
+}
+
+
+
+
+
 module.exports = {
     abonar_pase_jugador,
     generar_pase_jugador,
     obtener_pases_completados,
     obtener_pases_pendientes,
-    obtener_clubes_disponibles
+    obtener_clubes_disponibles,
+    obtener_todos_los_clubes,
+    eliminar_club_habilitado
 }
