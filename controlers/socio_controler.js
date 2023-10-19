@@ -21,7 +21,7 @@ const crear_socio = async ( req = request, res = response ) => {
 
     try {
         //console.log ( req.body)
-        const { nombre, apellido, fechaNacimiento, cedula,
+        const { nombre, apellido, fechaNacimiento, cedula, estadoSocio,
                 correo, numeroTel, direccion, ruc, tipoSocio,
                 contraseña, nombreUsuario, idAcceso } = req.body;
         
@@ -101,11 +101,18 @@ const crear_socio = async ( req = request, res = response ) => {
                 msj : 'Socio Creado',
                 socio : {
                     idSocio : idSocioConvert,
-                    nombreCmp : nombre_cmp, 
+                    tipoSocio,
+                    //nombreCmp : nombre_cmp,
+                    numeroTel,
+                    nombre,
+                    apellido,
+                    fechaNacimiento,
                     cedula,
                     //correoElectronico : correo_electronico, 
-                    creadoEn : creadoen, 
-                    //estadoSocio : estado_socio,
+                    creadoEn : creadoen,
+                    nombreUsuario,
+                    contraseña, 
+                    estadoSocio : estado_socio,
                     direccionSocio : direccion_socio
                 }
             }
@@ -131,12 +138,16 @@ const crear_socio = async ( req = request, res = response ) => {
 
 const actualizar_socio = async ( req = request, res = response ) => {
 
-    const { correo, numeroTel, estadoSocio, direccion } = req.body;
+    //const { correo, numeroTel, estadoSocio, direccion } = req.body;
     //console.log( correoNuevo, telefonoNuevo, rucNuevo, estadoSocio, direccionNuevo );
     const { id_socio } = req.params;
     //console.log( id );
-    const direccionNuevo = direccion;
+    //const direccionNuevo = direccion;
     try {
+        const { nombre, apellido, fechaNacimiento, cedula, estadoSocio,
+            correo, numeroTel, direccion, ruc, tipoSocio,
+            contraseña, nombreUsuario, idAcceso } = req.body;
+        const rucNuevo = ruc ;
         //------------------------------------------------------------------------------------------
         /*const socio_actualizado = prisma.$executeRaw`UPDATE public.socio
                                                             SET correo_electronico=${correo}, 
@@ -151,24 +162,36 @@ const actualizar_socio = async ( req = request, res = response ) => {
 
                                                                     editadoen : fecha_socio_actualizado,
                                                                     correo_electronico : correo,
+                                                                    id_acceso_socio : idAcceso,
+                                                                    contrasea : contraseña,
+                                                                    nombre_usuario : nombreUsuario,
+                                                                    ruc : rucNuevo,
+                                                                    tipo_socio : tipoSocio,
                                                                     numero_telefono : numeroTel,
                                                                     estado_socio : estadoSocio,
                                                                     direccion : direccionNuevo
                                                                 }
                                                             } );
         //console.log( socio_actualizado );
-        const { editadoen, correo_electronico, telefono, ruc, estado_socio, direccion, nombre_cmp } = socio_actualizado;
+        const { editadoen, correo_electronico, telefono, estado_socio, nombre_cmp } = socio_actualizado;
         res.status( 200 ).json({
             status : true,
             msj : 'Socio Actualizado con exito',
             socio : {
-                editadoEn : editadoen, 
-                correoElectronico : correo_electronico, 
-                telefono, 
-                ruc,
-                estadoSocio : estado_socio, 
-                direccion,
-                nombreCmp : nombre_cmp
+                idSocio : idSocioConvert,
+                tipoSocio,
+                //nombreCmp : nombre_cmp,
+                numeroTel,
+                nombre,
+                apellido,
+                fechaNacimiento,
+                cedula,
+                //correoElectronico : correo_electronico, 
+                creadoEn : creadoen,
+                nombreUsuario,
+                contraseña, 
+                estadoSocio : estado_socio,
+                direccionSocio : direccion_socio
             }
 
         });        
@@ -190,8 +213,7 @@ const borrar_socio = async ( req = request, res = response ) => {
 
     // SE IMPLEMENTA EL BORRADO DEL SOCIO ACTUALIZANDO NADA MAS CIERTOS CAMPOS DE LA TABLA
     const { id_socio } = req.params;
-    //console.log( id );
-    //const { estadoSocio, correoElectronico, numeroTel, ruc } = req.body;
+    const socio_eliminado = id_socio;
 
     try {
         //----------------------------------------------------------------------------
@@ -207,7 +229,7 @@ const borrar_socio = async ( req = request, res = response ) => {
                                                                     estado_socio : estados_socio.eliminado.id_estado,
                                                                     editadoen : fecha_edicion
                                                                 },
-                                                                where : { id_socio }
+                                                                where : { id_socio : Number(socio_eliminado) }
                                                             } );
         const { editadoen, direccion, correo_electronico, 
                 numero_telefono, estado_socio, ruc,
@@ -218,14 +240,21 @@ const borrar_socio = async ( req = request, res = response ) => {
 
                 status : true,
                 msj : 'Socio Borrado',
-                socio_borrado : {
-                    editadoEn : editadoen, 
-                    direccion, 
-                    correoElectronico : correo_electronico, 
-                    numeroTel : numero_telefono, 
-                    estadoSocio : estado_socio, 
-                    ruc,
-                    nombreSocio : nombre_cmp
+                socioBorrado : {
+                    idSocio : idSocioConvert,
+                    tipoSocio,
+                    //nombreCmp : nombre_cmp,
+                    numeroTel,
+                    nombre,
+                    apellido,
+                    fechaNacimiento,
+                    cedula,
+                    //correoElectronico : correo_electronico, 
+                    creadoEn : creadoen,
+                    nombreUsuario,
+                    contraseña, 
+                    estadoSocio : estado_socio,
+                    direccionSocio : direccion_socio
                 }
 
             }
@@ -263,8 +292,8 @@ const obtener_socios = async ( req = request, res = response ) => {
                                                     A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO, A.CEDULA,
                                                     B.CORREO_ELECTRONICO AS CORREO, B.DIRECCION AS DIRECCION,
                                                     CAST ( B.ID_SOCIO AS INTEGER ) AS idSocio, B.RUC AS RUC,
-                                                    B.CREADOEN,
-                                                    A.FECHA_NACIMIENTO AS FECHA_NACIMIENTO, C.ID_TIPO_SOCIO,
+                                                    B.CREADOEN, B.CONTRASEA, B.NOMBRE_USUARIO AS USUARIO,
+                                                    A.FECHA_NACIMIENTO AS FECHA_NACIMIENTO,CAST ( C.ID_TIPO_SOCIO AS INTEGER ) as id_tipo_socio,
                                                     C.DESC_TIPO_SOCIO AS descTipoSocio, B.NUMERO_TELEFONO AS numeroTel 
                                                     /*B.ESTADO_SOCIO AS estadoSocio*/
                                                 FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
@@ -285,22 +314,25 @@ const obtener_socios = async ( req = request, res = response ) => {
 
                 const { nombresocio, cedula, idsocio, nombre, apellido,
                         tipo_socio, numerotel, estadosocio, ruc, creadoen, 
+                        contrasea, nombre_usuario,
                         id_tipo_socio, fecha_nacimiento, direccion, correo } = element;
                 
                 
                 return {
-                    nombreCmp : nombresocio,
+                    //nombreCmp : nombresocio,
                     idSocio : idsocio,
+                    contraseña : contrasea,
+                    nombreUsuario : nombre_usuario,
                     //descTipoSocio : desctiposocio,
-                    //nombre,
-                    //apellido,
-                    //tipoSocio : id_tipo_socio,
-                    //numeroTel : numerotel,
+                    nombre,
+                    apellido,
+                    tipoSocio : id_tipo_socio,
+                    numeroTel : numerotel,
                     //estadoSocio : estadosocio,
                     creadoEn : creadoen,
                     cedula,
                     //id_tipo_socio,
-                    //fechaNacimiento :fecha_nacimiento ,
+                    fechaNacimiento :fecha_nacimiento ,
                     direccionSocio : direccion,
                     //correo,
                     //ruc
@@ -318,6 +350,7 @@ const obtener_socios = async ( req = request, res = response ) => {
  
 
     } catch (error) {
+        console.log( error );
         res.status( 500 ).json({
             status: false,
             msg: 'No se pudo obtener la informacion de los socios del club',
