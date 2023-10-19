@@ -24,6 +24,7 @@ const crear_socio = async ( req = request, res = response ) => {
         const { nombre, apellido, fechaNacimiento, cedula,
                 correo, numeroTel, direccion, ruc, tipoSocio,
                 contraseña, nombreUsuario, idAcceso } = req.body;
+        
 
         //console.log ( nombre, apellido, fecha_nacimiento );
         //convertir la fecha de nacimiento a fecha
@@ -88,18 +89,23 @@ const crear_socio = async ( req = request, res = response ) => {
                                                             } 
                                                     
                                                     } );
-        const { nombre_cmp, correo_electronico, creadoen, estado_socio  } = nuevo_socio;
+        const { id_socio, nombre_cmp, correo_electronico, creadoen, estado_socio  } = nuevo_socio;
         const direccion_socio = nuevo_socio.direccion;
+
+        const idSocioConvert = typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio;
+        //console.log( idSocioConvert );
         res.status( 200 ).json(
             {
 
                 status : true,
                 msj : 'Socio Creado',
-                socio_nuevo : {
+                socio : {
+                    idSocio : idSocioConvert,
                     nombreCmp : nombre_cmp, 
-                    correoElectronico : correo_electronico, 
+                    cedula,
+                    //correoElectronico : correo_electronico, 
                     creadoEn : creadoen, 
-                    estadoSocio : estado_socio,
+                    //estadoSocio : estado_socio,
                     direccionSocio : direccion_socio
                 }
             }
@@ -257,6 +263,7 @@ const obtener_socios = async ( req = request, res = response ) => {
                                                     A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO, A.CEDULA,
                                                     B.CORREO_ELECTRONICO AS CORREO, B.DIRECCION AS DIRECCION,
                                                     CAST ( B.ID_SOCIO AS INTEGER ) AS idSocio, B.RUC AS RUC,
+                                                    B.CREADOEN,
                                                     A.FECHA_NACIMIENTO AS FECHA_NACIMIENTO, C.ID_TIPO_SOCIO,
                                                     C.DESC_TIPO_SOCIO AS descTipoSocio, B.NUMERO_TELEFONO AS numeroTel 
                                                     /*B.ESTADO_SOCIO AS estadoSocio*/
@@ -277,25 +284,26 @@ const obtener_socios = async ( req = request, res = response ) => {
             const sociosFormateados = socios.map( ( element ) =>{
 
                 const { nombresocio, cedula, idsocio, nombre, apellido,
-                        tipo_socio, numerotel, estadosocio, ruc, 
+                        tipo_socio, numerotel, estadosocio, ruc, creadoen, 
                         id_tipo_socio, fecha_nacimiento, direccion, correo } = element;
                 
                 
                 return {
-                    //nombreSocio : nombresocio,
-                    //idSocio : idsocio,
+                    nombreCmp : nombresocio,
+                    idSocio : idsocio,
                     //descTipoSocio : desctiposocio,
-                    nombre,
-                    apellido,
-                    tipoSocio : id_tipo_socio,
-                    numeroTel : numerotel,
-                    estadoSocio : estadosocio,
+                    //nombre,
+                    //apellido,
+                    //tipoSocio : id_tipo_socio,
+                    //numeroTel : numerotel,
+                    //estadoSocio : estadosocio,
+                    creadoEn : creadoen,
                     cedula,
                     //id_tipo_socio,
-                    fechaNacimiento :fecha_nacimiento ,
-                    direccion,
-                    correo,
-                    ruc
+                    //fechaNacimiento :fecha_nacimiento ,
+                    direccionSocio : direccion,
+                    //correo,
+                    //ruc
                 };
               });
 
@@ -353,9 +361,9 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
                     nombreSocio : nombresocio,
                     cedula,
                     idSocio : idsocio,
-                    numeroTel : numerotelefono,
+                    //numeroTel : numerotelefono,
                     estadoSocio : estadosocio,
-                    descTipoSocio : desctiposocio
+                    //descTipoSocio : desctiposocio
                 } );
             });
             res.status(200).json({
