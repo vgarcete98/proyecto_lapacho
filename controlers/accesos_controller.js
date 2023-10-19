@@ -8,11 +8,18 @@ const prisma = new PrismaClient();
 const obtener_accesos = async ( req = request, res = response ) => {
 
     try {
-        const accesos = await prisma.$queryRaw`select CAST ( id_acceso AS INTEGER ) AS id_acceso, 
+        const accesos_para_usuarios = await prisma.$queryRaw`select CAST ( id_acceso AS INTEGER ) AS id_acceso, 
                                                         CAST ( id_rol_usuario AS INTEGER ) AS id_rol_usuario , 
                                                     descripcion_acceso
                                                 from accesos_usuario;`;
 
+        const accesos = accesos_para_usuarios.map( ( element )=>{
+            const { id_acceso, descripcion_acceso } = element;
+            return {
+                idAcceso : id_acceso,
+                descripcionAcceso : descripcion_acceso
+            }
+        } )
         res.status( 200 ).json(
             {
                 status : true,
