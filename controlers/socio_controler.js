@@ -92,7 +92,7 @@ const crear_socio = async ( req = request, res = response ) => {
         const { id_socio, nombre_cmp, correo_electronico, creadoen, estado_socio  } = nuevo_socio;
         const direccion_socio = nuevo_socio.direccion;
 
-        const idSocioConvert = typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio;
+        const idSocioConvert = (typeof id_socio === 'bigint') ? Number(id_socio.toString()) : id_socio;
         //console.log( idSocioConvert );
         res.status( 200 ).json(
             {
@@ -232,29 +232,38 @@ const borrar_socio = async ( req = request, res = response ) => {
                                                                 where : { id_socio : Number(socio_eliminado) }
                                                             } );
         const { editadoen, direccion, correo_electronico, 
-                numero_telefono, estado_socio, ruc,
-                nombre_cmp } = socio_actualizado;
-        res.status( 200 ).json(
+                numero_telefono, estado_socio, ruc, id_persona,
+                nombre_cmp, id_socio, id_tipo_socio, nombre_usuario, contrasea } = socio_actualizado;
+        const idSocioConvert = (typeof id_socio === 'bigint') ? Number(id_socio.toString()) : id_socio;
+        const tipoSocioConvert = (typeof id_tipo_socio === 'bigint') ? Number(id_tipo_socio.toString()) : id_tipo_socio;
+        const [ nombre, apellido ] = nombre_cmp.split( ' ' );
 
+        //-------------------------------------------------------------------------------
+        const id_persona_convert = (typeof id_persona === 'bigint') ? Number(id_persona.toString()) : id_persona;
+        const { fecha_nacimiento, cedula } = await prisma.persona.findUnique( { where : { id_persona : id_persona_convert } } )
+        const cedula_convert = cedula;
+        //-------------------------------------------------------------------------------        
+
+        res.status( 200 ).json(
             {
 
                 status : true,
                 msj : 'Socio Borrado',
                 socioBorrado : {
                     idSocio : idSocioConvert,
-                    tipoSocio,
+                    tipoSocio : tipoSocioConvert,
                     //nombreCmp : nombre_cmp,
-                    numeroTel,
+                    numeroTel : numero_telefono,
                     nombre,
                     apellido,
-                    fechaNacimiento,
-                    cedula,
+                    fechaNacimiento : fecha_nacimiento,
+                    cedula : cedula_convert,
                     //correoElectronico : correo_electronico, 
-                    creadoEn : creadoen,
-                    nombreUsuario,
-                    contraseña, 
+                    //creadoEn : creadoen,
+                    nombreUsuario : nombre_usuario,
+                    contraseña : contrasea, 
                     estadoSocio : estado_socio,
-                    direccionSocio : direccion_socio
+                    direccionSocio : direccion
                 }
 
             }
