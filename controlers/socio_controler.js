@@ -253,10 +253,13 @@ const obtener_socios = async ( req = request, res = response ) => {
 
     //SE OBTIENEN TODOS LOS SOCIOS DEL CLUB YA SEA ACTIVOS, ELIMINADOS, SUSPENDIDOS
     try {
-        const socios = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocio, A.CEDULA, 
-                                                    CAST ( B.ID_SOCIO AS INTEGER ) AS idSocio,
-                                                    C.DESC_TIPO_SOCIO AS descTipoSocio, B.NUMERO_TELEFONO AS numeroTel , 
-                                                    B.ESTADO_SOCIO AS estadoSocio 
+        const socios = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocioCmp, 
+                                                    A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO, A.CEDULA,
+                                                    B.CORREO_ELECTRONICO AS CORREO, B.DIRECCION AS DIRECCION,
+                                                    CAST ( B.ID_SOCIO AS INTEGER ) AS idSocio, B.RUC AS RUC,
+                                                    A.FECHA_NACIMIENTO AS FECHA_NACIMIENTO, C.ID_TIPO_SOCIO,
+                                                    C.DESC_TIPO_SOCIO AS descTipoSocio, B.NUMERO_TELEFONO AS numeroTel 
+                                                    /*B.ESTADO_SOCIO AS estadoSocio*/
                                                 FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
                                                 JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO`;
 
@@ -273,16 +276,26 @@ const obtener_socios = async ( req = request, res = response ) => {
 
             const sociosFormateados = socios.map( ( element ) =>{
 
-                const { nombresocio, cedula, idsocio, desctiposocio, numerotel, estadosocio } = element;
+                const { nombresocio, cedula, idsocio, nombre, apellido,
+                        tipo_socio, numerotel, estadosocio, ruc, 
+                        id_tipo_socio, fecha_nacimiento, direccion, correo } = element;
                 
                 
                 return {
-                    nombreSocio : nombresocio,
-                    idSocio : idsocio,
-                    descTipoSocio : desctiposocio,
+                    //nombreSocio : nombresocio,
+                    //idSocio : idsocio,
+                    //descTipoSocio : desctiposocio,
+                    nombre,
+                    apellido,
+                    tipoSocio : id_tipo_socio,
                     numeroTel : numerotel,
                     estadoSocio : estadosocio,
-                    cedula
+                    cedula,
+                    //id_tipo_socio,
+                    fechaNacimiento :fecha_nacimiento ,
+                    direccion,
+                    correo,
+                    ruc
                 };
               });
 
