@@ -84,7 +84,8 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                 estado_socio : estados_socio.activo.id_estado,
                                                                 contrasea : contraseña,
                                                                 nombre_usuario : nombreUsuario,
-                                                                id_acceso_socio : idAcceso
+                                                                id_acceso_socio : idAcceso,
+                                                                tipo_usuario : ''
 
                                                             } 
                                                     
