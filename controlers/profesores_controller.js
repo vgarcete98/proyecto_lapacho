@@ -19,7 +19,23 @@ const estadosProfesor = {
 const obtener_nomina_profesores = async ( req = request, res = response ) =>{
 
     try {
-        const todos_los_profesores = await prisma.profesores.findMany( );
+
+        const { cantidad, omitir } = req.query;
+
+        var todos_los_profesores;
+        console.log( cantidad, omitir )
+        if ( cantidad === undefined && omitir === undefined ) {
+
+            todos_los_profesores = await prisma.profesores.findMany();
+        } else {
+            todos_los_profesores = await prisma.profesores.findMany(
+                                                                { 
+                                                                    skip : Number( omitir ),
+                                                                    take : Number( cantidad )
+                                                                }
+                                                            );    
+        }
+
         
         let profesoresFormateado = [];
         todos_los_profesores.forEach( ( elemento )=>{

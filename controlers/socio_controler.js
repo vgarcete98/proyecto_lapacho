@@ -28,8 +28,8 @@ const crear_socio = async ( req = request, res = response ) => {
 
         //console.log ( nombre, apellido, fecha_nacimiento );
         //convertir la fecha de nacimiento a fecha
-        const fecha_db = generar_fecha( fechaNacimiento );
-
+        const fecha_db = generar_fecha( fechaNacimiento);
+        console.log( fecha_db );
         //primero debo de crear una persona y el sgte codigo devuelve el id de la persona creada
 
         //------------------------------------------------------------------------------------------
@@ -298,7 +298,13 @@ const obtener_socios = async ( req = request, res = response ) => {
 
     //SE OBTIENEN TODOS LOS SOCIOS DEL CLUB YA SEA ACTIVOS, ELIMINADOS, SUSPENDIDOS
     try {
-        const socios = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocioCmp, 
+
+        const { cantidad, omitir } = req.query;
+
+        var socios;
+        console.log( cantidad, omitir )
+        if ( cantidad === undefined && omitir === undefined ) {
+            socios = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocioCmp, 
                                                     A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO, A.CEDULA,
                                                     B.CORREO_ELECTRONICO AS CORREO, B.DIRECCION AS DIRECCION,
                                                     CAST ( B.ID_SOCIO AS INTEGER ) AS idSocio, B.RUC AS RUC,
@@ -308,6 +314,21 @@ const obtener_socios = async ( req = request, res = response ) => {
                                                     /*B.ESTADO_SOCIO AS estadoSocio*/
                                                 FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
                                                 JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO`;
+        }else {
+            socios = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocioCmp, 
+                                                    A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO, A.CEDULA,
+                                                    B.CORREO_ELECTRONICO AS CORREO, B.DIRECCION AS DIRECCION,
+                                                    CAST ( B.ID_SOCIO AS INTEGER ) AS idSocio, B.RUC AS RUC,
+                                                    B.CREADOEN, B.CONTRASEA, B.NOMBRE_USUARIO AS USUARIO,
+                                                    A.FECHA_NACIMIENTO AS FECHA_NACIMIENTO,CAST ( C.ID_TIPO_SOCIO AS INTEGER ) as id_tipo_socio,
+                                                    C.DESC_TIPO_SOCIO AS descTipoSocio, B.NUMERO_TELEFONO AS numeroTel 
+                                                    /*B.ESTADO_SOCIO AS estadoSocio*/
+                                                FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
+                                                JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
+                                                LIMIT ${ Number(cantidad) } 
+                                                OFFSET ${ Number(omitir) }`;
+        }
+
 
 
         if ( socios.length === 0 ){
