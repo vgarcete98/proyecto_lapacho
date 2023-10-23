@@ -302,7 +302,7 @@ const obtener_socios = async ( req = request, res = response ) => {
         const { cantidad, omitir } = req.query;
 
         var socios;
-        console.log( cantidad, omitir )
+        //console.log( cantidad, omitir )
         if ( cantidad === undefined && omitir === undefined ) {
             socios = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocioCmp, 
                                                     A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO, A.CEDULA,
@@ -350,23 +350,17 @@ const obtener_socios = async ( req = request, res = response ) => {
                 
                 
                 return {
-                    //nombreCmp : nombresocio,
                     idSocio : idsocio,
                     contraseña : contrasea,
                     nombreUsuario : nombre_usuario,
-                    //descTipoSocio : desctiposocio,
                     nombre,
                     apellido,
                     tipoSocio : id_tipo_socio,
                     numeroTel : numerotel,
-                    //estadoSocio : estadosocio,
                     creadoEn : creadoen,
                     cedula,
-                    //id_tipo_socio,
                     fechaNacimiento :fecha_nacimiento ,
                     direccionSocio : direccion,
-                    //correo,
-                    //ruc
                 };
               });
 
@@ -454,58 +448,90 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
 
 
 
-const obtener_socio_cedula = async ( req = request, res = response ) =>{
-
-    //console.log( req.query );
-    //const { cedula } = req.query;
-    const { socio_cedula } = req.query;
-    console.log( socio_cedula )
+const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
 
     try {
 
+        const { busqueda } = req.query;
         //------------------------------------------------------------------------------------------------
-        
-        //const socioPersona = await prisma.persona.findFirst( { where : { cedula : socio_cedula } } );
-        const socioPersona = await prisma.$queryRaw`SELECT CAST ( ID_PERSONA AS INTEGER ) AS ID_PERSONA 
+        //console.log( typeof(busqueda) );
+        var socioPersona;
+        if( Number( busqueda ) === NaN ){
+            // QUIERE DECIR QUE VINO UN STRING Y HAY QUE BUSCAR POR NOMBRE
+            //const socioPersona = await prisma.persona.findFirst( { where : { cedula : socio_cedula } } );
+            socioPersona = await prisma.$queryRaw`SELECT CAST ( ID_PERSONA AS INTEGER ) AS ID_PERSONA,
+                                                        FECHA_NACIMIENTO, CEDULA, NOMBRE, APELLIDO  
                                                         FROM  PERSONA 
-                                                    WHERE CEDULA = ${ socio_cedula }`;
+                                                    WHERE CAST ( CEDULA AS INTEGER ) = ${ busqueda }`;            
+        }else {
+
+            socioPersona = await prisma.$queryRaw`SELECT CAST ( ID_PERSONA AS INTEGER ) AS ID_PERSONA,
+                                                        FECHA_NACIMIENTO, CEDULA, NOMBRE, APELLIDO 
+                                                        FROM  PERSONA 
+                                                    WHERE CONCAT ( NOMBRE, ' ', APELLIDO) LIKE ${ busqueda }
+                                                    OR NOMBRE LIKE ${ busqueda }
+                                                    OR APELLIDO LIKE ${ busqueda }`;
+
+        }
+
         //------------------------------------------------------------------------------------------------       
         //console.log( socioPersona );
-        const [ primer_resultado,...resto ] = socioPersona;
-        const { id_persona } = primer_resultado;
-        
-        const socioCedula = await prisma.socio.findFirst( { where : { id_persona } } );
-        //console.log( socioCedula );
-
-        if ( socioCedula === null || socioCedula === undefined ){
-
+        if ( socioPersona.length === 0 ){
             res.status( 200 ).json( {
                 status : true,
-                msg : `No se logro encontrar al socio con cedula ${ socio_cedula }`,
-                socio : null
+                msg : `No se ha encontrado dicho resultado`,
+                //error
             } );
+        }else{
+            const [ primer_resultado,...resto ] = socioPersona;
+            //console.log( primer_resultado )
+            const { id_persona, fecha_nacimiento, cedula, nombre, apellido } = primer_resultado;
+            const idPersona = id_persona;
+            
+            const socioCedula = await prisma.socio.findFirst( { where : { id_persona : idPersona } } );
+            //console.log( socioCedula );
 
-        } else {
-            //nombre_cmp, correo_electronico, creadoen, estado_socio
-            const { id_socio, id_tipo_socio, nombre_cmp,
-                    estado_socio, id_persona, creadoen,
-                    correo_electronico, editadoen } = socioCedula;
+            if ( socioCedula === null || socioCedula === undefined ){
 
-            const socio = {
-                //idSocio : id_socio,
-                //idTipoSocio : id_tipo_socio,
-                nombreCmp : nombre_cmp,
-                estadoSocio : estado_socio,
-                creadoEn : creadoen,
-                correoElectronico : correo_electronico,
-                editadoEn : editadoen
-                //idPersona : id_persona
+                res.status( 200 ).json( {
+                    status : true,
+                    msg : `No se logro encontrar al socio`,
+                    //socio : null
+                } );
+
+            } else {
+                //nombre_cmp, correo_electronico, creadoen, estado_socio
+                const { direccion, numero_telefono, estado_socio, id_socio, 
+                        id_tipo_socio, nombre_usuario, contrasea } = socioCedula;
+
+                const [  idSocioConvert, idTipoSocioConvert ] = [ 
+                    typeof id_socio === 'bigint' ? id_socio.toString() : id_socio,
+                    typeof id_tipo_socio === 'bigint' ? id_tipo_socio.toString() : id_tipo_socio
+                ];
+
+                const [ nombreConvert, apellidoConvert, cedula_convert ] = [ nombre, apellido, cedula ];
+
+                const socio = {
+                        idSocio : idSocioConvert,
+                        tipoSocio : idTipoSocioConvert,
+                        //nombreCmp : nombre_cmp,
+                        numeroTel : numero_telefono,
+                        nombre : nombreConvert,
+                        apellido : apellidoConvert,
+                        fechaNacimiento : fecha_nacimiento,
+                        cedula : cedula_convert,
+                        nombreUsuario : nombre_usuario,
+                        contraseña : contrasea, 
+                        estadoSocio : estado_socio,
+                        direccionSocio : direccion
+                    }
+                res.status( 200 ).json( {
+                    status : true,
+                    msg : `Socio con cedula ${ cedula_convert }`,
+                    socio
+                } );            
             }
-            res.status( 200 ).json( {
-                status : true,
-                msg : `Socio con cedula ${ socio_cedula }`,
-                socio
-            } );
+
         }
 
 
@@ -589,5 +615,5 @@ module.exports = {
                     obtener_socios,
                     obtener_socios_detallados, 
                     borrar_socio,
-                    obtener_socio_cedula 
+                    obtener_socio_cedula_nombre 
                 };

@@ -7,7 +7,8 @@ const { actualizar_socio,
         obtener_socio, 
         obtener_socios,
         obtener_socios_detallados,
-        obtener_socio_cedula } = require( '../controlers/socio_controler' );
+        //obtener_socio_cedula, 
+        obtener_socio_cedula_nombre} = require( '../controlers/socio_controler' );
 
 const validar_token = require( '../middlewares/validar_token' );
 const validar_rol_usuario = require('../middlewares/validar_rol_usuario');
@@ -20,7 +21,7 @@ router_socio.get( '/',[ validar_token, validar_rol_usuario ], obtener_socios );
 
 router_socio.get( '/socios_detalle',[ validar_token, validar_rol_usuario ], obtener_socios_detallados );
 
-router_socio.get( '/socio_cedula',[ validar_token, validar_rol_usuario, ], obtener_socio_cedula )
+router_socio.get( '/socio_cedula/nombre',[ validar_token, validar_rol_usuario, ], obtener_socio_cedula_nombre )
 
 
 
