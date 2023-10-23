@@ -92,6 +92,62 @@ const obtener_nomina_profesores = async ( req = request, res = response ) =>{
 }
 
 
+const obtener_profesor_cedula_nombre = async ( req = request, res = response ) =>{
+
+    // VOY A OBTENER UN PROFESOR DADO SU ID
+
+    //const { id_profesor_cons } = req.params;
+
+    try {
+        const { busqueda } = req.query;
+        var profesor;
+        if( Number( busqueda ) === NaN ) {
+            profesor = await prisma.profesores.findFirst( { where : { cedula : Number(busqueda) } } );
+        }else {
+            profesor = await prisma.profesores.findFirst( { where : { nombre_profesor : { contains : busqueda } } } );
+        }
+        if ( profesor === null || profesor === undefined ) {
+
+            res.status( 200 ).json( {
+                status : false,
+                msg : "No se encontro el profesor mencionado",
+                profesor
+            } );
+
+        }else {
+            const { cedula, contacto_profesor, costo_x_hora, 
+                    creadoen, editadoen, estado_profesor, 
+                    id_profesor, nombre_profesor } = profesor;
+
+            const profesorFormateado = {
+                cedula,
+                contactoProfesor : contacto_profesor,
+                costoXHora : costo_x_hora,
+                creadoEn : creadoen,
+                editadoEn : editadoen,
+                estadoProfesor : estado_profesor,
+                idProfesor : id_profesor,
+                nombreProfe : nombre_profesor
+            }
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Profesor Buscado",
+                profesorFormateado
+            } );
+        } 
+
+    } catch (error) {
+        console.log ( error );
+        res.status( 5001 ).json( {
+            status : false,
+            msg : "No se pudo obtener el Profesor Buscado",
+        } );
+    }
+
+
+}
+
+
 
 const obtener_profesor = async ( req = request, res = response ) =>{
 
@@ -348,5 +404,6 @@ module.exports = {
     actualizar_profesor,
     eliminar_profesor,
     obtener_nomina_profesores,
-    obtener_profesor
+    obtener_profesor,
+    obtener_profesor_cedula_nombre
 }
