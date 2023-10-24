@@ -101,11 +101,21 @@ const obtener_profesor_cedula_nombre = async ( req = request, res = response ) =
     try {
         const { busqueda } = req.query;
         var profesor;
-        if( Number( busqueda ) === NaN ) {
-            profesor = await prisma.profesores.findFirst( { where : { cedula : Number(busqueda) } } );
+        //console.log( typeof( busqueda ), busqueda );
+        if( Number( busqueda ) === NaN || typeof( busqueda ) === 'string') {
+            //console.log( typeof( busqueda ), busqueda );
+            profesor = await prisma.profesores.findFirst( { where : { 
+                                                                        OR : [
+                                                                                { nombre_profesor : { startsWith : busqueda, mode: 'insensitive' } },
+                                                                                { nombre_profesor : { endsWith : busqueda, mode: 'insensitive' } },
+                                                                                { nombre_profesor : { contains : busqueda, mode: 'insensitive' } }
+                                                                            ]
+                                                                    } 
+                                                        } ); 
         }else {
-            profesor = await prisma.profesores.findFirst( { where : { nombre_profesor : { contains : busqueda } } } );
-        }
+            profesor = await prisma.profesores.findFirst( { where : { cedula : busqueda } } );
+
+       }
         if ( profesor === null || profesor === undefined ) {
 
             res.status( 200 ).json( {
