@@ -1,5 +1,5 @@
 const { request, response } = require('express')
-
+//const multer = require( 'multer' );
 const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient();
@@ -19,11 +19,12 @@ const estadosProfesor = {
 const obtener_nomina_profesores = async ( req = request, res = response ) =>{
 
     try {
-
+        //console.log( req.file, req.body, req.files );
+        //const { originalname,  } = req.file;
         const { cantidad, omitir } = req.query;
 
         var todos_los_profesores;
-        console.log( cantidad, omitir )
+        //console.log( cantidad, omitir )
         if ( cantidad === undefined && omitir === undefined ) {
 
             todos_los_profesores = await prisma.profesores.findMany();

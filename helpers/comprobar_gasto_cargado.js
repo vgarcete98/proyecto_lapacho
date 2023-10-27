@@ -6,7 +6,9 @@ const prisma = new PrismaClient();
 const comprobar_gasto_cargado = async ( req = request, res = response, next )=> {
 
     const { nroFactura } = req.body;
-
+    //console.log( req.body, req.files, req.file )
+    //console.log( req )
+    //console.log( nroFactura )
     try {
         const gasto_cargado = await prisma.gastos_club.findFirst( { where : { nro_factura : nroFactura } } );
 
@@ -25,7 +27,7 @@ const comprobar_gasto_cargado = async ( req = request, res = response, next )=> 
                     descripcion , 
                     gastoCreadoEn : gastocreadoen, 
                     montoGasto : monto_gasto, 
-                    nroFactura : nroFactura
+                    nroFactura : nro_factura
                 }
             } );
 

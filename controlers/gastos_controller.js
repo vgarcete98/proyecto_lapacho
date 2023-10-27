@@ -1,7 +1,9 @@
 
-const { request, response } = require('express')
+const { request, response } = require('express');
 
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient } = require('@prisma/client');
+const path = require('path');
+const fs = require('fs');
 
 const prisma = new PrismaClient();
 
@@ -10,24 +12,30 @@ const prisma = new PrismaClient();
 
 const cargar_gasto_club = async ( req = request, res = response ) =>{
 
-    const { idTipoPago,
-            //idUsuario,
-            nroFactura,
-            descripcion,
-            montoGasto,
-            ingresoXegreso } = req.body;
-    
-    const { token_trad } = req;
-    //console.log( token_trad );
-    //const [ rol_usuario,...resto ] = token_trad;
-    const { id_usuario } = token_trad;
-    // VAMOS A DETERMINAR QUE HACER DEPENDIENDO DE LO QUE SE CARGUE EN EL CAMPO INGRESOxEGRESO
-    const idUsuarioTrad = id_usuario;
-    let nuevo_ingresoXegreso;
-    const fecha_creacion_gasto = new Date();
-    const descripcionGasto = descripcion;
+    req.headers['content-type'] = 'multipart/form-data';
     try {
+        const { idTipoPago,
+                //idUsuario,
+                nroFactura,
+                descripcion,
+                montoGasto,
+                ingresoXegreso } = req.body;
+    
+        const { token_trad } = req;
+        //console.log( token_trad );
+        //const [ rol_usuario,...resto ] = token_trad;
+        const { id_usuario } = token_trad;
+        // VAMOS A DETERMINAR QUE HACER DEPENDIENDO DE LO QUE SE CARGUE EN EL CAMPO INGRESOxEGRESO
+        const idUsuarioTrad = id_usuario;
+        let nuevo_ingresoXegreso;
+        const fecha_creacion_gasto = new Date();
+        const descripcionGasto = descripcion;
 
+        //----------------------------------------------------------------
+        //const { archivo } = req.file;
+        //console.log( req )
+        //console.log( req.file );
+        //----------------------------------------------------------------        
 
         if ( ingresoXegreso === true ){
             //VAMOS A HACER QUE SE TRABAJE EN BASE A BOOLEANOS
@@ -41,10 +49,10 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
                                                                 ${ monto_gasto }, ${ ingresoXegreso }, ${ false } )`;*/
             nuevo_ingresoXegreso = await prisma.gastos_club.create( { data : {
                                                                                 id_tipo_pago : idTipoPago,
-                                                                                id_usuario : idUsuarioTrad,
+                                                                                id_socio_gasto_club : idUsuarioTrad,
                                                                                 nro_factura : nroFactura,
                                                                                 descripcion : descripcionGasto,
-                                                                                monto_gasto : montoGasto,
+                                                                                monto_gasto : Number(montoGasto),
                                                                                 ingreso : ingresoXegreso,
                                                                                 egreso : false,
                                                                                 gastocreadoen : fecha_creacion_gasto,
@@ -63,10 +71,10 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
                                                                 ${ montoGasto }, ${ ingresoXegreso }, ${ true } )`;*/
             nuevo_ingresoXegreso = await prisma.gastos_club.create( { data : {
                                                                                 id_tipo_pago : idTipoPago,
-                                                                                id_usuario : idUsuarioTrad,
+                                                                                id_socio_gasto_club : idUsuarioTrad,
                                                                                 nro_factura : nroFactura,
                                                                                 descripcion : descripcionGasto,
-                                                                                monto_gasto : montoGasto,
+                                                                                monto_gasto : Number(montoGasto),
                                                                                 egreso : true,
                                                                                 ingreso : false,
                                                                                 gastocreadoen : fecha_creacion_gasto,
@@ -74,6 +82,42 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
                                                                             } 
                                                                     } );
             //------------------------------------------------------------------------------------------------------
+        }
+        if( req.file ){
+            //const directorio = path.dirname('../gastos_ingresos');
+            //console.log( directorio )
+            //console.log( path.join( __dirname) )
+            //console.log( ruta );
+            const { filename, destination, originalname } = req.file;
+            const { file } = req;
+            //console.log( destination )
+            const ruta = path.join( __dirname, '../gastos_ingresos' );
+            //console.log( file );
+
+            //fs.appendFileSync( ruta, filename );
+            const ruta_destino = ruta + `/${filename}`;
+            fs.rename(req.file.path, ruta_destino, 
+                (error) => {
+                if (error) {
+                    const mensaje = error.message;
+                    console.log( mensaje );
+                    //const error = new Error( mensaje );
+                    throw new Error( mensaje );
+                }
+            
+            });
+
+            /*
+            fs.writeFile( ruta , originalname, 
+                ( error_carga ) => {
+                    if ( error_carga ) {
+                        const mensaje = error_carga.message;
+                        console.log( mensaje );
+                        //const error = new Error( mensaje );
+                        throw new Error( mensaje );
+                    }
+            })*/
+            
         }
 
     
@@ -113,7 +157,7 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
                 }
             } );
         }
-    } catch (error) {
+    } catch ( error ) {
         console.log( error );
         res.status( 500 ).json( {
             status : false,
@@ -221,6 +265,7 @@ const editar_gasto_club = async ( req = request, res = response ) =>{
         //const [ rol_usuario,...resto ] = token_trad;
         const { id_usuario } = token_trad;
         const idUsuario = id_usuario;
+
         if ( nroFactura !== '' || nroFactura === undefined || nroFactura === null ){
             //----------------------------------------------------------------------------------------------------------------------
             /*gasto_editado = await prisma.$executeRaw`UPDATE public.gastos_club

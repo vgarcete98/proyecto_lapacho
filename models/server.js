@@ -3,6 +3,8 @@ const express = require( 'express' );
 
 const cors = require( 'cors' );
 
+//const multer = require( 'multer' );
+
 const rutas = require( '../routes/routes' );
 
 //----------------------------------------------------------------------------
@@ -41,12 +43,14 @@ class Server {
     middlewares (){
 
         //Modo de lectura de datos usando JSON
-        this.app.use( express.json() );
+        this.app.use( express.json( ) );
 
         //Agregando el paquete para peticiones desde cualquier lugar
         this.app.use( cors() );
         
         this.app.use( express.static( 'public' ) );
+
+        //this.app.use( multer )
 
     }
 
