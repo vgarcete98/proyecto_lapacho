@@ -107,6 +107,15 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
             
             });
 
+            const { id_pago_club } = nuevo_ingresoXegreso;
+            const id_gasto_convertido = typeof( id_pago_club ) === 'bigint' ? Number(id_pago_club.toString()) : id_pago_club;
+            const archivo_cargado = await prisma.gastos_club.update( { 
+                                                                        where : { id_pago_club : id_gasto_convertido },
+                                                                        data : {
+                                                                            comprobante_gasto : ruta_destino
+                                                                        }
+                                                                    } )
+
             /*
             fs.writeFile( ruta , originalname, 
                 ( error_carga ) => {
@@ -169,6 +178,44 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
 
 }
 
+
+const obtener_comprobante_gasto = async ( req = request, res = response ) =>{
+
+    try {
+        
+        const { id_gasto } = req.params;
+
+        const gasto = await prisma.gastos_club.findUnique( { where : { id_pago_club : id_gasto } } );
+        const { comprobante_gasto } = gasto;
+        
+        fs.readFile(comprobante_gasto, 'utf8', (err, data) => {
+            if (err) {
+              console.error( 'Error al leer el archivo:', err );
+              return;
+            }
+        });
+
+        res.status( 200 ).json( {
+            status : true,
+            archivo : data
+        } );
+
+
+    } catch (error) {
+
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'No se ha podido procesar la insercion del registro',
+            //error
+        } );
+        
+    }
+
+}
+
+
+
 const obtener_gastos_x_mes = async ( req = request, res = response ) =>{
 
     try {
@@ -177,7 +224,7 @@ const obtener_gastos_x_mes = async ( req = request, res = response ) =>{
                                                                                     WHEN B.INGRESO = TRUE THEN 'INGRESO'
                                                                                     ELSE 'EGRESO'
                                                                                 END AS INGRESOxEGRESO, CAST ( B.ID_PAGO_CLUB AS INTEGER ) AS ID_PAGO_CLUB
-                                            FROM USUARIO A JOIN GASTOS_CLUB B ON A.ID_USUARIO = B.ID_USUARIO
+                                            FROM SOCIO A JOIN GASTOS_CLUB B ON A.ID_SOCIO = B.ID_SOCIO_GASTO_CLUB
                                             WHERE EXTRACT ( MONTH FROM GASTOCREADOEN ) = EXTRACT( MONTH FROM CURRENT_DATE )
                                             AND B.GASTO_BORRADO = false`;
         
@@ -406,7 +453,8 @@ module.exports = {
     obtener_gastos_x_mes,
     cargar_gasto_club ,
     editar_gasto_club , 
-    borrar_gasto
+    borrar_gasto,
+    obtener_comprobante_gasto
 }
 
 

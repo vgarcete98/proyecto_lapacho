@@ -137,8 +137,34 @@ const obtener_roles = async ( req = request, res = response ) => {
 }
 
 
-module.exports = {  actualizar_rol, 
+
+const obtener_modulos_x_rol = async ( req = request, res = response ) => {
+
+    const modulos_x_rol = await prisma.$queryRaw`SELECT A.ID_ROL_USUARIO, A.DESCRIPCION_ROL, STRING_AGG(CONCAT(C.DESCRIPCION_MODULO, ':'),CONCAT(C.ID_MODULO,';')), STRING_AGG( D.descripcion_accion, ', ' )
+                                                    FROM ROLES_USUARIO A JOIN MODULOS_HABILITADOS_ROL B ON A.id_rol_usuario = B.id_rol_usuario_habilitado_acciones
+                                                    JOIN MODULOS C ON C.id_modulo = B.id_modulo
+                                                    JOIN ACCIONES D ON C.id_modulo = D.id_modulo_accion
+                                                GROUP BY A.ID_ROL_USUARIO, A.DESCRIPCION_ROL`;
+
+
+
+
+    res.status( 200 ).json(
+
+        {
+            status : true,
+            msj : 'Roles del sistema',
+            roles_usuario
+        }
+
+    );
+
+}
+
+module.exports = {  
+    actualizar_rol, 
     borrar_rol, 
     crear_rol, 
-    obtener_roles
+    obtener_roles,
+    obtener_modulos_x_rol
 };

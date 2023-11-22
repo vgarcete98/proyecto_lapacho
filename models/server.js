@@ -1,6 +1,8 @@
 
 const express = require( 'express' );
 
+const { request, response } = require('express')
+
 const cors = require( 'cors' );
 
 //const multer = require( 'multer' );
@@ -49,6 +51,18 @@ class Server {
         this.app.use( cors() );
         
         this.app.use( express.static( 'public' ) );
+
+        this.app.use(function( err, req , res , next ) {
+            
+            console.error(err.stack);
+            res.status(500).json( 
+                {
+                    status : false,
+                    msj : `Ha ocurrido un error en la aplicacion  ${ err }` ,
+                    //nuevo_tipo_socio
+                }
+         );
+        });
 
         //this.app.use( multer )
 

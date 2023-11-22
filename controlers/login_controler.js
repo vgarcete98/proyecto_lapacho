@@ -11,7 +11,7 @@ const { generar_token } = require( '../helpers/generar_token' )
 const login = async ( req = request, res = response )=> {
 
     const { usuario, contraseña } = req.body;
-    
+    //console.log( usuario, contraseña )
     try {
         const consulta_usuario = await prisma.$queryRaw`SELECT CAST ( id_socio AS INTEGER ) AS id_usuario, 
                                                                 CAST ( id_acceso_socio AS INTEGER ) AS id_acceso,
@@ -32,7 +32,7 @@ const login = async ( req = request, res = response )=> {
             //console.log ( consulta_usuario );
             const [ primer_resultado, ...resto ] = consulta_usuario;
             const { id_usuario, tipo_usuario, id_acceso } = primer_resultado;
-
+            //console.log( primer_resultado, resto );
             const token = await generar_token( id_usuario, id_acceso );
 
             const consulta_acceso = await prisma.accesos_usuario.findUnique( { where : { id_acceso  } } );

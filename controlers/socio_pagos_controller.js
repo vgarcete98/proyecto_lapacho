@@ -279,11 +279,42 @@ const realizar_pago_socio = async ( req = request, res = response ) => {
         } );
     }
 
-
-
 }
 
+const obtener_comprobante_pago_cuota = async ( req = request, res = response ) =>{
 
+    try {
+        
+        const { id_cuota } = req.params;
+
+        const pago_cuota = await prisma.pagos_socio.findUnique( { where : { id_pago_socio : id_cuota } } );
+        const { comprobante_cuota } = pago_cuota;
+        
+        fs.readFile(comprobante_cuota, 'utf8', (err, data) => {
+            if (err) {
+              console.error( 'Error al leer el archivo:', err );
+              return;
+            }
+        });
+
+        res.status( 200 ).json( {
+            status : true,
+            archivo : data
+        } );
+
+
+    } catch (error) {
+
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'No se ha podido procesar la insercion del registro',
+            //error
+        } );
+        
+    }
+
+}
 
 
 
@@ -292,7 +323,8 @@ module.exports = {
     obtener_pagos_x_mes,
     obtener_pagos_x_socio,
     obtener_cuotas_pendientes_x_socio,
-    realizar_pago_socio
+    realizar_pago_socio,
+    obtener_comprobante_pago_cuota
     
 }
 

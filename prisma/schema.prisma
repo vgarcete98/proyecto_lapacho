@@ -88,6 +88,7 @@ model gastos_club {
   ingreso             Boolean?   @default(false)
   egreso              Boolean?   @default(false)
   gasto_borrado       Boolean?
+  comprobante_gasto   String?    @db.VarChar(255)
   socio               socio      @relation(fields: [id_socio_gasto_club], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_gastos_club_fk")
   tipo_pagos          tipo_pagos @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "tipo_pagos_pagos_club_fk")
 }
@@ -113,12 +114,13 @@ model mesas {
 }
 
 model pagos_socio {
-  id_pago_socio  BigInt       @id(map: "pagos_socio_pk") @default(autoincrement())
-  id_cuota_socio BigInt
-  nro_factura    String       @db.VarChar(255)
-  monto_abonado  Int
-  fecha_pago     DateTime?    @db.Date
-  cuotas_socio   cuotas_socio @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_pagos_socio_fk")
+  id_pago_socio    BigInt       @id(map: "pagos_socio_pk") @default(autoincrement())
+  id_cuota_socio   BigInt
+  nro_factura      String       @db.VarChar(255)
+  monto_abonado    Int
+  fecha_pago       DateTime?    @db.Date
+  comprobante_pago String?      @db.VarChar(255)
+  cuotas_socio     cuotas_socio @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_pagos_socio_fk")
 }
 
 model pases_socio {
@@ -156,10 +158,11 @@ model reservas {
 }
 
 model roles_usuario {
-  id_rol_usuario     BigInt            @id(map: "roles_usuario_pk") @default(autoincrement())
-  descripcion_rol    String            @db.VarChar(255)
-  estado_rol_usuario Int?              @db.SmallInt
-  accesos_usuario    accesos_usuario[]
+  id_rol_usuario          BigInt                    @id(map: "roles_usuario_pk") @default(autoincrement())
+  descripcion_rol         String                    @db.VarChar(255)
+  estado_rol_usuario      Int?                      @db.SmallInt
+  accesos_usuario         accesos_usuario[]
+  modulos_habilitados_rol modulos_habilitados_rol[]
 }
 
 model socio {
@@ -269,4 +272,26 @@ model inscripciones_no_socios {
   estado_inscripcion            Int?               @db.SmallInt
   editadoen                     DateTime?          @db.Date
   calendario_eventos            calendario_eventos @relation(fields: [id_evento_calendario_no_socio], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_inscripciones_no_socios_fk")
+}
+
+model acciones {
+  id_accion          Int     @id(map: "id_accion") @default(autoincrement())
+  id_modulo_accion   Int
+  descripcion_accion String  @db.VarChar(255)
+  modulos            modulos @relation(fields: [id_modulo_accion], references: [id_modulo], onDelete: NoAction, onUpdate: NoAction, map: "modulos_acciones_fk")
+}
+
+model modulos {
+  id_modulo               Int                       @id(map: "id_modulo") @default(autoincrement())
+  descripcion_modulo      String                    @db.VarChar(255)
+  acciones                acciones[]
+  modulos_habilitados_rol modulos_habilitados_rol[]
+}
+
+model modulos_habilitados_rol {
+  id_modulo_habilitado               Int           @id(map: "modulos_habilitados_rol_pk") @default(autoincrement())
+  id_modulo                          Int
+  id_rol_usuario_habilitado_acciones BigInt
+  modulos                            modulos       @relation(fields: [id_modulo], references: [id_modulo], onDelete: NoAction, onUpdate: NoAction, map: "modulos_modulos_habilitados_rol_fk")
+  roles_usuario                      roles_usuario @relation(fields: [id_rol_usuario_habilitado_acciones], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_modulos_habilitados_fk")
 }

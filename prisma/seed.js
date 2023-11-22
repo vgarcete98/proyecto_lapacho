@@ -210,9 +210,7 @@ async function main() {
                                               } );
   //---------------------------------------------------------------------------------
 
-  //---------------------------------------------------------------------------------
-
-
+  
   //---------------------------------------------------------------------------------
 
   const profesores_creados = new Date();
@@ -292,6 +290,81 @@ async function main() {
                                                                             { nombre_club_habilitado : 'SALESIANO', esta_habilitado : true, creadoen : new Date() }
                                                                           ] 
                                                                       } );
+
+  const modulos = await prisma.modulos.createMany( { 
+                                                      data : [
+                                                        { descripcion_modulo : 'ACCESOS' },
+                                                        { descripcion_modulo : 'AGENDAR_CLASES' },
+                                                        { descripcion_modulo : 'CALENDARIO_EVENTOS' },
+                                                        { descripcion_modulo : 'GASTOS' },
+                                                        { descripcion_modulo : 'INSCRIPCIONES' },
+                                                        { descripcion_modulo : 'PAGO_CUOTAS' },
+                                                        { descripcion_modulo : 'PASES_JUGADORES' },
+                                                        { descripcion_modulo : 'PROFESORES' },
+                                                        { descripcion_modulo : 'RESERVAS' },
+                                                        { descripcion_modulo : 'ROLES' },
+                                                        { descripcion_modulo : 'SOCIOS' }
+                                                      ] 
+                                                  } );
+
+  const acciones = await prisma.acciones.createMany( { 
+                                                        data : [
+                                                          { id_modulo_accion : 1, descripcion_accion : 'CREAR' },
+                                                          { id_modulo_accion : 1, descripcion_accion : 'LISTAR' },                                                          
+                                                          { id_modulo_accion : 1, descripcion_accion : 'VER_ACCESOS_USR' },
+                                                          
+                                                          { id_modulo_accion : 2, descripcion_accion : 'OBTENER_CLASES' },
+                                                          { id_modulo_accion : 2, descripcion_accion : 'AGENDAR_CLASES' },
+                                                          { id_modulo_accion : 2, descripcion_accion : 'ELIMINAR_CLASES' },
+                                                          { id_modulo_accion : 2, descripcion_accion : 'ABONAR_CLASE' },
+                                                          { id_modulo_accion : 2, descripcion_accion : 'EDITAR_CLASE' },
+                                                          
+                                                          { id_modulo_accion : 3, descripcion_accion : 'OBTENER_EVENTOS' },
+                                                          { id_modulo_accion : 3, descripcion_accion : 'ASIGNAR_EVENTOS' },
+                                                          { id_modulo_accion : 3, descripcion_accion : 'BORRAR_EVENTOS' },
+                                                          { id_modulo_accion : 3, descripcion_accion : 'EDITAR_EVENTOS' },
+
+                                                          { id_modulo_accion : 4, descripcion_accion : 'OBTENER_GASTOS' },
+                                                          { id_modulo_accion : 4, descripcion_accion : 'EDITAR_GASTOS' },
+                                                          { id_modulo_accion : 4, descripcion_accion : 'CARGAR_GASTOS' },
+                                                          { id_modulo_accion : 4, descripcion_accion : 'BORRAR_GASTOS' },
+                                                          { id_modulo_accion : 4, descripcion_accion : 'OBTENER_COMPROBANTES' },
+
+                                                          { id_modulo_accion : 5, descripcion_accion : 'VER_INSCRIPCIONES' },
+                                                          { id_modulo_accion : 5, descripcion_accion : 'EDITAR_INSCRIPCIONES' },
+                                                          { id_modulo_accion : 5, descripcion_accion : 'ABONAR_INSCRIPCION' },
+                                                          { id_modulo_accion : 5, descripcion_accion : 'INSCRIBIRSE' },
+                                                          { id_modulo_accion : 5, descripcion_accion : 'INSCRIBIR_NO_SOCIO' },
+
+                                                          { id_modulo_accion : 6, descripcion_accion : 'VER_CUOTAS' },
+                                                          { id_modulo_accion : 6, descripcion_accion : 'VER_COMPROBANTE' },
+                                                          { id_modulo_accion : 6, descripcion_accion : 'HACER_PAGO' },
+
+                                                          { id_modulo_accion : 7, descripcion_accion : 'VER_PASES_JUGADORES' },
+                                                          { id_modulo_accion : 7, descripcion_accion : 'CREAR_PASES_JUGADORES' },
+                                                          { id_modulo_accion : 7, descripcion_accion : 'EDITAR_PASES_JUGADORES' },
+                                                          { id_modulo_accion : 7, descripcion_accion : 'BORRAR_PASES_JUGADORES' },
+
+                                                          { id_modulo_accion : 8, descripcion_accion : 'CREAR_PROFESORES' },
+                                                          { id_modulo_accion : 8, descripcion_accion : 'VER_PROFESORES' },
+                                                          { id_modulo_accion : 8, descripcion_accion : 'EDITAR_PROFESORES' },
+                                                          { id_modulo_accion : 8, descripcion_accion : 'BORRAR_PROFESORES' },
+
+                                                          { id_modulo_accion : 9, descripcion_accion : 'CREAR_RESERVAS' },
+                                                          { id_modulo_accion : 9, descripcion_accion : 'BORRAR_RESERVAS' },
+                                                          { id_modulo_accion : 9, descripcion_accion : 'EDITAR_RESERVAS' },
+                                                          { id_modulo_accion : 9, descripcion_accion : 'VER_RESERVAS' },
+
+                                                          { id_modulo_accion : 10, descripcion_accion : 'CREAR_ROLES' },
+                                                          { id_modulo_accion : 10, descripcion_accion : 'EDITAR_ROLES' },
+                                                          { id_modulo_accion : 10, descripcion_accion : 'VER_ROLES' },
+                                                          
+                                                          { id_modulo_accion : 11, descripcion_accion : 'CREAR_SOCIO' },
+                                                          { id_modulo_accion : 11, descripcion_accion : 'EDITAR_SOCIOS' },
+                                                          { id_modulo_accion : 11, descripcion_accion : 'VER_SOCIO' },
+                                                          { id_modulo_accion : 11, descripcion_accion : 'BORRAR_SOCIO' },
+                                                        ] 
+                                                    } );
 
 }
 

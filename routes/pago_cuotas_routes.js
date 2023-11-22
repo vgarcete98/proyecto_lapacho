@@ -5,7 +5,8 @@ const {
         obtener_pagos_x_mes,
         obtener_pagos_x_socio,
         obtener_cuotas_pendientes_x_socio,
-        realizar_pago_socio } = require( '../controlers/socio_pagos_controller' );
+        realizar_pago_socio,
+        obtener_comprobante_pago_cuota } = require( '../controlers/socio_pagos_controller' );
         
 const validar_token = require( '../middlewares/validar_token' );
 const { comprobar_pago_cuota_socio } = require( '../helpers/comprobar_pago_cuota' );
@@ -18,7 +19,9 @@ router_pagos.get( '/', [ validar_token,  ], obtener_pagos_x_mes );
 
 router_pagos.get( '/socio', [ validar_token ], obtener_pagos_x_socio );
 
-router_pagos.get( '/socio/pagos_pendientes', [ validar_token ], obtener_cuotas_pendientes_x_socio )
+router_pagos.get( '/socio/pagos_pendientes', [ validar_token ], obtener_cuotas_pendientes_x_socio );
+
+router_pagos.get( '/socio/comprobante_pago/:id_cuota', [ validar_token ], obtener_comprobante_pago_cuota );
 
 router_pagos.post( '/', [ validar_token, comprobar_pago_cuota_socio ], realizar_pago_socio );
 

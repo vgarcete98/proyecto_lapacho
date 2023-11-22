@@ -18,7 +18,9 @@ const {
     cargar_gasto_club,
     editar_gasto_club,
     obtener_gastos_x_mes, 
-    borrar_gasto} = require( '../controlers/gastos_controller' );
+    borrar_gasto, 
+    obtener_comprobante_gasto } = require( '../controlers/gastos_controller' );
+
 const { comprobar_gasto_cargado } = require('../helpers/comprobar_gasto_cargado');
 //----------------------------------------------------------------------------
 const upload2 = multer_instance2;
@@ -39,5 +41,7 @@ router_cargo_gastos.post( '/', upload2.single( 'archivo' ),
 
 router_cargo_gastos.delete( '/:id_gasto',[ validar_token, validar_rol_usuario ], borrar_gasto );
 
+
+router_cargo_gastos.get( '/comprobante_gasto/:id_gasto', [ validar_token, validar_rol_usuario ], obtener_comprobante_gasto  )
 
 module.exports = router_cargo_gastos;
