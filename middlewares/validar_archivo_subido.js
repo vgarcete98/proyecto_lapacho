@@ -4,7 +4,8 @@ const EXTENSIONES_VALIDAS = [
     'JPEG',
     'PNG',
     'GIF',
-    'JPG'
+    'JPG',
+    //'TEST'
 ];
 
 

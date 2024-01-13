@@ -34,15 +34,112 @@ async function main() {
     cena_fin_anio : "CENA_FIN_ANIO"
   }
 
+//-----------------------------------------------------------------------------------------------------------------
+  const tipos_ruta_app = await prisma.tipos_ruta_app.createMany(
+                                                                  {
+                                                                    data : [
+                                                                      { descripcion : 'SOCIOS' },
+                                                                      { descripcion : 'PAGO_CUOTAS' },
+                                                                      { descripcion : 'PASES_CLUBES_JUGADORES' },
+                                                                      { descripcion : 'EVENTOS' },
+                                                                      { descripcion : 'ACCESOS_SOCIO' },
+                                                                      { descripcion : 'INSCRIPCIONES_EVENTOS' },
+                                                                      { descripcion : 'LOGIN_CLUB' },
+                                                                      { descripcion : 'PROFESORES' },    
+                                                                      { descripcion : 'RESERVAS' },
+                                                                      { descripcion : 'SEGURIDAD' },
+                                                                      { descripcion : 'GASTOS_INGRESOS' },                                                                         
+                                                                    ]
+                                                                  }
+                                                                );
+//-----------------------------------------------------------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------------------------------------------------------
+  const rutas_app = await prisma.rutas_app.createMany(
+                                                            {
+                                                              data : [
+                                                                { path_ruta : '/socio', id_tipo_ruta_app : 1  },
+                                                                { path_ruta : '/usuario', id_tipo_ruta_app : 1  },
+                                                                { path_ruta : '/tipo_reserva', id_tipo_ruta_app : 9  },
+                                                                { path_ruta : '/eventos', id_tipo_ruta_app : 4  },
+                                                                { path_ruta : '/roles', id_tipo_ruta_app : 10  },
+                                                                { path_ruta : '/tipo_socio', id_tipo_ruta_app : 1  },
+                                                                { path_ruta : '/accesos', id_tipo_ruta_app : 10  },
+                                                                { path_ruta : '/auth', id_tipo_ruta_app : 7  },
+                                                                { path_ruta : '/reserva_en_club', id_tipo_ruta_app :  9 },
+                                                                { path_ruta : '/pagos_socio', id_tipo_ruta_app : 2  },
+                                                                { path_ruta : '/gastos_club', id_tipo_ruta_app : 11  },
+                                                                { path_ruta : '/calendario_eventos', id_tipo_ruta_app :  4 },
+                                                                { path_ruta : '/inscripciones', id_tipo_ruta_app :  6 },
+                                                                { path_ruta : '/pases_jugadores', id_tipo_ruta_app : 3  },
+                                                                { path_ruta : '/profesores', id_tipo_ruta_app : 8  },
+                                                                { path_ruta : '/agendamiento_clases', id_tipo_ruta_app : 9 },
+                                                              ]
+                                                            }
+                                                          );
+//---------------------------------------------------------------------------------------------------------------------------------
+ 
   // PIRMER ROL CREADO
-  //---------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------------
   const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                         { descripcion_rol : 'ADMINISTRADOR' },
                                                                         { descripcion_rol :  'SOCIO' },
                                                                         { descripcion_rol :  'SOCIO_PROFESOR' }
                                                                       ] 
                                                           } );
-  //---------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------------
+
+  //RUTAS ASIGNADAS A ROLES POR DEFECTO A ADMINISTRADOR
+  //--------------------------------------------------------------------------------------------------------------
+  const rutas_habilitadas = await prisma.rutas_habilitadas_rol.createMany(
+                                                                            {
+                                                                              data : [
+                                                                                { id_rol_usuario : 1, id_ruta_app : 1 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 2 },                                                                                
+                                                                                { id_rol_usuario : 1, id_ruta_app : 3 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 4 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 5 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 6 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 7 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 8 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 9 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 10 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 11 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 12 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 13 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 14 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 15 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 16 }
+                                                                              ]
+                                                                            }
+
+                                                                          );
+
+  //-------------------------------------------------------------------------------------------------------------------------------------
+
+
+ //RUTAS ASIGNADAS A ROLES POR DEFECTO A SOCIOS
+  //--------------------------------------------------------------------------------------------------------------
+  const rutas_habilitadas_rol_socio = await prisma.rutas_habilitadas_rol.createMany(
+                                                                                      {
+                                                                                        data : [
+                                                                                          { id_rol_usuario : 2, id_ruta_app : 3 },
+                                                                                          { id_rol_usuario : 2, id_ruta_app : 4 },                                                                                
+                                                                                          { id_rol_usuario : 2, id_ruta_app : 9 },
+                                                                                          { id_rol_usuario : 2, id_ruta_app : 10 },
+                                                                                          { id_rol_usuario : 2, id_ruta_app : 11 },
+                                                                                          { id_rol_usuario : 2, id_ruta_app : 13 },
+                                                                                          { id_rol_usuario : 2, id_ruta_app : 14 },
+                                                                                          { id_rol_usuario : 2, id_ruta_app : 16 },
+                                                                                        ]
+                                                                                      }
+
+                                                                                    );
+
+
+
+
+
 
   // ACCESOS PARA ESE USUARIO
   //---------------------------------------------------------------------------------
@@ -154,6 +251,33 @@ async function main() {
                                                             END;
                                                             $$ LANGUAGE plpgsql;`
 
+
+  const procedimiento_genera_cuotas = await prisma.$executeRaw`CREATE OR REPLACE PROCEDURE genera_cuotas_annio()
+                                                                AS $$
+                                                                DECLARE
+                                                                    socio_fila RECORD;
+                                                                  fecha_vencimiento_cuota DATE; -- SERIA EL 5 DE CADA MES
+                                                                BEGIN
+                                                                  -- SELECCIONO TODOS LOS SOCIOS ACTIVOS
+                                                                  --DEBO RECORRER TODOS LOS DATOS DE MI CONSULTA E IR INSERTANDO EN LA TABLA DE CUOTAS
+                                                                    FOR socio_fila IN (	SELECT DISTINCT (A.ID_SOCIO) AS SOCIO, C.ID_TIPO_DESCUENTO as TIPO_DESC, D.ID_TIPO_CUOTA AS TIPO_CUOTA
+                                                                                FROM SOCIO A JOIN CUOTAS_SOCIO B ON A.id_socio = B.id_socio
+                                                                                JOIN tipo_descuento C  ON C.id_tipo_descuento = B.id_tipo_descuento
+                                                                                JOIN tipo_cuota D ON D.id_tipo_cuota = B.id_tipo_cuota
+                                                                              WHERE ESTADO_SOCIO = 1) LOOP
+                                                                    FOR i IN 1..12 LOOP
+                                                                    
+                                                                      fecha_vencimiento_cuota := DATE_TRUNC('MONTH', CURRENT_DATE + INTERVAL '1 month' * i) + INTERVAL '4 days';
+                                                                      INSERT INTO public.cuotas_socio( id_socio, id_tipo_cuota, id_tipo_descuento, 
+                                                                                        fecha_vencimiento, descripcion)
+                                                                      VALUES (socio_fila.socio, socio_fila.tipo_cuota, socio_fila.tipo_desc, 
+                                                                          fecha_vencimiento_cuota, CONCAT ( 'CUOTA : ', fecha_vencimiento_cuota ) );
+                                                                    END LOOP;
+                                                                
+                                                                
+                                                                    END LOOP;
+
+                                                                END $$ LANGUAGE plpgsql;`
 
   const trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_generar_cuotas_socio
                                                   AFTER INSERT ON SOCIO
@@ -291,80 +415,7 @@ async function main() {
                                                                           ] 
                                                                       } );
 
-  const modulos = await prisma.modulos.createMany( { 
-                                                      data : [
-                                                        { descripcion_modulo : 'ACCESOS' },
-                                                        { descripcion_modulo : 'AGENDAR_CLASES' },
-                                                        { descripcion_modulo : 'CALENDARIO_EVENTOS' },
-                                                        { descripcion_modulo : 'GASTOS' },
-                                                        { descripcion_modulo : 'INSCRIPCIONES' },
-                                                        { descripcion_modulo : 'PAGO_CUOTAS' },
-                                                        { descripcion_modulo : 'PASES_JUGADORES' },
-                                                        { descripcion_modulo : 'PROFESORES' },
-                                                        { descripcion_modulo : 'RESERVAS' },
-                                                        { descripcion_modulo : 'ROLES' },
-                                                        { descripcion_modulo : 'SOCIOS' }
-                                                      ] 
-                                                  } );
 
-  const acciones = await prisma.acciones.createMany( { 
-                                                        data : [
-                                                          { id_modulo_accion : 1, descripcion_accion : 'CREAR' },
-                                                          { id_modulo_accion : 1, descripcion_accion : 'LISTAR' },                                                          
-                                                          { id_modulo_accion : 1, descripcion_accion : 'VER_ACCESOS_USR' },
-                                                          
-                                                          { id_modulo_accion : 2, descripcion_accion : 'OBTENER_CLASES' },
-                                                          { id_modulo_accion : 2, descripcion_accion : 'AGENDAR_CLASES' },
-                                                          { id_modulo_accion : 2, descripcion_accion : 'ELIMINAR_CLASES' },
-                                                          { id_modulo_accion : 2, descripcion_accion : 'ABONAR_CLASE' },
-                                                          { id_modulo_accion : 2, descripcion_accion : 'EDITAR_CLASE' },
-                                                          
-                                                          { id_modulo_accion : 3, descripcion_accion : 'OBTENER_EVENTOS' },
-                                                          { id_modulo_accion : 3, descripcion_accion : 'ASIGNAR_EVENTOS' },
-                                                          { id_modulo_accion : 3, descripcion_accion : 'BORRAR_EVENTOS' },
-                                                          { id_modulo_accion : 3, descripcion_accion : 'EDITAR_EVENTOS' },
-
-                                                          { id_modulo_accion : 4, descripcion_accion : 'OBTENER_GASTOS' },
-                                                          { id_modulo_accion : 4, descripcion_accion : 'EDITAR_GASTOS' },
-                                                          { id_modulo_accion : 4, descripcion_accion : 'CARGAR_GASTOS' },
-                                                          { id_modulo_accion : 4, descripcion_accion : 'BORRAR_GASTOS' },
-                                                          { id_modulo_accion : 4, descripcion_accion : 'OBTENER_COMPROBANTES' },
-
-                                                          { id_modulo_accion : 5, descripcion_accion : 'VER_INSCRIPCIONES' },
-                                                          { id_modulo_accion : 5, descripcion_accion : 'EDITAR_INSCRIPCIONES' },
-                                                          { id_modulo_accion : 5, descripcion_accion : 'ABONAR_INSCRIPCION' },
-                                                          { id_modulo_accion : 5, descripcion_accion : 'INSCRIBIRSE' },
-                                                          { id_modulo_accion : 5, descripcion_accion : 'INSCRIBIR_NO_SOCIO' },
-
-                                                          { id_modulo_accion : 6, descripcion_accion : 'VER_CUOTAS' },
-                                                          { id_modulo_accion : 6, descripcion_accion : 'VER_COMPROBANTE' },
-                                                          { id_modulo_accion : 6, descripcion_accion : 'HACER_PAGO' },
-
-                                                          { id_modulo_accion : 7, descripcion_accion : 'VER_PASES_JUGADORES' },
-                                                          { id_modulo_accion : 7, descripcion_accion : 'CREAR_PASES_JUGADORES' },
-                                                          { id_modulo_accion : 7, descripcion_accion : 'EDITAR_PASES_JUGADORES' },
-                                                          { id_modulo_accion : 7, descripcion_accion : 'BORRAR_PASES_JUGADORES' },
-
-                                                          { id_modulo_accion : 8, descripcion_accion : 'CREAR_PROFESORES' },
-                                                          { id_modulo_accion : 8, descripcion_accion : 'VER_PROFESORES' },
-                                                          { id_modulo_accion : 8, descripcion_accion : 'EDITAR_PROFESORES' },
-                                                          { id_modulo_accion : 8, descripcion_accion : 'BORRAR_PROFESORES' },
-
-                                                          { id_modulo_accion : 9, descripcion_accion : 'CREAR_RESERVAS' },
-                                                          { id_modulo_accion : 9, descripcion_accion : 'BORRAR_RESERVAS' },
-                                                          { id_modulo_accion : 9, descripcion_accion : 'EDITAR_RESERVAS' },
-                                                          { id_modulo_accion : 9, descripcion_accion : 'VER_RESERVAS' },
-
-                                                          { id_modulo_accion : 10, descripcion_accion : 'CREAR_ROLES' },
-                                                          { id_modulo_accion : 10, descripcion_accion : 'EDITAR_ROLES' },
-                                                          { id_modulo_accion : 10, descripcion_accion : 'VER_ROLES' },
-                                                          
-                                                          { id_modulo_accion : 11, descripcion_accion : 'CREAR_SOCIO' },
-                                                          { id_modulo_accion : 11, descripcion_accion : 'EDITAR_SOCIOS' },
-                                                          { id_modulo_accion : 11, descripcion_accion : 'VER_SOCIO' },
-                                                          { id_modulo_accion : 11, descripcion_accion : 'BORRAR_SOCIO' },
-                                                        ] 
-                                                    } );
 
 }
 

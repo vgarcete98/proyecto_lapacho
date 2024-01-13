@@ -158,11 +158,11 @@ model reservas {
 }
 
 model roles_usuario {
-  id_rol_usuario          BigInt                    @id(map: "roles_usuario_pk") @default(autoincrement())
-  descripcion_rol         String                    @db.VarChar(255)
-  estado_rol_usuario      Int?                      @db.SmallInt
-  accesos_usuario         accesos_usuario[]
-  modulos_habilitados_rol modulos_habilitados_rol[]
+  id_rol_usuario        BigInt                  @id(map: "roles_usuario_pk") @default(autoincrement())
+  descripcion_rol       String                  @db.VarChar(255)
+  estado_rol_usuario    Int?                    @db.SmallInt
+  accesos_usuario       accesos_usuario[]
+  rutas_habilitadas_rol rutas_habilitadas_rol[]
 }
 
 model socio {
@@ -275,10 +275,11 @@ model inscripciones_no_socios {
 }
 
 model acciones {
-  id_accion          Int     @id(map: "id_accion") @default(autoincrement())
-  id_modulo_accion   Int
-  descripcion_accion String  @db.VarChar(255)
-  modulos            modulos @relation(fields: [id_modulo_accion], references: [id_modulo], onDelete: NoAction, onUpdate: NoAction, map: "modulos_acciones_fk")
+  id_accion               Int                       @id(map: "id_accion") @default(autoincrement())
+  id_modulo_accion        Int
+  descripcion_accion      String                    @db.VarChar(255)
+  modulos                 modulos                   @relation(fields: [id_modulo_accion], references: [id_modulo], onDelete: NoAction, onUpdate: NoAction, map: "modulos_acciones_fk")
+  modulos_habilitados_rol modulos_habilitados_rol[]
 }
 
 model modulos {
@@ -289,9 +290,45 @@ model modulos {
 }
 
 model modulos_habilitados_rol {
-  id_modulo_habilitado               Int           @id(map: "modulos_habilitados_rol_pk") @default(autoincrement())
+  id_modulo_habilitado               Int      @id(map: "modulos_habilitados_rol_pk") @default(autoincrement())
   id_modulo                          Int
   id_rol_usuario_habilitado_acciones BigInt
-  modulos                            modulos       @relation(fields: [id_modulo], references: [id_modulo], onDelete: NoAction, onUpdate: NoAction, map: "modulos_modulos_habilitados_rol_fk")
-  roles_usuario                      roles_usuario @relation(fields: [id_rol_usuario_habilitado_acciones], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_modulos_habilitados_fk")
+  id_accion                          Int
+  acciones                           acciones @relation(fields: [id_accion], references: [id_accion], onDelete: NoAction, onUpdate: NoAction, map: "acciones_modulos_habilitados_rol_fk")
+  modulos                            modulos  @relation(fields: [id_modulo], references: [id_modulo], onDelete: NoAction, onUpdate: NoAction, map: "modulos_modulos_habilitados_rol_fk")
+}
+
+model api_logs {
+  id_log        Int     @id(map: "api_logs_pk") @default(autoincrement())
+  status_code   Int
+  request_body  String? @db.VarChar(255)
+  response_body String? @db.VarChar(255)
+  type_request  String? @db.VarChar(10)
+}
+
+model rutas_app {
+  id_ruta_app           Int                     @id(map: "rutas_app_pk") @default(autoincrement())
+  path_ruta             String                  @db.VarChar(255)
+  id_tipo_ruta_app      Int
+  tipos_ruta_app        tipos_ruta_app          @relation(fields: [id_tipo_ruta_app], references: [id_tipo_ruta_app], onDelete: NoAction, onUpdate: NoAction, map: "tipos_ruta_app_rutas_app_fk")
+  rutas_habilitadas_rol rutas_habilitadas_rol[]
+}
+
+model rutas_habilitadas_rol {
+  id_ruta_habilitada Int           @id(map: "rutas_habilitadas_rol_pk") @default(autoincrement())
+  id_rol_usuario     BigInt
+  id_ruta_app        Int
+  roles_usuario      roles_usuario @relation(fields: [id_rol_usuario], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_rutas_habilitadas_rol_fk")
+  rutas_app          rutas_app     @relation(fields: [id_ruta_app], references: [id_ruta_app], onDelete: NoAction, onUpdate: NoAction, map: "rutas_app_rutas_habilitadas_rol_fk")
+}
+
+model tipos_ruta {
+  id_tipo_ruta     Int    @id(map: "tipos_ruta_pk")
+  descripcion_ruta String @db.VarChar(255)
+}
+
+model tipos_ruta_app {
+  id_tipo_ruta_app Int         @id(map: "tipos_ruta_app_pk") @default(autoincrement())
+  descripcion      String      @db.VarChar(255)
+  rutas_app        rutas_app[]
 }

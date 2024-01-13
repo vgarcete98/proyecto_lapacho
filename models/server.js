@@ -1,7 +1,12 @@
 
 const express = require( 'express' );
 
+const listEndpoints = require('express-list-endpoints')
+//const getEndpoints = require('express-list-endpoints')
+
 const { request, response } = require('express')
+
+const bodyParser = require('body-parser');
 
 const cors = require( 'cors' );
 
@@ -29,6 +34,12 @@ const router_clases = require( '../routes/clases_routes' )
 //----------------------------------------------------------------------------
 
 
+// MIDDLEWARES PERSONALIZADOS A NIVEL DE APLICACION
+//----------------------------------------------------------------------------
+const { middleware_request, } = require( '../middlewares/logs_middleware' )
+//----------------------------------------------------------------------------
+
+
 class Server {
 
 
@@ -49,8 +60,14 @@ class Server {
 
         //Agregando el paquete para peticiones desde cualquier lugar
         this.app.use( cors() );
+
+        this.app.use( bodyParser.text() );
         
         this.app.use( express.static( 'public' ) );
+
+        this.app.use( middleware_request );
+
+        //this.app.use( middleware_response );
 
         this.app.use(function( err, req , res , next ) {
             
@@ -101,6 +118,16 @@ class Server {
         this.app.use( rutas.profesores.ruta, router_profesores );
 
         this.app.use (rutas.clases_particulares.ruta, router_clases );
+    }
+
+    listar_rutas (){
+
+        listEndpoints( this.app ).forEach(function(element) {
+            const { path } = element;
+            console.log(path);
+          });
+
+        //console.log(getEndpoints(this.app));
     }
 
 
