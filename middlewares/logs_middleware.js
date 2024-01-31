@@ -15,14 +15,17 @@ const middleware_request = async (req = request, res = response, next) => {
     const tipo = req.method;
     const ruta = req.url;
     const cuerpo_solicitud = req.body;
-    //console.log ( req.body )
+    const codigo_status = req.statusCode
+    console.log ( req.body )
     const nuevo_log = await prisma.api_logs.create( {
 
+        //PROXIMAMENTE AÑADIR LA FECHA DE SOLICITUD
         data : {
             fecha_solicitud : fecha,
             request_body : JSON.stringify(cuerpo_solicitud ),
             type_request : tipo,
-            ruta_solicitud : ruta
+            ruta_solicitud : ruta,
+            status_code : 200//codigo_status
         }
     } );
 

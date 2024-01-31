@@ -299,11 +299,13 @@ model modulos_habilitados_rol {
 }
 
 model api_logs {
-  id_log        Int     @id(map: "api_logs_pk") @default(autoincrement())
-  status_code   Int
-  request_body  String? @db.VarChar(255)
-  response_body String? @db.VarChar(255)
-  type_request  String? @db.VarChar(10)
+  id_log          Int      @id(map: "api_logs_pk") @default(autoincrement())
+  status_code     Int
+  request_body    String?  @db.VarChar(255)
+  response_body   String?  @db.VarChar(255)
+  type_request    String?  @db.VarChar(10)
+  fecha_solicitud DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+  ruta_solicitud  String   @db.VarChar(255)
 }
 
 model rutas_app {
