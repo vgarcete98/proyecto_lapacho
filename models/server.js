@@ -93,20 +93,24 @@ class Server {
         });
 
         //COMENTO ESTA PARTE YA QUE DEBO DE TRABAJAR CON JSON ENCRIPTADO
-        /*
+        
         this.app.use(function(req , res , next ) {
             
             try {
                 
                 //HAY QUE DESENCRYPTAR EL BODY DE LA REQUEST QUE ESTA VINIENDO
-        
-                const ciphertext = req.body;
-                var bytes  = AES.decrypt(ciphertext, process.env.ENCRYPTS3CR3TEDK3Y);
-                var decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-        
-        
-                req.body = decryptedData
-                next()
+                
+                const {data} = req.body;
+                if (data === undefined ){
+                    //QUIERE DECIR QUE ES UNA CONSULTA NADA MAS 
+                    next()
+                }else {
+                    // CASO CONTRARIO PARA OPERACIONES DE INSERT, DELETE, UPDATE 
+                    var bytes  = AES.decrypt(data, process.env.ENCRYPTS3CR3TEDK3Y);
+                    var decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+                    req.body = decryptedData
+                    next()                    
+                }
 
             } catch (error) {
                 res.status(500).json( 
@@ -119,7 +123,7 @@ class Server {
             }
 
         });
-        */
+        
 
         this.app.use(async function(req , res , next ) {
 
@@ -218,7 +222,7 @@ class Server {
 
         listEndpoints( this.app ).forEach(function(element) {
             const { path } = element;
-            console.log(path);
+            //console.log(path);
           });
 
         //console.log(getEndpoints(this.app));
