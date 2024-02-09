@@ -101,8 +101,10 @@ class Server {
                 //HAY QUE DESENCRYPTAR EL BODY DE LA REQUEST QUE ESTA VINIENDO
                 
                 const {data} = req.body;
-                if (data === undefined ){
-                    //QUIERE DECIR QUE ES UNA CONSULTA NADA MAS 
+                const { path } = req;
+                if (data === undefined && path !== '/auth/login'){
+                    //SOLO PARA EL LOGIN SOLICITO EL ENCRIPTADO 
+                    console.log( `Es la ruta ${path}` );
                     next()
                 }else {
                     // CASO CONTRARIO PARA OPERACIONES DE INSERT, DELETE, UPDATE 
