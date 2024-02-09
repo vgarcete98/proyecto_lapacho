@@ -104,7 +104,7 @@ class Server {
                 const { path } = req;
                 if (data === undefined && path !== '/auth/login'){
                     //SOLO PARA EL LOGIN SOLICITO EL ENCRIPTADO 
-                    console.log( `Es la ruta ${path}` );
+                    //console.log( `Es la ruta ${path}` );
                     next()
                 }else {
                     // CASO CONTRARIO PARA OPERACIONES DE INSERT, DELETE, UPDATE 
