@@ -21,6 +21,7 @@ const middleware_request = async (req = request, res = response, next) => {
 
         //PROXIMAMENTE AÑADIR LA FECHA DE SOLICITUD
         data : {
+
             fecha_solicitud : fecha,
             request_body : JSON.stringify(cuerpo_solicitud ),
             type_request : tipo,

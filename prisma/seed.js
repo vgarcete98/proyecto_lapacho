@@ -135,9 +135,27 @@ async function main() {
                                                                                       }
 
                                                                                     );
+  const tipos_ingresos = await prisma.tipos_ingreso.createMany( {
+                                                              data : [
+                                                                { descripcion : "CUOTAS"  },
+                                                                { descripcion : "TORNEOS"  },
+                                                                { descripcion : "CANTINA"  },
+                                                                { descripcion : "DONACION"  },
+                                                                { descripcion : "ACTIVIDADES"  },
+                                                                { descripcion : "ALQUILER"  },
+                                                              ]
+                                                            });
 
-
-
+  const tipos_egresos = await prisma.tipos_egreso.createMany( {
+                                                              data : [
+                                                                { descripcion : "CUOTAS"  },
+                                                                { descripcion : "TORNEOS"  },
+                                                                { descripcion : "CANTINA"  },
+                                                                { descripcion : "DONACION"  },
+                                                                { descripcion : "ACTIVIDADES"  },
+                                                                { descripcion : "ALQUILER"  },
+                                                              ]
+                                                            });
 
 
 
