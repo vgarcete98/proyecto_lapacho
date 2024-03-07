@@ -142,18 +142,18 @@ async function main() {
                                                                 { descripcion : "CANTINA"  },
                                                                 { descripcion : "DONACION"  },
                                                                 { descripcion : "ACTIVIDADES"  },
-                                                                { descripcion : "ALQUILER"  },
+                                                                { descripcion : "ALQUILER_CLUB_MESAS"  },
                                                               ]
                                                             });
 
   const tipos_egresos = await prisma.tipos_egreso.createMany( {
                                                               data : [
-                                                                { descripcion : "CUOTAS"  },
-                                                                { descripcion : "TORNEOS"  },
-                                                                { descripcion : "CANTINA"  },
-                                                                { descripcion : "DONACION"  },
-                                                                { descripcion : "ACTIVIDADES"  },
-                                                                { descripcion : "ALQUILER"  },
+                                                                { descripcion : "LIMPIEZA"  },
+                                                                { descripcion : "SERVICIO_DE_AGUA"  },
+                                                                { descripcion : "SERVICIO_DE_LUZ"  },
+                                                                { descripcion : "ALQUILER_LOCAL"  },
+                                                                { descripcion : "MANTENIMIENTO_DEL_CLUB"  },
+                                                                { descripcion : "SERVICIO_DE_INTERNET"  },
                                                               ]
                                                             });
 
@@ -185,14 +185,17 @@ async function main() {
   const tipo_descuento = await prisma.tipo_descuento.createMany( { data : [
                                                                             { desc_tipo_descuento : 'NINGUNO' },
                                                                             { desc_tipo_descuento : 'DESCUENTO_FAMILIAR' },
-                                                                            { desc_tipo_descuento : 'DESCUENTO_MENOR' }
+                                                                            { desc_tipo_descuento : 'DESCUENTO_MENOR' },
+                                                                            { desc_tipo_descuento : 'SOCIO_HONORARIO' },
+                                                                            { desc_tipo_descuento : 'VITALICIO' }
                                                                           ] 
                                                                 } ); 
 
   const tipo_de_cuota = await prisma.tipo_cuota.createMany( { data : [
-                                                                        { desc_tipo_cuota : 'CUOTA_NORMAL', monto_cuota : 150000 },
-                                                                        { desc_tipo_cuota : 'CUOTA_SOCIO_MENOR', monto_cuota : 90000 },
-                                                                        { desc_tipo_cuota : 'CUOTA_SOCIO_FAMILIAR', monto_cuota : 130000 }
+                                                                        { desc_tipo_cuota : 'CUOTA_NORMAL', monto_cuota : 150000, creadoen : new Date()},
+                                                                        { desc_tipo_cuota : 'CUOTA_SOCIO_MENOR', monto_cuota : 90000, creadoen : new Date() },
+                                                                        { desc_tipo_cuota : 'CUOTA_SOCIO_FAMILIAR', monto_cuota : 130000, creadoen : new Date() },
+                                                                        { desc_tipo_cuota : 'SOCIO_VITALICIO', monto_cuota : 0, creadoen : new Date() }
                                                                       ] 
                                                           } );  
   //---------------------------------------------------------------------------------
@@ -415,21 +418,24 @@ async function main() {
 
   //--------------------------------------------------------------------------------------------------------------
   
-  const tipos_pagos = await prisma.tipo_pagos.createMany( { data : [
-                                                                        { desc_tipo_pago : 'PAGO_ALQUILER' },
-                                                                        { desc_tipo_pago : 'PAGO_PERSONAL' },
-                                                                        { desc_tipo_pago : 'COBRO_DE_CUOTAS' },
-                                                                        { desc_tipo_pago : 'PAGO_DE_SERVICIOS' },
-                                                                        { desc_tipo_pago : 'PAGO_MANTENIMIENTO' },
-                                                                        { desc_tipo_pago : 'INGRESOS_X_ACTIVIDAD' }
-                                                                    ] 
-                                                        } );
+  //const tipos_pagos = await prisma.tipo_pagos.createMany( { data : [
+  //                                                                      { desc_tipo_pago : 'PAGO_ALQUILER' },
+  //                                                                      { desc_tipo_pago : 'PAGO_PERSONAL' },
+  //                                                                      { desc_tipo_pago : 'COBRO_DE_CUOTAS' },
+  //                                                                      { desc_tipo_pago : 'PAGO_DE_SERVICIOS' },
+  //                                                                      { desc_tipo_pago : 'PAGO_MANTENIMIENTO' },
+  //                                                                      { desc_tipo_pago : 'INGRESOS_X_ACTIVIDAD' }
+  //                                                                  ] 
+  //                                                      } );
   //--------------------------------------------------------------------------------------------------------------
   
   const clubes_para_pases = await prisma.clubes_habilitados.createMany( { 
                                                                           data : [  
                                                                             { nombre_club_habilitado : 'SPIN', esta_habilitado : true, creadoen : new Date() },
-                                                                            { nombre_club_habilitado : 'SALESIANO', esta_habilitado : true, creadoen : new Date() }
+                                                                            { nombre_club_habilitado : 'SALESIANO', esta_habilitado : true, creadoen : new Date() },
+                                                                            { nombre_club_habilitado : 'SAJONIA', esta_habilitado : true, creadoen : new Date() },
+                                                                            { nombre_club_habilitado : 'ENCARNACION', esta_habilitado : true, creadoen : new Date() },
+                                                                            { nombre_club_habilitado : 'VILLARRICA', esta_habilitado : true, creadoen : new Date() }
                                                                           ] 
                                                                       } );
 
