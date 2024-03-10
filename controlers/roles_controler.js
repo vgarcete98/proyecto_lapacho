@@ -166,5 +166,5 @@ module.exports = {
     borrar_rol, 
     crear_rol, 
     obtener_roles,
-    obtener_modulos_x_rol
+    //obtener_modulos_x_rol
 };

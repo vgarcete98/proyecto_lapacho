@@ -1,17 +1,10 @@
 
 const express = require( 'express' );
-const jwt = require('jsonwebtoken');
-//PARA ENCRIPTADO Y DESENCRIPTADO 
-//----------------------------------------------------
-var AES = require("crypto-js/aes");
-var SHA256 = require("crypto-js/sha256");
-var CryptoJS = require("crypto-js");
-//----------------------------------------------------
 
 //----------------------------------------------------
 const { PrismaClient } = require('@prisma/client')
 const { request, response } = require('express')
-const prisma = new PrismaClient();
+//const prisma = new PrismaClient();
 //----------------------------------------------------
 
 const listEndpoints = require('express-list-endpoints')
@@ -47,7 +40,11 @@ const router_clases = require( '../routes/clases_routes' )
 
 // MIDDLEWARES PERSONALIZADOS A NIVEL DE APLICACION
 //----------------------------------------------------------------------------
-const { middleware_request, } = require( '../middlewares/logs_middleware' )
+const { middleware_request, } = require( '../middlewares/logs_middleware' );
+const validar_token = require('../middlewares///validar_token');
+const { validar_existe_usuario, validar_existe_usuario_socio } = require('../middlewares/validar_existe_usuario');
+const { validar_acceso_a_ruta } = require('../middlewares/validar_acceso_a_ruta');
+const { desencriptar_body_login } = require('../middlewares/desencriptar_login');
 //----------------------------------------------------------------------------
 
 
@@ -80,6 +77,21 @@ class Server {
 
         //this.app.use( middleware_response );
 
+
+        //COMENTO ESTA PARTE YA QUE DEBO DE TRABAJAR CON JSON ENCRIPTADO
+        
+        this.app.use(desencriptar_body_login);//desencripto el body del login
+        
+
+        this.app.use( validar_token );//comprueba el token
+
+        this.app.use( validar_existe_usuario_socio );//ve si ese usuario es valido y existe
+
+        this.app.use(validar_acceso_a_ruta);//y ve si tiene la ruta habilitada
+
+
+        //this.app.use( multer )
+
         this.app.use(function( err, req , res , next ) {
             
             //console.error(err.stack);
@@ -91,97 +103,6 @@ class Server {
                 }
          );
         });
-
-        //COMENTO ESTA PARTE YA QUE DEBO DE TRABAJAR CON JSON ENCRIPTADO
-        
-        this.app.use(function(req , res , next ) {
-            
-            try {
-                
-                //HAY QUE DESENCRYPTAR EL BODY DE LA REQUEST QUE ESTA VINIENDO
-                
-                const {data} = req.body;
-                const { path } = req;
-                if (data === undefined && path !== '/auth/login'){
-                    //SOLO PARA EL LOGIN SOLICITO EL ENCRIPTADO 
-                    //console.log( `Es la ruta ${path}` );
-                    next()
-                }else {
-                    // CASO CONTRARIO PARA OPERACIONES DE INSERT, DELETE, UPDATE 
-                    var bytes  = AES.decrypt(data, process.env.ENCRYPTS3CR3TEDK3Y);
-                    var decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-                    req.body = decryptedData
-                    next()                    
-                }
-
-            } catch (error) {
-                res.status(500).json( 
-                    {
-                        status : false,
-                        msj : `Ha ocurrido un error al desencriptar  ${ error }` ,
-                        //nuevo_tipo_socio
-                    }
-                );                
-            }
-
-        });
-        
-
-        this.app.use(async function(req , res , next ) {
-
-            try {
-                //console.log( req.path );
-                if (req.path === '/auth/login') {
-                    next()
-                } else {
-
-                    const { x_token } = req.headers;
-                    //console.log( x_token );
-                    const payload = jwt.verify( x_token,process.env.SECRET0RPR1VAT3K3Y );
-                    //console.log ( payload );
-                    req.token_trad = payload;
-
-                    const { token_trad } = req;
-
-                    const { id_usuario } = token_trad;                
-                    
-                    const resultado = await prisma.$queryRaw`SELECT D.PATH_RUTA AS ruta
-                                                                FROM ACCESOS_USUARIO A JOIN roles_usuario B ON B.id_rol_usuario = A.id_rol_usuario
-                                                                JOIN RUTAS_HABILITADAS_ROL F ON F.id_rol_usuario = B.id_rol_usuario
-                                                                JOIN RUTAS_APP D ON D.id_ruta_app = F.id_ruta_app
-                                                                JOIN tipos_ruta_app C ON C.id_tipo_ruta_app = D.id_tipo_ruta_app
-                                                                JOIN socio G on G.id_acceso_socio = A.id_acceso
-                                                            WHERE G.id_socio = ${ id_usuario } `;
-
-                    var comprobado = false;
-                    resultado.forEach(element => {
-                        const { ruta } = element;
-                        //console.log( ruta );
-                        if ( ruta === req.path ){
-                            comprobado = true;
-                        }
-
-                    });
-                    if (!comprobado) throw new Error( "El usuario no tiene el acceso a ese recurso" )
-                
-                    next()                                 
-                }
-  
-        
-            } catch (error) {
-                res.status(500).json( 
-                    {
-                        status : false,
-                        msj : `Ha ocurrido un error al comprobar las rutas del usuario :  ${ error }` ,
-                        //nuevo_tipo_socio
-                    }
-                );                
-            }
-
-        });
-
-
-        //this.app.use( multer )
 
     }
 

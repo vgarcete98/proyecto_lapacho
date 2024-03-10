@@ -172,10 +172,10 @@ async function main() {
   // TIPO DE SOCIO QUE MANEJA EL USUARIO
   //---------------------------------------------------------------------------------
   const nuevos_tipos_de_socio = await prisma.tipo_socio.createMany( { data : [
-                                                                              { desc_tipo_socio : tipos_de_socio.socio_normal },
-                                                                              { desc_tipo_socio : tipos_de_socio.socio_familiar },
-                                                                              { desc_tipo_socio : tipos_de_socio.socio_menor_edad },
-                                                                              { desc_tipo_socio : tipos_de_socio.socio_admin }
+                                                                              { desc_tipo_socio : tipos_de_socio.socio_normal, tipo_socio_creado_en : new Date() },
+                                                                              { desc_tipo_socio : tipos_de_socio.socio_familiar, tipo_socio_creado_en : new Date() },
+                                                                              { desc_tipo_socio : tipos_de_socio.socio_menor_edad, tipo_socio_creado_en : new Date() },
+                                                                              { desc_tipo_socio : tipos_de_socio.socio_admin, tipo_socio_creado_en : new Date() }
                                                                             ] 
                                                                   } );
   //---------------------------------------------------------------------------------
@@ -217,7 +217,7 @@ async function main() {
   //AQUI VENDRIA EL TRIGGER QUE SE ENCARGA DE GENERAR LAS CUOTAS PARA LOS SOCIOS
 
 
-  const funcion_trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION generar_cuotas_socio()
+  /*const funcion_trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION generar_cuotas_socio()
                                                             RETURNS TRIGGER AS $$
                                                             
                                                             DECLARE
@@ -270,10 +270,10 @@ async function main() {
                                                               RETURN NEW;
                                                             
                                                             END;
-                                                            $$ LANGUAGE plpgsql;`
+                                                            $$ LANGUAGE plpgsql;`*/
 
 
-  const procedimiento_genera_cuotas = await prisma.$executeRaw`CREATE OR REPLACE PROCEDURE genera_cuotas_annio()
+  /*const procedimiento_genera_cuotas = await prisma.$executeRaw`CREATE OR REPLACE PROCEDURE genera_cuotas_annio()
                                                                 AS $$
                                                                 DECLARE
                                                                     socio_fila RECORD;
@@ -303,7 +303,7 @@ async function main() {
   const trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_generar_cuotas_socio
                                                   AFTER INSERT ON SOCIO
                                                   FOR EACH ROW
-                                                  EXECUTE FUNCTION generar_cuotas_socio();`
+                                                  EXECUTE FUNCTION generar_cuotas_socio();`*/
 
 
   // PERSONA QUE MANEJA EL USUARIO
@@ -331,12 +331,12 @@ async function main() {
   const pass_admin = process.env.C0NTR4SEN1A_4DM1N; 
 
   const socios = await prisma.socio.createMany( { data : [  
-                                                            { 
-                                                              id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
-                                                              nombre_cmp : "Victor Garcete", numero_telefono : "0985552004", id_persona : 1,
-                                                              nombre_usuario : "v_garcete", contrasea : "12345678", estado_usuario : 1, 
-                                                              creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "ACTIVO" 
-                                                            },
+                                                            //{ 
+                                                            //  id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
+                                                            //  nombre_cmp : "Victor Garcete", numero_telefono : "0985552004", id_persona : 1,
+                                                            //  nombre_usuario : "v_garcete", contrasea : "12345678", estado_usuario : 1, 
+                                                            //  creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "ACTIVO" 
+                                                            //},
 
                                                             { 
                                                               id_tipo_socio : 4, creadoen : new Date(), estado_socio : 1,
@@ -345,12 +345,12 @@ async function main() {
                                                               creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "ACTIVO" 
                                                             },
 
-                                                            { 
-                                                              id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
-                                                              nombre_cmp : "Lucas Torres", numero_telefono : "------------", id_persona : 2,
-                                                              nombre_usuario : "lucas.torres", contrasea : "12345678", estado_usuario : 2, 
-                                                              creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "SUSPENDIDO" 
-                                                            }
+                                                            //{ 
+                                                            //  id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
+                                                            //  nombre_cmp : "Lucas Torres", numero_telefono : "------------", id_persona : 2,
+                                                            //  nombre_usuario : "lucas.torres", contrasea : "12345678", estado_usuario : 2, 
+                                                            //  creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "SUSPENDIDO" 
+                                                            //}
                                                           ] 
                                               } );
   //---------------------------------------------------------------------------------

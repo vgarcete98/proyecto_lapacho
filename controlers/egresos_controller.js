@@ -97,13 +97,52 @@ const borrar_egreso = async ( req = request, res = response )=>{
 }
 
 
-const actualizar_egreso = ( req = request, res = response )=>{
+const actualizar_egreso = async ( req = request, res = response )=>{
 
 
     try {
-        const {  } = req.body;
-    } catch (error) {
+        const { idOperacionEgreso, montoNuevo, descripcionNueva, comprobanteNuevo, nroFacturaNuevo } = req.body;
         
+        const fecha_edicion = new Date();
+
+        const edicion_egreso = await prisma.egresos.update( { 
+                                                                data : { 
+                                                                    monto : montoNuevo,
+                                                                    descripcion : descripcionNueva,
+                                                                    comprobante : comprobanteNuevo,
+                                                                    nro_factura : nroFacturaNuevo,
+                                                                    editado_en : fecha_edicion
+                                                                },
+                                                                where : { is_operacion_egreso : idOperacionEgreso }
+                                                             } )
+        
+        const { is_operacion_egreso, monto, nro_factura, descripcion, id_tipo, id_socio, editado_en } = edicion_egreso;
+        
+        const egresoEditado = {
+            idOperacionEgreso : is_operacion_egreso,
+            monto,
+            nroFactura : nro_factura,
+            descripcion,
+            idTipo : id_tipo,
+            idSocio : id_socio,
+            editadoEn : editado_en
+
+        }
+
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Registro Editado con exito",
+            egresoEditado
+        } );
+
+
+    } catch (error) {
+        console.log( error );
+        res.status( 400 ).json( {
+            status : false,
+            msg : "No se pudo editar el egreso, error : " + error,
+            //nuevoIngreso
+        } );
     }
 
 

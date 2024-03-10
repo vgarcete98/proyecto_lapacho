@@ -11,6 +11,10 @@ model accesos_usuario {
   id_acceso          BigInt        @id(map: "accesos_usuario_pk") @default(autoincrement())
   id_rol_usuario     BigInt
   descripcion_acceso String        @db.VarChar(255)
+  rol_editado_en     DateTime?     @db.Date
+  rol_creado_en      DateTime?     @db.Date
+  id_usuario_edita   Int?
+  id_usuario_crea    Int?
   roles_usuario      roles_usuario @relation(fields: [id_rol_usuario], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_accesos_usuario_fk")
   socio              socio[]
 }
@@ -161,6 +165,10 @@ model roles_usuario {
   id_rol_usuario        BigInt                  @id(map: "roles_usuario_pk") @default(autoincrement())
   descripcion_rol       String                  @db.VarChar(255)
   estado_rol_usuario    Int?                    @db.SmallInt
+  rol__creado_en        DateTime?               @db.Date
+  rol_editado_en        DateTime?               @db.Date
+  id_usuario_crea_rol   DateTime?               @db.Date
+  id_usuario_edita_rol  Int?
   accesos_usuario       accesos_usuario[]
   rutas_habilitadas_rol rutas_habilitadas_rol[]
 }
@@ -323,11 +331,15 @@ model rutas_app {
 }
 
 model rutas_habilitadas_rol {
-  id_ruta_habilitada Int           @id(map: "rutas_habilitadas_rol_pk") @default(autoincrement())
-  id_rol_usuario     BigInt
-  id_ruta_app        Int
-  roles_usuario      roles_usuario @relation(fields: [id_rol_usuario], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_rutas_habilitadas_rol_fk")
-  rutas_app          rutas_app     @relation(fields: [id_ruta_app], references: [id_ruta_app], onDelete: NoAction, onUpdate: NoAction, map: "rutas_app_rutas_habilitadas_rol_fk")
+  id_ruta_habilitada  Int           @id(map: "rutas_habilitadas_rol_pk") @default(autoincrement())
+  id_rol_usuario      BigInt
+  id_ruta_app         Int
+  id_usuario_crea_rh  Int?
+  id_usuario_edita_rh Int?
+  fecha_edicion       DateTime?     @db.Date
+  fecha_creacion      DateTime?     @db.Date
+  roles_usuario       roles_usuario @relation(fields: [id_rol_usuario], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_rutas_habilitadas_rol_fk")
+  rutas_app           rutas_app     @relation(fields: [id_ruta_app], references: [id_ruta_app], onDelete: NoAction, onUpdate: NoAction, map: "rutas_app_rutas_habilitadas_rol_fk")
 }
 
 model tipos_ruta {

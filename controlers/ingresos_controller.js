@@ -57,11 +57,52 @@ const agregar_ingreso = async ( req = request, res = response )=>{
 
 
 const borrar_ingreso = async ( req = request, res = response )=>{
+
+//A VER BORRAR EN SI NO SE VA HACER, SOLO CAMBIAR EL ESTADO DE UNA COLUMNA QUE SE LLAMA BORRADO
+try {
+
+    const { idOperacionEgreso } = req.body;
+
+    const fecha_borrado = new Date();
+    const borrado_egreso = await prisma.ingresos.update( { 
+                                                            data : { borrado : true, editado_en : fecha_borrado },
+                                                            where : { column_d_operacion_ingreso : idOperacionEgreso }
+                                                         } );
+
+    const { id_operacion_ingreso, monto, nro_factura, descripcion, id_socio, id_tipo   } = borrado_egreso;
+    
+    res.status( 200 ).json( {
+        status : true,
+        msg : "Registro Borrado",
+        BorradoIngreso : {
+            idOperacionIngreso : id_operacion_ingreso,
+            monto,
+            nroFactura : nro_factura,
+            descripcion,
+            idSocio : id_socio,
+            idTipo : id_tipo
+        }
+    } );
+
+
+} catch (error) {
+    console.log( error );
+    res.status( 400 ).json( {
+        status : false,
+        msg : "No se pudo cargar el egreso, error : " + error,
+        //nuevoIngreso
+    } );
+}
+
+
     
 }
 
 
 const actualizar_ingreso = async ( req = request, res = response )=>{
+
+
+    
     
 }
 
