@@ -15,13 +15,12 @@ const { actualizar_egreso,
 const router_egresos = Router();
 
 
-router_egresos.route( '/' )
-                .get( [],  obtener_egresos_x_fecha )
-                .get( '/tipos_egreso', obtener_tipos_egreso )
-                .get( '/reportes_egresos_excel', obtener_egresos_x_fecha_excel )
-                .post( [], agrega_regreso)
-                .put( [], actualizar_egreso )
-                .delete( [], borrar_egreso);
+router_egresos.get('/', [],  obtener_egresos_x_fecha );
+router_egresos.get( '/tipos_egreso', obtener_tipos_egreso );
+router_egresos.get( '/reportes_egresos_excel', obtener_egresos_x_fecha_excel );
+router_egresos.post('/', [], agrega_regreso);
+router_egresos.put( '/',[], actualizar_egreso );
+router_egresos.delete('/', [], borrar_egreso);
 
 
 

@@ -48,7 +48,8 @@ async function main() {
                                                                       { descripcion : 'PROFESORES' },    
                                                                       { descripcion : 'RESERVAS' },
                                                                       { descripcion : 'SEGURIDAD' },
-                                                                      { descripcion : 'GASTOS_INGRESOS' },                                                                         
+                                                                      { descripcion : 'GASTOS_INGRESOS' },   
+                                                                      { descripcion : 'RUTAS_DE_APP' }                                                                      
                                                                     ]
                                                                   }
                                                                 );
@@ -74,6 +75,9 @@ async function main() {
                                                                 { path_ruta : '/pases_jugadores', id_tipo_ruta_app : 3  },
                                                                 { path_ruta : '/profesores', id_tipo_ruta_app : 8  },
                                                                 { path_ruta : '/agendamiento_clases', id_tipo_ruta_app : 9 },
+                                                                { path_ruta : '/rutas_app', id_tipo_ruta_app : 9 },
+                                                                { path_ruta : '/ingresos', id_tipo_ruta_app : 9 },
+                                                                { path_ruta : '/egresos', id_tipo_ruta_app : 12 },
                                                               ]
                                                             }
                                                           );
@@ -109,7 +113,10 @@ async function main() {
                                                                                 { id_rol_usuario : 1, id_ruta_app : 13 },
                                                                                 { id_rol_usuario : 1, id_ruta_app : 14 },
                                                                                 { id_rol_usuario : 1, id_ruta_app : 15 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 16 }
+                                                                                { id_rol_usuario : 1, id_ruta_app : 16 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 17 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 18 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 19 },
                                                                               ]
                                                                             }
 

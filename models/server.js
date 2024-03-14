@@ -45,6 +45,9 @@ const validar_token = require('../middlewares///validar_token');
 const { validar_existe_usuario, validar_existe_usuario_socio } = require('../middlewares/validar_existe_usuario');
 const { validar_acceso_a_ruta } = require('../middlewares/validar_acceso_a_ruta');
 const { desencriptar_body_login } = require('../middlewares/desencriptar_login');
+const router_ingresos = require('../routes/ingresos_routes');
+const router_egresos = require('../routes/egresos_routes');
+const { router_rutas_app } = require('../routes/rutas_app_routes');
 //----------------------------------------------------------------------------
 
 
@@ -139,13 +142,19 @@ class Server {
         this.app.use( rutas.profesores.ruta, router_profesores );
 
         this.app.use (rutas.clases_particulares.ruta, router_clases );
+
+        this.app.use( rutas.ingresos_del_club.ruta, router_ingresos );
+
+        this.app.use( rutas.egresos_del_club.ruta, router_egresos );
+
+        this.app.use( rutas.rutas_de_la_app.ruta, router_rutas_app );
     }
 
     listar_rutas (){
 
         listEndpoints( this.app ).forEach(function(element) {
             const { path } = element;
-            //console.log(path);
+            console.log(path);
           });
 
         //console.log(getEndpoints(this.app));
@@ -167,6 +176,8 @@ class Server {
             console.log('     |___|');
             console.log ( `\nEN LINEA EN PUERTO  ${ this.PUERTO }` );
         } )
+
+        //this.listar_rutas()
     }
 
 

@@ -16,14 +16,12 @@ const { actualizar_ingreso,
 const router_ingresos = Router();
 
 
-
-router_ingresos.route( '/' )
-                .get( [], obtener_ingresos_x_fecha )
-                .get( [], '/tipos_ingreso', obtener_tipos_ingreso )
-                .get( '/reportes_ingresos_excel', [  ], obtener_ingresos_x_fecha_excel )
-                .post( [], agregar_ingreso )
-                .put( [] , actualizar_ingreso)
-                .delete( [], borrar_ingreso );
+router_ingresos.get( '/', [], obtener_ingresos_x_fecha );
+router_ingresos.get( '/tipos_ingreso', [], obtener_tipos_ingreso );
+router_ingresos.get( '/reportes_ingresos_excel', [  ], obtener_ingresos_x_fecha_excel );
+router_ingresos.post('/', [], agregar_ingreso );
+router_ingresos.put( '/', [] , actualizar_ingreso);
+router_ingresos.delete( '/', [], borrar_ingreso );
 
 
 

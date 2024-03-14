@@ -156,7 +156,7 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
 
     try {
         
-        const {  } = req.body;
+        const { fechaDesde, fechaHasta } = req.body;
 
         const egresos_x_fecha = await prisma.egresos.findMany( { 
                                                                     where : { 
@@ -283,6 +283,107 @@ const obtener_tipos_egreso = async ( req = request, res = response )=>{
         } );
     }
 }
+
+
+
+const obtener_egresos = async ( req = request, res = response )=>{
+
+    try {
+        
+        const { fechaDesde, fechaHasta, pagina } = req.query;
+
+        const [ dia_desde, mes_desde, annio_desde ] =  fechaDesde.split( '/' );
+
+        const [ dia_hasta, mes_hasta, annio_hasta ] =  fechaHasta.split( '/' );
+
+
+        const fecha_desde = new Date( Number(annio_desde), Number(mes_desde) -1 , Number(dia_desde)  );
+
+        const fecha_hasta = new Date( Number(annio_hasta), Number(mes_hasta) -1 , Number(dia_hasta) );
+
+        const query = await prisma.$queryRaw`SELECT A.is_operacion_egreso AS id_operacion_egreso,
+                                                		A.id_socio, 
+                                                		B.nombre_usuario, 
+                                                		B.nombre_cmp,
+                                                		A.id_tipo AS id_tipo_egreso, 
+                                                		A.nro_factura,
+                                                		C.descripcion AS tipo_ingreso,
+                                                		A.descripcion AS comentario, 
+                                                		A.monto, 
+                                                		A.cargado_en AS fecha_carga,
+                                                		A.editado_en as fecha_actualizacion		
+                                                FROM EGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
+                                                JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
+                                            WHERE A.cargado BETWEEN ${fecha_desde} AND ${fechaHasta}
+                                            LIMIT 10 OFFSET ${pagina}
+                                            ORDER BY A.cargado DESC`
+
+        const egresosXFecha = []
+
+        if ( query.length > 0 ){
+
+            query.forEach( ( value )=>{
+
+                const { id_operacion_egreso ,
+                        id_socio, 
+                        nombre_usuario, 
+                        nombre_cmp,
+                        id_tipo , 
+                        nro_factura,
+                        id_tipo_egreso,
+                        comentario, 
+                        monto, 
+                        fecha_carga,
+                        fecha_actualizacion  } = value;
+
+                        
+                egresosXFecha.push( {
+                        idOperacionEgreso : id_operacion_egreso ,
+                        idSocio : id_socio, 
+                        nombreUsuario : nombre_usuario, 
+                        nombreCmp : nombre_cmp,
+                        idTipo : id_tipo_egreso , 
+                        nroFactura : nro_factura,
+                        tiposEgreso : tipo_ingreso,
+                        comentario, 
+                        monto, 
+                        fechaCarga : fecha_carga,
+                        fechaActualizacion : fecha_actualizacion 
+                } )
+            });
+
+
+
+        }
+
+
+        res.status( 200 ).json(
+            {
+                status : true,
+                msj : `Egresos de las fechas ${fechaDesde } y ${ fechaHasta }`,
+                egresosXFecha
+            }
+        )
+
+    } catch (error) {
+        console.log( error );
+
+        res.status( 400 ).json( {
+            status : false,
+            msg : "No se pudo obtener los ingresos, error : " + error,
+            //nuevoIngreso
+        } );
+
+
+
+
+    }
+
+
+
+
+}
+
 
 
 

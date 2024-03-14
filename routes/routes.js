@@ -83,7 +83,22 @@ const rutas = {
 
     clases_particulares : {
         ruta : "/agendamiento_clases"
+    },
+
+    ingresos_del_club : {
+        ruta : "/ingresos"
+    },
+
+    egresos_del_club : {
+        ruta : "/egresos"
+    },
+
+    rutas_de_la_app : {
+
+        ruta : "/rutas_app"
+
     }
+
 
 }
 
