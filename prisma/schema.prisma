@@ -354,16 +354,17 @@ model tipos_ruta_app {
 }
 
 model egresos {
-  is_operacion_egreso Int          @id(map: "egresos_pk")
+  is_operacion_egreso Int          @id(map: "egresos_pk") @default(autoincrement())
   id_socio            BigInt
   id_tipo             Int
   nro_factura         String       @db.VarChar(255)
   cargado_en          DateTime     @db.Date
-  editado_en          DateTime     @db.Date
+  editado_en          DateTime?    @db.Date
   descripcion         String       @db.VarChar
   monto               Int
   borrado             Boolean?
   comprobante         String       @db.VarChar
+  fecha_pago          DateTime     @db.Date
   socio               socio        @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_egresos_fk")
   tipos_egreso        tipos_egreso @relation(fields: [id_tipo], references: [id_tipo], onDelete: NoAction, onUpdate: NoAction, map: "tipos_egreso_egresos_fk")
 }
@@ -374,7 +375,7 @@ model ingresos {
   id_tipo                    Int
   nro_factura                String?       @db.VarChar(255)
   cargado_en                 DateTime      @db.Date
-  editado_en                 DateTime      @db.Date
+  editado_en                 DateTime?     @db.Date
   descripcion                String?       @db.VarChar
   monto                      Int
   borrado                    Boolean       @default(false)

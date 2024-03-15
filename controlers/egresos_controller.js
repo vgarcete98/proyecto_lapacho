@@ -13,15 +13,24 @@ const prisma = new PrismaClient();
 const agrega_regreso = async ( req = request, res = response )=>{
     try {
         
-        const { id_tipo_egreso, descripcion_egreso, monto_egreso } = req.body;
+        const { idTipoEgreso, descripcionEgreso, montoEngreso, idSocio, nroFactura, fechaPago } = req.body;
         const fecha_carga = new Date();
 
+        const [ dia, mes, annio ] =  fechaPago.split( '/' );
 
-        const nuevo_egreso = await prisma.ingresos.create( { data : {  
+        const fechaDePago = new Date( Number(annio), Number(mes) -1 , Number(dia)  );
+
+
+        const nuevo_egreso = await prisma.egresos.create( { data : {  
                                                                         cargado_en : fecha_carga,
-                                                                        monto : monto_egreso,
-                                                                        id_socio : 1,
-                                                                        id_tipo : id_tipo_egreso
+                                                                        editado_en : fecha_carga,
+                                                                        monto : montoEngreso,
+                                                                        id_socio : idSocio,
+                                                                        id_tipo : idTipoEgreso,
+                                                                        descripcion : descripcionEgreso,
+                                                                        nro_factura : nroFactura,
+                                                                        fecha_pago : fechaDePago,
+                                                                        comprobante : ''
                                                                     } 
                                                         } )
 
@@ -29,7 +38,7 @@ const agrega_regreso = async ( req = request, res = response )=>{
 
         const nuevoEgreso = {
             cargadoEn : cargado_en,
-            idSocio : id_socio,
+            idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
             monto,
             idTipo : id_tipo,
             descripcion
@@ -37,7 +46,7 @@ const agrega_regreso = async ( req = request, res = response )=>{
 
         res.status( 200 ).json( {
             status : true,
-            msg : "Igreso Cargado",
+            msg : "Egreso Cargado",
             nuevoEgreso
         } );
 
@@ -156,26 +165,55 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
 
     try {
         
-        const { fechaDesde, fechaHasta } = req.body;
+        const { fechaDesde, fechaHasta, pagina } = req.query;
 
-        const egresos_x_fecha = await prisma.egresos.findMany( { 
-                                                                    where : { 
-                                                                        cargado_en : { gte : new Date(), lte : new Date() }
-                                                                    },
-                                                                    orderBy : { cargado_en : 'desc' },
-                                                                } );
+        const query = `SELECT A.is_operacion_egreso AS id_operacion_egreso,
+                                A.id_socio,
+                                B.nombre_usuario,
+                                B.nombre_cmp,
+                                A.id_tipo AS id_tipo_egreso,
+                                C.descripcion AS tipo_ingreso,
+                                A.descripcion AS comentario,
+                                A.monto,
+                                A.nro_factura,
+                                A.cargado_en AS fecha_carga,
+                                A.editado_en as fecha_actualizacion
+                            FROM EGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
+                            JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
+                        WHERE A.cargado_en BETWEEN TO_DATE('${fechaDesde}', 'DD/MM/YYYY' )  AND  TO_DATE('${fechaHasta}' , 'DD/MM/YYYY' )
+                        ORDER BY A.cargado_en DESC
+                        LIMIT 20 OFFSET ${Number(pagina)}`
+
+
+
+        const egresos_x_fecha = await prisma.$queryRawUnsafe(query);
 
         let egresosXFecha = [];
         egresos_x_fecha.forEach( ( value )=>{
-            const { is_operacion_egreso, cargado_en, comprobante, descripcion, id_tipo, monto, nro_factura } = value;
+            const {  id_operacion_egreso,
+                    id_socio,
+                    nombre_usuario,
+                    nombre_cmp,
+                    id_tipo_egreso,
+                    tipo_ingreso,
+                    comentario,
+                    monto,
+                    nro_factura,
+                    fecha_carga,
+                    fecha_actualizacion } = value;
+            
+            
             egresosXFecha.push( {
-                idOperacionEgreso : is_operacion_egreso,
-                cargadoEn : cargado_en,
-                comprobante,
-                descripcion,
-                idTipo : id_tipo,
-                monto,
-                nro_factura
+                idOperacionEgreso : id_operacion_egreso,
+                idSocio : id_socio,
+                nombreUsuario : nombre_usuario,
+                nombreCmp : nombre_cmp,
+                tiposIngreso : tipo_ingreso,
+                comentario : comentario,
+                nroFactura : nro_factura,
+                monto : monto,
+                fechaCarga : fecha_carga,
+                fechaActualizacion : fecha_actualizacion
             } );
 
             

@@ -98,25 +98,25 @@ const borrar_ingreso = async ( req = request, res = response )=>{
 //A VER BORRAR EN SI NO SE VA HACER, SOLO CAMBIAR EL ESTADO DE UNA COLUMNA QUE SE LLAMA BORRADO
 try {
 
-    const { idOperacionEgreso } = req.body;
+    const { id_ingreso } = req.params;
 
     const fecha_borrado = new Date();
-    const borrado_egreso = await prisma.ingresos.update( { 
+    const borrado_ingreso = await prisma.ingresos.update( { 
                                                             data : { borrado : true, editado_en : fecha_borrado },
-                                                            where : { column_d_operacion_ingreso : idOperacionEgreso }
-                                                         } );
+                                                            where : { column_d_operacion_ingreso : Number(id_ingreso) }
+                                                        } );
 
-    const { id_operacion_ingreso, monto, nro_factura, descripcion, id_socio, id_tipo   } = borrado_egreso;
+    const { column_d_operacion_ingreso, monto, nro_factura, descripcion, id_socio, id_tipo   } = borrado_ingreso;
     
     res.status( 200 ).json( {
         status : true,
         msg : "Registro Borrado",
         BorradoIngreso : {
-            idOperacionIngreso : id_operacion_ingreso,
+            idOperacionIngreso : column_d_operacion_ingreso,
             monto,
             nroFactura : nro_factura,
             descripcion,
-            idSocio : id_socio,
+            idSocio :  (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
             idTipo : id_tipo
         }
     } );
@@ -124,11 +124,22 @@ try {
 
 } catch (error) {
     console.log( error );
-    res.status( 400 ).json( {
-        status : false,
-        msg : "No se pudo cargar el egreso, error : " + error,
-        //nuevoIngreso
-    } );
+    const { code, meta} = error;
+    const { cause } = meta;
+    if ( code ===  'P2025' ){
+        res.status( 400 ).json( {
+            status : false,
+            msg : "No se pudo actualizar el ingreso, El mismo no se encontro, error : " + cause,
+            //nuevoIngreso
+        } );
+    }else{
+        res.status( 400 ).json( {
+            status : false,
+            msg : "No se pudo actrualizar el ingreso, error : " + error,
+            //nuevoIngreso
+        } );        
+    }
+
 }
 
 
@@ -305,11 +316,10 @@ const actualizar_ingreso = async ( req = request, res = response )=>{
 const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
     try {
 
-        console.log( req.query );
+        //console.log( req.query );
 
         const { fechaDesde, fechaHasta, pagina } = req.query;
-
-        const query = await prisma.$queryRaw`SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
+        const query_ingresos = `SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
                                                     A.id_socio,
                                                     B.nombre_usuario,
                                                     B.nombre_cmp,
@@ -321,10 +331,14 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
                                                     A.editado_en as fecha_actualizacion
                                                 FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
                                                 JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
-                                            --WHERE A.cargado_en BETWEEN CAST ('${fechaDesde}' AS DATE) AND  CAST ('${fechaHasta}' AS DATE)
+                                            WHERE A.cargado_en BETWEEN CAST('${fechaDesde}' AS DATE ) AND CAST('${fechaHasta}' AS DATE ) 
                                             ORDER BY A.cargado_en DESC
-                                            LIMIT 20 OFFSET ${Number(pagina)}`;
+                                            LIMIT 20 OFFSET ${Number(pagina)};`
 
+        const query = await prisma.$queryRawUnsafe( query_ingresos );
+
+                                            
+        //console.log( query );
         const ingresosXFecha = [];
 
         if ( query.length > 0 ){

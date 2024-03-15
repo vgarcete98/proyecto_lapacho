@@ -11,7 +11,7 @@ const validar_acceso_a_ruta = async (req = request, res = response, next)=>{
 
 
     try {
-        //console.log( req.path );
+        console.log( req.path );
         if (req.path === '/auth/login') {
             next()
         } else {
@@ -24,7 +24,8 @@ const validar_acceso_a_ruta = async (req = request, res = response, next)=>{
 
             const { token_trad } = req;
 
-            const { id_usuario } = token_trad;                
+            const { id_usuario } = token_trad;  
+            //console.log( id_usuario )              
             
             const resultado = await prisma.$queryRaw`SELECT D.PATH_RUTA AS ruta
                                                         FROM ACCESOS_USUARIO A JOIN roles_usuario B ON B.id_rol_usuario = A.id_rol_usuario
@@ -38,7 +39,13 @@ const validar_acceso_a_ruta = async (req = request, res = response, next)=>{
             resultado.forEach(element => {
                 const { ruta } = element;
                 //console.log( ruta );
-                if ( ruta === req.path ){
+                const rutas = req.path.split( '/' );
+                //console.log( rutas )
+                if ( rutas.length > 2 ){
+                    if ( ruta === `/${rutas[1]}` ){
+                        comprobado = true;
+                    }
+                }else if ( ruta === req.path ){
                     comprobado = true;
                 }
 
