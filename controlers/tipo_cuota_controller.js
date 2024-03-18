@@ -1,6 +1,7 @@
 const { request, response } = require('express')
 
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient } = require('@prisma/client');
+const { json } = require('body-parser');
 
 const prisma = new PrismaClient();
 
@@ -8,15 +9,43 @@ const prisma = new PrismaClient();
 
 const obtener_tipos_de_cuota = async ( req = request, res = response ) => {
 
+    try {
+        const tipos_cuota = await prisma.tipo_cuota.findMany(  );
 
-    res.status( 200 ).json(
+        const tiposCuota = [];
+        tipos_cuota.forEach( ( value )=>{
 
-        {
-            status : true,
-            msj : 'Pagos del mes en el club',
+            const { creadoen, desc_tipo_cuota, editadoen, id_tipo_cuota, monto_cuota } = value;
             
-        }
-    );
+            //const idTipoCuota =Number(JSON.stringify(id_tipo_cuota));
+            tiposCuota.push( {
+                creadoEn : creadoen,
+                descripcion : desc_tipo_cuota,
+                editadoEn : editadoen,
+                montoDeCuota : monto_cuota,
+                idTipoCuota : id_tipo_cuota
+            } );
+
+        } )
+
+        res.status( 200 ).json(
+            {
+                status : true,
+                msj : 'Tipos de cuota en el club',
+                tiposCuota
+            }
+        );        
+    } catch (error) {
+        console.log( error );
+        res.status( 400 ).json(
+            {
+                status : false,
+                msj : 'Ha ocurrido un error al consultar los tipos de cuota : ' + error
+            }
+        ); 
+        
+    }
+
 
 
 }
@@ -24,25 +53,47 @@ const obtener_tipos_de_cuota = async ( req = request, res = response ) => {
 
 const crear_tipo_de_cuota = async ( req = request, res = response ) => {
 
+    try {
+        const { descripcion, montoCuota } = req.body;
 
-    const { descripcion, monto_cuota } = req.body;
+        const nuevo_tipo_cuota = await prisma.tipo_cuota.create( { data : {  
+                                                                        monto_cuota : montoCuota,
+                                                                        desc_tipo_cuota : descripcion,
+                                                                        creadoen : new Date()
+                                                                    } 
+                                                                } );
+        
+        const { creadoen, desc_tipo_cuota, editadoen, id_tipo_cuota, monto_cuota } = nuevo_tipo_cuota;
+        if ( nuevo_tipo_cuota > 0 ) {
 
-    const nuevo_tipo_cuota = await prisma.$executeRaw`INSERT INTO TIPO_CUOTA 
-                                                            ( DESC_TIPO_CUOTA, MONTO_CUOTA )
-                                                        VALUES ( ${ descripcion }, ${ monto_cuota } )`;
-    if ( nuevo_tipo_cuota > 0 ) {
+            res.status( 200 ).json(
 
-        res.status( 200 ).json(
+                {
+                    status : true,
+                    msj : 'Nuevo tipo de cuota Creado',
+                    tipoCuota :{
+                        creadoEn : creadoen,
+                        descripcion : desc_tipo_cuota,
+                        editadoEn : editadoen,
+                        idTipoCuota : id_tipo_cuota,
+                        montoDeCuota : monto_cuota
+                    } 
+                }
+            );
 
-            {
-                status : true,
-                msj : 'Nuevo tipo de cuota Creado',
-                status : true
-            }
-        );
+        } else {
+            res.status( 200 ).json(
 
-    } else {
-        res.status( 200 ).json(
+                {
+                    status : true,
+                    msj : 'No se pudo crear el tipo de cuota',
+                    status : false
+                }
+            );
+        }        
+    } catch (error) {
+        console.log( error );
+        res.status( 400 ).json(
 
             {
                 status : true,
@@ -53,55 +104,115 @@ const crear_tipo_de_cuota = async ( req = request, res = response ) => {
     }
 
 
+
+
 }
 
 
 const editar_tipo_de_cuota = async ( req = request, res = response ) => {
 
-    const { descripcion, monto_cuota } = req.body;
-    const { id_tipo_cuota } = req.params;
+    try {
+        const { descripcion, montoCuota } = req.body;
+        const { id_tipo_cuota } = req.params;
+        const idTipoCuota  = id_tipo_cuota;
+        const editar_tipo_de_cuota = await prisma.tipo_cuota.update( { 
+                                                                        data : { desc_tipo_cuota : descripcion, monto_cuota : montoCuota },
+                                                                        where : { id_tipo_cuota : idTipoCuota } 
+                                                                    } );
 
-    const editar_tipo_de_cuota = await prisma.$executeRaw`UPDATE public.tipo_cuota
-                                                                SET desc_tipo_cuota=${ descripcion }, monto_cuota= ${ monto_cuota }
-                                                            WHERE id_tipo_cuota = ${ id_tipo_cuota }`;
 
-    if ( editar_tipo_de_cuota > 0 ) { 
+        const { creadoen, desc_tipo_cuota, editadoen,  monto_cuota } = editar_tipo_de_cuota;
 
-        res.status( 200 ).json(
+        if ( editar_tipo_de_cuota > 0 ) { 
 
+            res.status( 200 ).json(
+
+                {
+                    status : true,
+                    msj : 'Monto actualizado de cuotas',
+                    tipoCuota : {
+                        creadoEn : creadoen, 
+                        descTipoCuota : desc_tipo_cuota, 
+                        editadoEn : editadoen, 
+                        montoCuota : monto_cuota,
+                        idTipoCuota
+                    }
+                }
+            );
+
+
+        } else {
+            res.status( 400 ).json(
+                {
+                    status : false,
+                    msj : 'No se encontro el registro para editar'
+                }
+            );
+        }        
+    } catch (error) {
+        console.log( error );
+        res.status( 400 ).json(
             {
-                status : true,
-                msj : 'Pagos del mes en el club',
-                status : true
-            }
-        );
-
-
-    } else {
-        res.status( 200 ).json(
-
-            {
-                status : true,
-                msj : 'Editado tipo de cuota',
-                status : false
+                status : false,
+                msj : `Ocurrio un error al editar el registro : ${ error }`
             }
         );
     }
+
+
 
 }
 
 
 const borrar_tipo_de_cuota = async ( req = request, res = response ) => {
 
+    try {
+        const { descripcion, montoCuota } = req.body;
+        const { id_tipo_cuota } = req.params;
+        const idTipoCuota  = id_tipo_cuota;
+        const editar_tipo_de_cuota = await prisma.tipo_cuota.update( { 
+                                                                        data : { desc_tipo_cuota : descripcion, monto_cuota : montoCuota },
+                                                                        where : { id_tipo_cuota : idTipoCuota } 
+                                                                    } );
 
-    res.status( 200 ).json(
 
-        {
-            status : true,
-            msj : 'Pagos del mes en el club',
-            
-        }
-    );
+        const { creadoen, desc_tipo_cuota, editadoen,  monto_cuota } = editar_tipo_de_cuota;
+
+        if ( editar_tipo_de_cuota > 0 ) { 
+
+            res.status( 200 ).json(
+
+                {
+                    status : true,
+                    msj : 'Tipo de cuota borrado',
+                    tipoCuota : {
+                        creadoEn : creadoen, 
+                        descTipoCuota : desc_tipo_cuota, 
+                        editadoEn : editadoen, 
+                        montoCuota : monto_cuota,
+                        idTipoCuota : typeof idTipoCuota === 'bigint' ? Number(idTipoCuota) : idTipoCuota
+                    }
+                }
+            );
+
+
+        } else {
+            res.status( 400 ).json(
+                {
+                    status : false,
+                    msj : 'No se encontro el registro para eliminar'
+                }
+            );
+        }        
+    } catch (error) {
+        console.log( error );
+        res.status( 400 ).json(
+            {
+                status : false,
+                msj : `Ocurrio un error al eliminar el registro : ${ error }`
+            }
+        );
+    }
 
 
 }

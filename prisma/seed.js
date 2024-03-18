@@ -49,7 +49,8 @@ async function main() {
                                                                       { descripcion : 'RESERVAS' },
                                                                       { descripcion : 'SEGURIDAD' },
                                                                       { descripcion : 'GASTOS_INGRESOS' },   
-                                                                      { descripcion : 'RUTAS_DE_APP' }                                                                      
+                                                                      { descripcion : 'RUTAS_DE_APP' },
+                                                                      { descripcion : 'TIPO_CUOTAS' }                                                                      
                                                                     ]
                                                                   }
                                                                 );
@@ -78,6 +79,7 @@ async function main() {
                                                                 { path_ruta : '/rutas_app', id_tipo_ruta_app : 9 },
                                                                 { path_ruta : '/ingresos', id_tipo_ruta_app : 9 },
                                                                 { path_ruta : '/egresos', id_tipo_ruta_app : 12 },
+                                                                { path_ruta : '/tipo_cuotas', id_tipo_ruta_app : 13 }
                                                               ]
                                                             }
                                                           );
@@ -117,6 +119,7 @@ async function main() {
                                                                                 { id_rol_usuario : 1, id_ruta_app : 17 },
                                                                                 { id_rol_usuario : 1, id_ruta_app : 18 },
                                                                                 { id_rol_usuario : 1, id_ruta_app : 19 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 20 }
                                                                               ]
                                                                             }
 
@@ -224,9 +227,9 @@ async function main() {
   //AQUI VENDRIA EL TRIGGER QUE SE ENCARGA DE GENERAR LAS CUOTAS PARA LOS SOCIOS
 
 
-  /*const funcion_trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION generar_cuotas_socio()
+  const funcion_trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION generar_cuotas_socio()
                                                             RETURNS TRIGGER AS $$
-                                                            
+                                                                                                                          
                                                             DECLARE
                                                                 fecha_inicio DATE;
                                                               fecha_loop DATE;
@@ -234,14 +237,15 @@ async function main() {
                                                               meses_a_sumar INT := 36;
                                                               contador INTEGER;
                                                               tipo_cuota BIGINT;
+                                                              monto_cuota_socio INTEGER;
                                                             BEGIN
-                                                            
-                                                                -- Define el rango de fechas y el producto para el que deseas calcular el total de ventas
+                                                                                                                          
+                                                                -- Define el rango de fechas y el producto para el que deseas calcular el total de cuotas
                                                                 fecha_inicio := NOW();
                                                               fecha_vencimiento_cuota := DATE_TRUNC('month', fecha_inicio);
-                                                            
+                                                                                                                          
                                                               contador := 1;
-                                                              
+                                                                                                                          
                                                               IF NEW.ID_TIPO_SOCIO = 1 THEN
                                                                 tipo_cuota := 1;				
                                                                 ELSE
@@ -251,33 +255,36 @@ async function main() {
                                                                   tipo_cuota := 3;			
                                                                   END IF;
                                                                 END IF;	
-                                                              
-                                                              
+                                                                                                                          
+                                                                                                                          
                                                               fecha_loop := DATE_TRUNC('month', fecha_inicio);
+                                                              SELECT MONTO_CUOTA INTO monto_cuota_socio FROM TIPO_CUOTA A WHERE A.ID_TIPO_CUOTA = tipo_cuota LIMIT 1;
                                                               LOOP
                                                                     -- Incrementa el contador
                                                                     contador := contador + 1;
-                                                                    
+                                                                                                                          
                                                                 fecha_loop := fecha_loop + INTERVAL '1 months';
                                                                 fecha_vencimiento_cuota := DATE_TRUNC('month', fecha_loop) + INTERVAL '4 days';
-                                                                
-                                                                
+                                                                                                                          
+                                                                                                                          
+                                                                                                                          
+                                                                                                                          
                                                                 INSERT INTO CUOTAS_SOCIO ( id_socio, id_tipo_cuota, id_tipo_descuento, 
-                                                                              fecha_vencimiento, descripcion)
-                                                                  VALUES ( NEW.ID_SOCIO, 1, tipo_cuota,
-                                                                        fecha_vencimiento_cuota, CONCAT ( 'CUOTA : ', fecha_vencimiento_cuota ) );
+                                                                              fecha_vencimiento, descripcion, pago_realizado, monto_cuota)
+                                                                  VALUES ( NEW.ID_SOCIO, tipo_cuota, 1,
+                                                                        fecha_vencimiento_cuota, CONCAT ( 'CUOTA : ', fecha_vencimiento_cuota ), false, monto_cuota_socio );
                                                                           
-                                                                
+                                                                  
                                                                     -- Comprueba la condición de salida
                                                                     IF contador >36  THEN
                                                                         EXIT; -- Sale del bucle si el contador es mayor que 36
                                                                     END IF;
                                                                 END LOOP;
-                                                            
+                                                                  
                                                               RETURN NEW;
-                                                            
+                                                                  
                                                             END;
-                                                            $$ LANGUAGE plpgsql;`*/
+                                                            $$ LANGUAGE plpgsql;`
 
 
   /*const procedimiento_genera_cuotas = await prisma.$executeRaw`CREATE OR REPLACE PROCEDURE genera_cuotas_annio()
@@ -305,13 +312,36 @@ async function main() {
                                                                 
                                                                     END LOOP;
 
-                                                                END $$ LANGUAGE plpgsql;`
+                                                                END $$ LANGUAGE plpgsql;`*/
 
   const trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_generar_cuotas_socio
                                                   AFTER INSERT ON SOCIO
                                                   FOR EACH ROW
-                                                  EXECUTE FUNCTION generar_cuotas_socio();`*/
+                                                  EXECUTE FUNCTION generar_cuotas_socio();`
 
+
+const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION cambia_monto_cuotas()
+                                                          RETURNS TRIGGER AS $$
+                                                          DECLARE
+                                                          BEGIN
+                                                          	UPDATE CUOTAS_SOCIO
+                                                          		SET MONTO_CUOTA = NEW.monto_cuota
+                                                          	WHERE FECHA_PAGO_REALIZADO IS NOT NULL 
+                                                          			AND ID_SOCIO NOT IN ( SELECT ID_SOCIO FROM SOCIO 
+                                                          									WHERE tipo_usuario = 'SUSPENDIDO' OR tipo_usuario = 'ELIMINADO' OR id_tipo_socio = 5 )
+                                                          			AND ID_TIPO_CUOTA = OLD.ID_TIPO_CUOTA;
+                                                                
+                                                                
+                                                            RETURN NEW;
+                                                                
+                                                          END;
+                                                        $$ LANGUAGE plpgsql;`;
+
+
+  const trigger_actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_cambia_monto_cuotas
+                                                                  AFTER UPDATE ON TIPO_CUOTA
+                                                                  FOR EACH ROW
+                                                                  EXECUTE FUNCTION cambia_monto_cuotas();`  
 
   // PERSONA QUE MANEJA EL USUARIO
   //---------------------------------------------------------------------------------
@@ -338,12 +368,12 @@ async function main() {
   const pass_admin = process.env.C0NTR4SEN1A_4DM1N; 
 
   const socios = await prisma.socio.createMany( { data : [  
-                                                            //{ 
-                                                            //  id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
-                                                            //  nombre_cmp : "Victor Garcete", numero_telefono : "0985552004", id_persona : 1,
-                                                            //  nombre_usuario : "v_garcete", contrasea : "12345678", estado_usuario : 1, 
-                                                            //  creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "ACTIVO" 
-                                                            //},
+                                                            { 
+                                                              id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
+                                                              nombre_cmp : "Victor Garcete", numero_telefono : "0985552004", id_persona : 1,
+                                                              nombre_usuario : "v_garcete", contrasea : "12345678", estado_usuario : 1, 
+                                                              creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "ACTIVO" 
+                                                            },
 
                                                             { 
                                                               id_tipo_socio : 4, creadoen : new Date(), estado_socio : 1,
@@ -352,12 +382,12 @@ async function main() {
                                                               creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "ACTIVO" 
                                                             },
 
-                                                            //{ 
-                                                            //  id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
-                                                            //  nombre_cmp : "Lucas Torres", numero_telefono : "------------", id_persona : 2,
-                                                            //  nombre_usuario : "lucas.torres", contrasea : "12345678", estado_usuario : 2, 
-                                                            //  creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "SUSPENDIDO" 
-                                                            //}
+                                                            { 
+                                                              id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
+                                                              nombre_cmp : "Lucas Torres", numero_telefono : "------------", id_persona : 2,
+                                                              nombre_usuario : "lucas.torres", contrasea : "12345678", estado_usuario : 2, 
+                                                              creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "SUSPENDIDO" 
+                                                            }
                                                           ] 
                                               } );
   //---------------------------------------------------------------------------------

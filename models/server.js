@@ -48,6 +48,7 @@ const { desencriptar_body_login } = require('../middlewares/desencriptar_login')
 const router_ingresos = require('../routes/ingresos_routes');
 const router_egresos = require('../routes/egresos_routes');
 const { router_rutas_app } = require('../routes/rutas_app_routes');
+const router_tipo_cuota = require('../routes/tipo_cuota_routes');
 //----------------------------------------------------------------------------
 
 
@@ -148,6 +149,8 @@ class Server {
         this.app.use( rutas.egresos_del_club.ruta, router_egresos );
 
         this.app.use( rutas.rutas_de_la_app.ruta, router_rutas_app );
+
+        this.app.use( rutas.tipo_cuotas.ruta, router_tipo_cuota )
     }
 
     listar_rutas (){

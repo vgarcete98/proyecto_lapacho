@@ -69,7 +69,7 @@ model cuotas_socio {
   pago_realizado       Boolean?       @default(false)
   fecha_pago_realizado DateTime?      @db.Date
   monto_cuota          Int
-  id_tipo_cuota        BigInt
+  id_tipo_cuota        Int
   socio                socio          @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_cuotas_socio_fk")
   tipo_cuota           tipo_cuota     @relation(fields: [id_tipo_cuota], references: [id_tipo_cuota], onDelete: NoAction, onUpdate: NoAction, map: "tipo_cuota_cuotas_socio_fk")
   tipo_descuento       tipo_descuento @relation(fields: [id_tipo_descuento], references: [id_tipo_descuento], onDelete: NoAction, onUpdate: NoAction, map: "tipo_descuento_cuotas_socio_fk")
@@ -215,11 +215,12 @@ model socio_reservas {
 }
 
 model tipo_cuota {
-  id_tipo_cuota   BigInt         @id(map: "tipo_cuota_pk") @default(autoincrement())
-  monto_cuota     BigInt
+  id_tipo_cuota   Int            @id(map: "tipo_cuota_pk") @default(autoincrement())
+  monto_cuota     Int
   creadoen        DateTime       @db.Date
   editadoen       DateTime?      @db.Date
   desc_tipo_cuota String         @db.VarChar(255)
+  borrado         Boolean?
   cuotas_socio    cuotas_socio[]
 }
 
