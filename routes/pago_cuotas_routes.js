@@ -4,7 +4,6 @@ const Router = require( 'express' )
 const {
         obtener_pagos_x_mes,
         obtener_pagos_x_socio,
-        obtener_cuotas_pendientes_x_socio,
         realizar_pago_socio,
         obtener_comprobante_pago_cuota } = require( '../controlers/socio_pagos_controller' );
         
@@ -17,8 +16,6 @@ const router_pagos = Router();
 router_pagos.get( '/', [ /*validar_token,*/  ], obtener_pagos_x_mes );
 
 router_pagos.get( '/socio', [  ], obtener_pagos_x_socio );
-
-router_pagos.get( '/socio/pagos_pendientes', [ ], obtener_cuotas_pendientes_x_socio );
 
 router_pagos.get( '/socio/comprobante_pago/:id_cuota', [  ], obtener_comprobante_pago_cuota );
 

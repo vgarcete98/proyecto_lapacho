@@ -254,7 +254,6 @@ const obtener_comprobante_pago_cuota = async ( req = request, res = response ) =
 module.exports = {
     obtener_pagos_x_mes,
     obtener_pagos_x_socio,
-    obtener_cuotas_pendientes_x_socio,
     realizar_pago_socio,
     obtener_comprobante_pago_cuota
     

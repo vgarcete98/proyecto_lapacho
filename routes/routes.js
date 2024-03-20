@@ -97,6 +97,11 @@ const rutas = {
 
         ruta : "/rutas_app"
 
+    },
+
+    cuotas_del_club : {
+
+        ruta : "/cuotas_club"
     }
 
 
