@@ -237,7 +237,7 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
             
             egresosXFecha.push( {
                 idOperacionEgreso : id_operacion_egreso,
-                idSocio : id_socio,
+                idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
                 nombreUsuario : nombre_usuario,
                 nombreCmp : nombre_cmp,
                 tiposIngreso : tipo_ingreso,

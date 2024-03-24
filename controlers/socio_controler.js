@@ -462,7 +462,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
             socioPersona = await prisma.$queryRaw`SELECT CAST ( ID_PERSONA AS INTEGER ) AS ID_PERSONA,
                                                         FECHA_NACIMIENTO, CEDULA, NOMBRE, APELLIDO  
                                                         FROM  PERSONA 
-                                                    WHERE CAST ( CEDULA AS INTEGER ) = ${ busqueda }`;            
+                                                    WHERE CAST ( CEDULA AS INTEGER ) = ${ Number( busqueda ) }`;            
         }else {
 
             socioPersona = await prisma.$queryRaw`SELECT CAST ( ID_PERSONA AS INTEGER ) AS ID_PERSONA,
