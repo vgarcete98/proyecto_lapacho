@@ -178,16 +178,16 @@ model socio {
   id_tipo_socio        BigInt
   id_persona           BigInt
   id_acceso_socio      BigInt
-  tipo_usuario         String?                @db.VarChar(255)
+  tipo_usuario         String?                @default(dbgenerated("1")) @db.VarChar(255)
   nombre_usuario       String                 @db.VarChar(255)
   contrasea            String                 @db.VarChar(255)
-  estado_usuario       Int?                   @db.SmallInt
-  nombre_cmp           String?                @db.VarChar(255)
-  correo_electronico   String?                @db.VarChar(255)
+  estado_usuario       Int?                   @default(1) @db.SmallInt
+  nombre_cmp           String?                @default("") @db.VarChar(255)
+  correo_electronico   String?                @default("") @db.VarChar(255)
   numero_telefono      String?                @db.VarChar(255)
-  direccion            String?                @db.VarChar(255)
-  ruc                  String?                @db.VarChar(255)
-  estado_socio         Int?                   @db.SmallInt
+  direccion            String?                @default("") @db.VarChar(255)
+  ruc                  String?                @default("") @db.VarChar(255)
+  estado_socio         Int?                   @default(1) @db.SmallInt
   creadoen             DateTime?              @db.Date
   editadoen            DateTime?              @db.Date
   agendamiento_clase   agendamiento_clase[]
