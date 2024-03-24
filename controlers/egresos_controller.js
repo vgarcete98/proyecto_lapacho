@@ -9,6 +9,30 @@ const prisma = new PrismaClient();
 
 
 
+//PARA  LO QUE SERIA EGRESOS
+//----------------------------------------------------------------
+const workbook_egresos = new ExcelJS.Workbook();
+
+const worksheet_egresos = workbook_egresos.addWorksheet('visitas_personas');
+
+// Defino las columnas
+worksheet_egresos.columns = [
+    { key : 'id_operacion_egreso', header : 'Numero registro',  width: 20  },
+    { key : 'nombre_usuario', header : 'Nombre Usuario',  width: 20 },            
+    { key : 'nombre_completo', header : 'Nombre Completo',  width: 20 },            
+    { key : 'cedula', header : 'Cedula',  width: 20 },            
+    { key : 'tipo_egreso', header : 'Tipo Egreso',  width: 20 },            
+    { key : 'nro_factura', header : 'Numero Factura',  width: 20 },            
+    { key : 'comentario', header : 'Comentario',  width: 20 },            
+    { key : 'monto', header : 'Monto',  width: 20 },            
+    { key : 'fecha_pago', header : 'Fecha de Pago',  width: 20 },            
+    { key : 'fecha_carga', header : 'Fecha de Carga',  width: 20 },            
+    { key : 'fecha_actualizacion', header : 'Fecha de actualizacion',  width: 20 }       
+
+];
+
+
+
 
 const agrega_regreso = async ( req = request, res = response )=>{
     try {
@@ -248,38 +272,45 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
 const obtener_egresos_x_fecha_excel = async ( req = request, res = response )=>{
     try {
         
-        const {  } = req.body;
+        const { fecha_desde, fecha_hasta } = req.query;
 
-        const egresos_x_fecha = await prisma.egresos.findMany( { 
-                                                                    where : { 
-                                                                        cargado_en : { gte : new Date(), lte : new Date() }
-                                                                    },
-                                                                    orderBy : { cargado_en : 'desc' },
-                                                                } );
-
-        let egresosXFecha = [];
+        const egresos_x_fecha = await prisma.$queryRaw`SELECT A.is_operacion_egreso AS id_operacion_egreso,
+                                                		    	B.nombre_usuario, 
+                                                		    	CONCAT(F.apellido, ', ', F.nombre) as nombre_completo,
+                                                                F.cedula,
+                                                		    	C.descripcion AS tipo_egreso, 
+                                                		    	A.nro_factura,
+                                                		    	A.descripcion AS comentario, 
+                                                		    	A.monto, 
+														    	A.fecha_pago,
+                                                		    	A.cargado_en AS fecha_carga,
+                                                		    	A.editado_en as fecha_actualizacion		
+                                                            FROM EGRESOS A 
+												            JOIN SOCIO B ON A.id_socio = B.id_socio
+												            JOIN PERSONA F ON B.id_persona = F.id_persona
+                                                            JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
+                                                        WHERE A.cargado BETWEEN ${fecha_desde} AND ${fecha_hasta}
+                                                        LIMIT 10 OFFSET ${pagina}
+                                                        ORDER BY A.cargado DESC`;
         egresos_x_fecha.forEach( ( value )=>{
-            const { is_operacion_egreso, cargado_en, comprobante, descripcion, id_tipo, monto, nro_factura } = value;
-            egresosXFecha.push( {
-                idOperacionEgreso : is_operacion_egreso,
-                cargadoEn : cargado_en,
-                comprobante,
-                descripcion,
-                idTipo : id_tipo,
-                monto,
-                nro_factura
-            } );
+            const { id_operacion_egreso, fecha_carga, 
+                    fecha_actualizacion, monto, comentario, 
+                    nro_factura, tipo_egreso, cedula,
+                    nombre_completo, nombre_usuario } = value;
 
-            
+            worksheet_egresos.addRow( { 
+                                            id_operacion_egreso, fecha_carga, 
+                                            fecha_actualizacion, monto, comentario, 
+                                            nro_factura, tipo_egreso, cedula,
+                                            nombre_completo, nombre_usuario 
+                                    } );
         } );
 
 
-                
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Registros de las fechas",
-            egresosXFecha
-        } );
+
+        let ruta = path.join( __dirname, `../reportes/${fecha_reporte.toLocaleString().split('/').join('_').split(':').join('_').split(', ').join( '_' )}.xlsx` );
+        await workbook_egresos.xlsx.writeFile(ruta);
+        res.sendFile(ruta);
 
     } catch (error) {
         console.log( error );

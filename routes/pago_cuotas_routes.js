@@ -2,8 +2,6 @@ const Router = require( 'express' )
 
 
 const {
-        obtener_pagos_x_mes,
-        obtener_pagos_x_socio,
         realizar_pago_socio,
         obtener_comprobante_pago_cuota } = require( '../controlers/socio_pagos_controller' );
         
@@ -13,13 +11,17 @@ const { comprobar_pago_cuota_socio } = require( '../helpers/comprobar_pago_cuota
 const router_pagos = Router();
 
 
-router_pagos.get( '/', [ /*validar_token,*/  ], obtener_pagos_x_mes );
-
-router_pagos.get( '/socio', [  ], obtener_pagos_x_socio );
-
 router_pagos.get( '/socio/comprobante_pago/:id_cuota', [  ], obtener_comprobante_pago_cuota );
 
 router_pagos.post( '/', [ /*validar_token,*/ comprobar_pago_cuota_socio ], realizar_pago_socio );
+
+
+
+
+
+
+
+
 
 
 module.exports = router_pagos;

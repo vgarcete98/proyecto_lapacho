@@ -8,30 +8,25 @@ const prisma = new PrismaClient();
 const ExcelJS = require('exceljs');
 
 
+//PARA  LO QUE SERIA EGRESOS
+//----------------------------------------------------------------
 const workbook_ingresos = new ExcelJS.Workbook();
 
-workbook_ingresos.addWorksheet('Reportes_Ingresos');
+const worksheet_ingresos = workbook_ingresos.addWorksheet('visitas_personas');
 
+// Defino las columnas
+worksheet_ingresos.columns = [
 
-const reporte_excel_ingresos = workbook_ingresos.getWorksheet( 'Reportes_Ingresos' );
+    { key : 'id_operacion_ingreso', header : 'Numero registro',  width: 20  },
+    { key : 'nombre_usuario', header : 'Nombre Usuario',  width: 20 },            
+    { key : 'nombre_completo', header : 'Nombre Completo',  width: 20 },            
+    { key : 'cedula', header : 'Cedula',  width: 20 },            
+    { key : 'comentario', header : 'Comentario',  width: 20 },            
+    { key : 'monto', header : 'Monto',  width: 20 },            
+    { key : 'cargado_en', header : 'Fecha de Carga',  width: 20 },            
+    { key : 'editado_en', header : 'Fecha de Edicion',  width: 20 }   
 
-
-
-// AÑADO LAS COLUMNAS QUE VA TENER MI ARCHIVO EXCEL
-
-//------------------------------------------------------------------------------
-//column_d_operacion_ingreso, cargado_en, editado_en, descripcion, id_socio, id_tipo, monto
-reporte_excel_ingresos.columns = [
-                                    { header: 'column_d_operacion_ingreso', key: 'Numero de Operacion', width: 10 },
-                                    { header: 'cargado_en', key: 'Fecha de Carga', width: 10 },
-                                    { header: 'editado_en', key: 'Fecha de Edicion', width: 10 },
-                                    { header: 'descripcion', key: 'Descripcion', width: 10 },
-                                    { header: 'id_socio', key: 'Numero de Socio', width: 10 },
-                                    { header: 'id_tipo', key: 'Numero de Tipo de carga', width: 10 },
-                                    { header: 'monto', key: 'Monto de Ingreso', width: 10 },
-                                ];
-//------------------------------------------------------------------------------
-
+];
 
 
 const agregar_ingreso = async ( req = request, res = response )=>{
@@ -41,16 +36,6 @@ const agregar_ingreso = async ( req = request, res = response )=>{
         
         const { idTipoIngreso, descripcionIngreso, montoIngreso, idSocio } = req.body;
         const fecha_carga = new Date();
-
-        /*  
-        "idTipoIngreso" : 1, 
-        "descripcionIngreso" : 'GANACIA TORNEO 13/03/2024', 
-        "montoIngreso" : 1.000.000,
-        "idSocio" : 1
-        
-        */
-
-
 
         const nuevo_ingreso = await prisma.ingresos.create( { data : {  
                                                                         cargado_en : fecha_carga,
@@ -400,46 +385,38 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
         
         const { fechaDesde, fechaHasta } = req.body;
 
-        const [ dia_desde, mes_desde, annio_desde ] =  fechaDesde.split( '/' );
+        const ingresos_x_fecha = await prisma.$queryRaw`SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
+                                                                B.nombre_usuario,
+                                                                CONCAT(F.apellido, ', ', F.nombre) as nombre_completo,
+                                                                F.cedula,
+                                                                C.descripcion AS tipo_ingreso,
+                                                                A.descripcion AS comentario,
+                                                                A.monto,
+                                                                A.cargado_en AS fecha_carga,
+                                                                A.editado_en as fecha_actualizacion
+                                                            FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
+															JOIN PERSONA F ON B.id_persona = F.id_persona
+                                                            JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
+                                                        WHERE A.cargado_en BETWEEN CAST('${fechaDesde}' AS DATE ) AND CAST('${fechaHasta}' AS DATE ) 
+                                                        ORDER BY A.cargado_en DESC
+                                                        LIMIT 20 OFFSET ${Number(pagina)};`
 
-        const [ dia_hasta, mes_hasta, annio_hasta ] =  fechaHasta.split( '/' );
-
-
-        const fecha_desde = new Date( Number(annio_desde), Number(mes_desde) -1 , Number(dia_desde)  );
-
-        const fecha_hasta = new Date( Number(annio_hasta), Number(mes_hasta) -1 , Number(dia_hasta) );
-
-        const ingresos_x_fecha = await prisma.ingresos.findMany( { 
-                                                                    where : { 
-                                                                        cargado_en : { 
-                                                                                        gte : fecha_desde, 
-                                                                                        lte : fecha_hasta
-                                                                                    }
-                                                                    },
-                                                                    orderBy : { cargado_en : 'desc' },
-                                                                } );
-
-        let ingresosXFecha = [];
         ingresos_x_fecha.forEach( ( value )=>{
-            const { column_d_operacion_ingreso, cargado_en, editado_en, descripcion, id_socio, id_tipo, monto } = value;
-            //ingresosXFecha.push( {
-            //    idOperacionIngreso : column_d_operacion_ingreso,
-            //    idSocio : id_socio,
-            //    cargadoEn : cargado_en,
-            //    editadoEn : editado_en,
-            //    comprobante,
-            //    descripcion,
-            //    idTipo : id_tipo,
-            //    monto,
-            //    nro_factura
-            //} );
+            const { id_operacion_ingreso, nombre_completo, cedula,
+                    tipo_ingreso, comentario, monto, fecha_carga,
+                    fecha_actualizacion, nombre_usuario } = value;
 
-            reporte_excel_ingresos.addRow( { column_d_operacion_ingreso, cargado_en, editado_en, descripcion, id_socio, id_tipo, monto } );
+            worksheet_ingresos.addRow( { 
+                                            id_operacion_ingreso, nombre_completo, cedula,
+                                            tipo_ingreso, comentario, monto, fecha_carga,
+                                            fecha_actualizacion, nombre_usuario 
+                                    } );
         } );
+        let ruta = path.join( __dirname, `../reportes/${fecha_reporte.toLocaleString().split('/').join('_').split(':').join('_').split(', ').join( '_' )}.xlsx` );
+        await workbook_ingresos.xlsx.writeFile(ruta);
+        res.sendFile(ruta);
 
-
-                
-        res.sendFile( '../', ( error )=>{ console.log( error ); } );
+            
 
     } catch (error) {
         console.log( error );
