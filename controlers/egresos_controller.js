@@ -191,6 +191,14 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
         
         const { fechaDesde, fechaHasta, pagina } = req.query;
 
+        const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
+
+        const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
+
+        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
+
+        const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;        
+
         const query = `SELECT A.is_operacion_egreso AS id_operacion_egreso,
                                 A.id_socio,
                                 B.nombre_usuario,
@@ -204,7 +212,7 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
                                 A.editado_en as fecha_actualizacion
                             FROM EGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
                             JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
-                        WHERE A.cargado_en BETWEEN TO_DATE('${fechaDesde}', 'DD/MM/YYYY' )  AND  TO_DATE('${fechaHasta}' , 'DD/MM/YYYY' )
+                        WHERE A.cargado_en BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
                         ORDER BY A.cargado_en DESC
                         LIMIT 20 OFFSET ${Number(pagina)}`
 

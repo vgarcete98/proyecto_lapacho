@@ -304,6 +304,18 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
         //console.log( req.query );
 
         const { fechaDesde, fechaHasta, pagina } = req.query;
+
+
+        const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
+
+        const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
+
+        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
+
+        const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;        
+
+
+
         const query_ingresos = `SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
                                                     A.id_socio,
                                                     B.nombre_usuario,
@@ -316,10 +328,10 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
                                                     A.editado_en as fecha_actualizacion
                                                 FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
                                                 JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
-                                            WHERE A.cargado_en BETWEEN CAST('${fechaDesde}' AS DATE ) AND CAST('${fechaHasta}' AS DATE ) 
+                                            WHERE A.cargado_en BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
                                             ORDER BY A.cargado_en DESC
                                             LIMIT 20 OFFSET ${Number(pagina)};`
-
+        console.log( query_ingresos );
         const query = await prisma.$queryRawUnsafe( query_ingresos );
 
                                             
