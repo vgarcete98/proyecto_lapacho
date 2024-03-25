@@ -336,7 +336,7 @@ const obtener_tipos_egreso = async ( req = request, res = response )=>{
 
     try {
         
-        const tipos_egreso = await prisma.tipos_ingreso.findMany( );
+        const tipos_egreso = await prisma.tipos_egreso.findMany( );
 
         let tiposEgreso = []
 

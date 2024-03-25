@@ -454,64 +454,31 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
 
         const { busqueda } = req.query;
         //------------------------------------------------------------------------------------------------
-        //console.log( typeof(busqueda), Number( busqueda ) );
-        //console.log( busqueda );
         var socioPersona = [];
         var socio = [];
-        if( Number( busqueda ) > 0 ){
-            // QUIERE DECIR QUE VINO UN STRING Y HAY QUE BUSCAR POR NOMBRE
-            //const socioPersona = await prisma.persona.findFirst( { where : { cedula : socio_cedula } } );
-            socioPersona.push(await prisma.persona.findFirst( { where : { cedula : busqueda } } )) ;    
-            
-            if ( socioPersona === null || socioPersona === undefined ){
-                res.status( 200 ).json( {
-                    status : true,
-                    msg : `No se ha encontrado dicho resultado`,
-                    //error
-                } );
-            
-            }
 
-        } else {
-            
-            //console.log( query_nombre );
-            socioPersona = await prisma.persona.findMany( { where : { 
-                                                                        OR : [
-                                                                            { nombre :  { contains: busqueda } },
-                                                                            { apellido : { contains: busqueda } }
-                                                                        ]
-                                                                    } 
-                                                        } );
-            
-            if ( socioPersona === null || socioPersona === undefined || socioPersona.length === 0){
-                res.status( 200 ).json( {
-                    status : true,
-                    msg : `No se ha encontrado dicho resultado`,
-                    //error
-                } );
 
-            }
-
-        }
-        //console.log( socioPersona )
-
-        for (const value in socioPersona) {
-            const { id_persona, fecha_nacimiento, cedula, nombre, apellido } = value;
-            const idPersona = typeof id_persona === 'bigint' ? Number(id_persona.toString()) : id_persona;
-            //console.log( idPersona );
-            const socioCedula = await prisma.socio.findFirst( { 
-                                                                where : { 
-                                                                    id_persona : idPersona 
-                                                                } 
-                                                            } );
-            //console.log( socioCedula )
-            if ( socioCedula === undefined || socioCedula === null ){
-                console.log( "No se encontro al socio" );
-
-            } else {
-                //nombre_cmp, correo_electronico, creadoen, estado_socio
-                const { direccion, numero_telefono, estado_socio, id_socio, 
-                        id_tipo_socio, nombre_usuario, contrasea } = socioCedula;
+        const query = `SELECT * 
+                            FROM PERSONA A JOIN SOCIO B ON A.id_persona = B.id_persona
+                        ${Number( busqueda ) > 0 ? `WHERE A.CEDULA = '${busqueda}'` :  `WHERE A.NOMBRE LIKE '%${busqueda}%' --OR B.nombre_cmp LIKE '%${busqueda}%'`} `;
+        //console.log( query );
+        const socios = await prisma.$queryRawUnsafe( query );
+        
+        
+        if ( socios === null || socios === undefined || socios.length === 0){
+            res.status( 200 ).json( {
+                status : true,
+                msg : `No se ha encontrado dicho resultado`,
+                //error
+            } );
+        }else{
+            socios.forEach( (value)=>{ 
+                const { id_persona, fecha_nacimiento, cedula, nombre, apellido,
+                        direccion, numero_telefono, estado_socio, id_socio, 
+                        id_tipo_socio, nombre_usuario, contrasea } = value;
+                const idPersona = typeof id_persona === 'bigint' ? Number(id_persona.toString()) : id_persona;
+                //console.log( idPersona );
+                //console.log( value );
 
                 const [  idSocioConvert, idTipoSocioConvert ] = [ 
                     typeof id_socio === 'bigint' ? id_socio.toString() : id_socio,
@@ -519,30 +486,27 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
                 ];
 
                 const [ nombreConvert, apellidoConvert, cedula_convert ] = [ nombre, apellido, cedula ];
-
                 socio.push ({
-                                idSocio : idSocioConvert,
-                                tipoSocio : idTipoSocioConvert,
-                                //nombreCmp : nombre_cmp,
-                                numeroTel : numero_telefono,
-                                nombre : nombreConvert,
-                                apellido : apellidoConvert,
-                                fechaNacimiento : fecha_nacimiento,
-                                cedula : cedula_convert,
-                                nombreUsuario : nombre_usuario,
-                                contraseña : contrasea, 
-                                estadoSocio : estado_socio,
-                                direccionSocio : direccion
-                            });      
-            }
-
+                    idSocio : idSocioConvert,
+                    tipoSocio : idTipoSocioConvert,
+                    //nombreCmp : nombre_cmp,
+                    numeroTel : numero_telefono,
+                    nombre : nombreConvert,
+                    apellido : apellidoConvert,
+                    fechaNacimiento : fecha_nacimiento,
+                    cedula : cedula_convert,
+                    nombreUsuario : nombre_usuario,
+                    contraseña : contrasea, 
+                    estadoSocio : estado_socio,
+                    direccionSocio : direccion
+                }); 
+            } );
+            res.status( 200 ).json( {
+                status : true,
+                msg : `Socios coincidentes`,
+                socio
+            } ); 
         }
-        
-        res.status( 200 ).json( {
-            status : true,
-            msg : `Socios coincidentes`,
-            socio
-        } ); 
 
 
     } catch (error) {
