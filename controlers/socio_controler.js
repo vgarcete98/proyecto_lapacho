@@ -457,86 +457,92 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
         //console.log( typeof(busqueda), Number( busqueda ) );
         //console.log( busqueda );
         var socioPersona = [];
-
+        var socio = [];
         if( Number( busqueda ) > 0 ){
             // QUIERE DECIR QUE VINO UN STRING Y HAY QUE BUSCAR POR NOMBRE
             //const socioPersona = await prisma.persona.findFirst( { where : { cedula : socio_cedula } } );
-            socioPersona = await prisma.$queryRaw`SELECT CAST ( ID_PERSONA AS INTEGER ) AS ID_PERSONA,
-                                                        FECHA_NACIMIENTO, CEDULA, NOMBRE, APELLIDO  
-                                                        FROM  PERSONA 
-                                                    WHERE CEDULA = '${ busqueda }'`;            
-        }else {
+            socioPersona.push(await prisma.persona.findFirst( { where : { cedula : busqueda } } )) ;    
             
-            const query_nombre = `SELECT CAST ( ID_PERSONA AS INTEGER ) AS ID_PERSONA,
-                                                        FECHA_NACIMIENTO, CEDULA, NOMBRE, APELLIDO 
-                                                        FROM  PERSONA 
-                                                    WHERE NOMBRE LIKE '%${ busqueda }%'
-                                                    --OR APELLIDO LIKE '%${ busqueda }%'`;
+            if ( socioPersona === null || socioPersona === undefined ){
+                res.status( 200 ).json( {
+                    status : true,
+                    msg : `No se ha encontrado dicho resultado`,
+                    //error
+                } );
+            
+            }
+
+        } else {
+            
             //console.log( query_nombre );
-            socioPersona = await prisma.$queryRawUnsafe(query_nombre);
+            socioPersona = await prisma.persona.findMany( { where : { 
+                                                                        OR : [
+                                                                            { nombre :  { contains: busqueda } },
+                                                                            { apellido : { contains: busqueda } }
+                                                                        ]
+                                                                    } 
+                                                        } );
+            
+            if ( socioPersona === null || socioPersona === undefined || socioPersona.length === 0){
+                res.status( 200 ).json( {
+                    status : true,
+                    msg : `No se ha encontrado dicho resultado`,
+                    //error
+                } );
+
+            }
 
         }
+        //console.log( socioPersona )
 
-        //------------------------------------------------------------------------------------------------       
-        //console.log( socioPersona );
-        if ( socioPersona.length === 0 ){
-            res.status( 200 ).json( {
-                status : true,
-                msg : `No se ha encontrado dicho resultado`,
-                //error
-            } );
-        }else{
-            //const [ primer_resultado,...resto ] = socioPersona;
-            //console.log( primer_resultado )
-            const socio = [];
-            socioPersona.forEach( async (value)=>{
-                const { id_persona, fecha_nacimiento, cedula, nombre, apellido } = value;
-                const idPersona = id_persona;
+        for (const value in socioPersona) {
+            const { id_persona, fecha_nacimiento, cedula, nombre, apellido } = value;
+            const idPersona = typeof id_persona === 'bigint' ? Number(id_persona.toString()) : id_persona;
+            //console.log( idPersona );
+            const socioCedula = await prisma.socio.findFirst( { 
+                                                                where : { 
+                                                                    id_persona : idPersona 
+                                                                } 
+                                                            } );
+            //console.log( socioCedula )
+            if ( socioCedula === undefined || socioCedula === null ){
+                console.log( "No se encontro al socio" );
 
-                const socioCedula = await prisma.$queryRaw`SELECT * FROM SOCIO WHERE ID_PERSONA = ${ idPersona }`;
+            } else {
+                //nombre_cmp, correo_electronico, creadoen, estado_socio
+                const { direccion, numero_telefono, estado_socio, id_socio, 
+                        id_tipo_socio, nombre_usuario, contrasea } = socioCedula;
 
-                if ( socioCedula === undefined || socioCedula === null ){
+                const [  idSocioConvert, idTipoSocioConvert ] = [ 
+                    typeof id_socio === 'bigint' ? id_socio.toString() : id_socio,
+                    typeof id_tipo_socio === 'bigint' ? id_tipo_socio.toString() : id_tipo_socio
+                ];
 
-                    console.log (`No se logro encontrar al socio`);
+                const [ nombreConvert, apellidoConvert, cedula_convert ] = [ nombre, apellido, cedula ];
 
-                } else {
-                    //nombre_cmp, correo_electronico, creadoen, estado_socio
-                    const { direccion, numero_telefono, estado_socio, id_socio, 
-                            id_tipo_socio, nombre_usuario, contrasea } = socioCedula;
-
-                    const [  idSocioConvert, idTipoSocioConvert ] = [ 
-                        typeof id_socio === 'bigint' ? id_socio.toString() : id_socio,
-                        typeof id_tipo_socio === 'bigint' ? id_tipo_socio.toString() : id_tipo_socio
-                    ];
-
-                    const [ nombreConvert, apellidoConvert, cedula_convert ] = [ nombre, apellido, cedula ];
-
-                    socio.push ({
-                                    idSocio : idSocioConvert,
-                                    tipoSocio : idTipoSocioConvert,
-                                    //nombreCmp : nombre_cmp,
-                                    numeroTel : numero_telefono,
-                                    nombre : nombreConvert,
-                                    apellido : apellidoConvert,
-                                    fechaNacimiento : fecha_nacimiento,
-                                    cedula : cedula_convert,
-                                    nombreUsuario : nombre_usuario,
-                                    contraseña : contrasea, 
-                                    estadoSocio : estado_socio,
-                                    direccionSocio : direccion
-                                });      
-                }
-
-            } );
-
-            res.status( 200 ).json( {
-                status : true,
-                msg : `Socios coincidentes`,
-                socio
-            } );     
-
+                socio.push ({
+                                idSocio : idSocioConvert,
+                                tipoSocio : idTipoSocioConvert,
+                                //nombreCmp : nombre_cmp,
+                                numeroTel : numero_telefono,
+                                nombre : nombreConvert,
+                                apellido : apellidoConvert,
+                                fechaNacimiento : fecha_nacimiento,
+                                cedula : cedula_convert,
+                                nombreUsuario : nombre_usuario,
+                                contraseña : contrasea, 
+                                estadoSocio : estado_socio,
+                                direccionSocio : direccion
+                            });      
+            }
 
         }
+        
+        res.status( 200 ).json( {
+            status : true,
+            msg : `Socios coincidentes`,
+            socio
+        } ); 
 
 
     } catch (error) {
