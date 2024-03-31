@@ -11,19 +11,19 @@ const MESES_ESPAÑOL = [ 'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 
 
 const realizar_pago_socio = async ( req = request, res = response ) => {
 
-    const { idCuotaSocio, nroFactura, montoAbonado, numeroCedula } = req.body;
-
-    let idCuotaSocioConvertido = 1;
-    let montoAbonadoConvertido = 0;
-    if ( typeof( idCuotaSocio ) !== Number ){ idCuotaSocioConvertido = Number( idCuotaSocio ) };
-    if ( typeof( montoAbonado ) !== Number ){ montoAbonadoConvertido = Number( montoAbonado ) };
-    //const fecha_pago = new Date();
-
     try {
+        const { idCuotaSocio, nroFactura, montoAbonado, numeroCedula, descripcionPago } = req.body;
+
+        let idCuotaSocioConvertido = 1;
+        let montoAbonadoConvertido = 0;
+        if ( typeof( idCuotaSocio ) !== Number ){ idCuotaSocioConvertido = Number( idCuotaSocio ) };
+        if ( typeof( montoAbonado ) !== Number ){ montoAbonadoConvertido = Number( montoAbonado ) };
+        //const fecha_pago = new Date();
+
         const fechaPago = new Date();
         //----------------------------------------------------------------------------------------------------------------------------
-        
-        const socio = await prisma.persona.findFirst( { where : { cedula : numeroCedula } } );
+        const { id_socio } = req.params;
+        const socio = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
 
         const nombre_socio = socio.nombre + ' ' + socio.apellido;
         const pago_socio = await prisma.pagos_socio.create( {   
@@ -39,9 +39,14 @@ const realizar_pago_socio = async ( req = request, res = response ) => {
         const { id_cuota_socio, fecha_pago, monto_abonado, nro_factura } = pago_socio;
         
         const idCuotaPagada = id_cuota_socio;
+        //const fecha_pago = new date
         const cuota_pagada = await prisma.cuotas_socio.update( { 
                                                                     where : { id_cuota_socio : idCuotaPagada },
-                                                                    data : { pago_realizado : true }
+                                                                    data : { 
+                                                                                pago_realizado : true,
+                                                                                fecha_pago_realizado : fechaPago,
+                                                                                descripcion : descripcionPago 
+                                                                            }
                                                             } );
 
 

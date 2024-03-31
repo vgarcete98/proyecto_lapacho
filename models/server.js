@@ -92,7 +92,7 @@ class Server {
 
         this.app.use( validar_existe_usuario_socio );//ve si ese usuario es valido y existe
 
-        this.app.use(validar_acceso_a_ruta);//y ve si tiene la ruta habilitada
+        //this.app.use(validar_acceso_a_ruta);//y ve si tiene la ruta habilitada
 
 
         //this.app.use( multer )
@@ -156,15 +156,15 @@ class Server {
         this.app.use( rutas.cuotas_del_club.ruta, router_cuotas );
     }
 
-    listar_rutas (){
-
-        listEndpoints( this.app ).forEach(function(element) {
-            const { path } = element;
-            console.log(path);
-          });
-
-        //console.log(getEndpoints(this.app));
-    }
+    //listar_rutas (){
+//
+    //    listEndpoints( this.app ).forEach(function(element) {
+    //        const { path } = element;
+    //        console.log(path);
+    //      });
+//
+    //    //console.log(getEndpoints(this.app));
+    //}
 
 
     listen(){

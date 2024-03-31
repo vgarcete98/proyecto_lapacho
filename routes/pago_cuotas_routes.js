@@ -13,7 +13,7 @@ const router_pagos = Router();
 
 router_pagos.get( '/socio/comprobante_pago/:id_cuota', [  ], obtener_comprobante_pago_cuota );
 
-router_pagos.post( '/', [ /*validar_token,*/ comprobar_pago_cuota_socio ], realizar_pago_socio );
+router_pagos.post( '/socio/pagar_cuota/:id_socio', [ comprobar_pago_cuota_socio ], realizar_pago_socio );
 
 
 
