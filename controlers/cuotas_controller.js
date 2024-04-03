@@ -334,9 +334,95 @@ const obtener_cuotas_atrasadas_del_mes = async ( req = request, res = response )
 }
 
 
+
+const obtener_grilla_de_cuotas = async ( req = request, res = response )=>{
+
+    try {
+        
+        let query = `SELECT concat( A.apellido,' ', A.nombre) as nombre_cmp, A.cedula, B.nombre_usuario, B.id_socio,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 1  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS enero,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 2  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS febrero,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 3  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS marzo,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 4  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS abril,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 5  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS mayo,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 6  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS junio,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 7  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS julio,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 8  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS agosto,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 9  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS septiembre,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 10 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS octubre,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 11 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS noviembre,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 12 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS diciembre
+                        FROM PERSONA A
+                        JOIN SOCIO B ON A.id_persona = B.id_persona 
+                        JOIN CUOTAS_SOCIO C ON B.id_socio = C.id_socio
+                        JOIN PAGOS_SOCIO D ON D.id_cuota_socio = C.id_cuota_socio`
+        let grillaCuotas = [];
+        let grilla_cuotas = [];
+        grilla_cuotas = await prisma.$queryRawUnsafe( query );
+        //console.log( grilla_cuotas );
+
+        if ( grilla_cuotas.length === 0  ){
+            res.status( 200 ).json(
+
+                {
+                    status : true,
+                    msj : 'No existe grilla disponible de cuotas',
+                    grillaCuotas
+                }
+            );
+        }else {
+            grilla_cuotas.forEach( ( element )=>{
+
+                const { nombre_cmp, nombre_usuario, cedula, id_socio, ...cuotas } = element;
+
+                grillaCuotas.push( {
+                    nombreCmp : nombre_cmp,
+                    nombreUsuario : nombre_usuario,
+                    idSocio : (typeof( id_socio) === 'bigint' ) ? Number( String( id_socio ) ) : id_socio,
+                    cedula,
+                    cuotas
+                } );
+
+            } );
+            res.status( 200 ).json(
+
+                {
+                    status : true,
+                    msj : 'Grilla de las cuotas',
+                    grillaCuotas
+                }
+            );
+
+        }
+
+
+
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'No se pudo obtener la grilla de cuotas del mes',
+            //error
+        } );
+    }
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
 module.exports = {
     obtener_cuotas_pendientes_x_socio,
     obtener_cuotas_pendientes_del_mes,
     obtener_cuotas_atrasadas_del_mes,
-    obtener_cuotas_pagadas_del_mes
+    obtener_cuotas_pagadas_del_mes,
+    obtener_grilla_de_cuotas
 }
