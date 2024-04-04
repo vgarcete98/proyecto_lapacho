@@ -4,19 +4,12 @@ const { PrismaClient } = require('@prisma/client')
 
 const ExcelJS = require('exceljs');
 
-
+const path = require( 'path' );
 const prisma = new PrismaClient();
 
 
 
-//PARA  LO QUE SERIA EGRESOS
-//----------------------------------------------------------------
-const workbook_egresos = new ExcelJS.Workbook();
-
-const worksheet_egresos = workbook_egresos.addWorksheet('visitas_personas');
-
-// Defino las columnas
-worksheet_egresos.columns = [
+const columnas_egresos = [
     { key : 'id_operacion_egreso', header : 'Numero registro',  width: 20  },
     { key : 'nombre_usuario', header : 'Nombre Usuario',  width: 20 },            
     { key : 'nombre_completo', header : 'Nombre Completo',  width: 20 },            
@@ -280,26 +273,34 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
 const obtener_egresos_x_fecha_excel = async ( req = request, res = response )=>{
     try {
         
-        const { fecha_desde, fecha_hasta } = req.query;
+        const { fecha_desde, fecha_hasta } = req.params;
+        const query = `SELECT A.is_operacion_egreso AS id_operacion_egreso,
+                            	B.nombre_usuario, 
+                            	CONCAT(F.apellido, ', ', F.nombre) as nombre_completo,
+                                F.cedula,
+                            	C.descripcion AS tipo_egreso, 
+                            	A.nro_factura,
+                            	A.descripcion AS comentario, 
+                            	A.monto, 
+					        	A.fecha_pago,
+                            	A.cargado_en AS fecha_carga,
+                            	A.editado_en as fecha_actualizacion		
+                            FROM EGRESOS A 
+					        JOIN SOCIO B ON A.id_socio = B.id_socio
+					        JOIN PERSONA F ON B.id_persona = F.id_persona
+                            JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
+                        WHERE A.cargado BETWEEN ${fecha_desde} AND ${fecha_hasta}
+                        ORDER BY A.cargado DESC`
+        const egresos_x_fecha = await prisma.$queryRawUnsafe( query );
+        //PARA  LO QUE SERIA EGRESOS
+        //----------------------------------------------------------------
+        const workbook_egresos = new ExcelJS.Workbook();
 
-        const egresos_x_fecha = await prisma.$queryRaw`SELECT A.is_operacion_egreso AS id_operacion_egreso,
-                                                		    	B.nombre_usuario, 
-                                                		    	CONCAT(F.apellido, ', ', F.nombre) as nombre_completo,
-                                                                F.cedula,
-                                                		    	C.descripcion AS tipo_egreso, 
-                                                		    	A.nro_factura,
-                                                		    	A.descripcion AS comentario, 
-                                                		    	A.monto, 
-														    	A.fecha_pago,
-                                                		    	A.cargado_en AS fecha_carga,
-                                                		    	A.editado_en as fecha_actualizacion		
-                                                            FROM EGRESOS A 
-												            JOIN SOCIO B ON A.id_socio = B.id_socio
-												            JOIN PERSONA F ON B.id_persona = F.id_persona
-                                                            JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
-                                                        WHERE A.cargado BETWEEN ${fecha_desde} AND ${fecha_hasta}
-                                                        LIMIT 10 OFFSET ${pagina}
-                                                        ORDER BY A.cargado DESC`;
+        const worksheet_egresos = workbook_egresos.addWorksheet('egresos_lapacho');
+
+        // Defino las columnas
+        worksheet_egresos.columns = columnas_egresos;
+                                                        
         egresos_x_fecha.forEach( ( value )=>{
             const { id_operacion_egreso, fecha_carga, 
                     fecha_actualizacion, monto, comentario, 
@@ -315,7 +316,7 @@ const obtener_egresos_x_fecha_excel = async ( req = request, res = response )=>{
         } );
 
 
-
+        const fecha_reporte = new Date();
         let ruta = path.join( __dirname, `../reportes/${fecha_reporte.toLocaleString().split('/').join('_').split(':').join('_').split(', ').join( '_' )}.xlsx` );
         await workbook_egresos.xlsx.writeFile(ruta);
         res.sendFile(ruta);

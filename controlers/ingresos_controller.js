@@ -4,18 +4,12 @@ const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient();
 
-
+const path = require( 'path' );
 const ExcelJS = require('exceljs');
 
 
-//PARA  LO QUE SERIA EGRESOS
-//----------------------------------------------------------------
-const workbook_ingresos = new ExcelJS.Workbook();
 
-const worksheet_ingresos = workbook_ingresos.addWorksheet('visitas_personas');
-
-// Defino las columnas
-worksheet_ingresos.columns = [
+const columnas_ingresos = [
 
     { key : 'id_operacion_ingreso', header : 'Numero registro',  width: 20  },
     { key : 'nombre_usuario', header : 'Nombre Usuario',  width: 20 },            
@@ -27,6 +21,7 @@ worksheet_ingresos.columns = [
     { key : 'editado_en', header : 'Fecha de Edicion',  width: 20 }   
 
 ];
+
 
 
 const agregar_ingreso = async ( req = request, res = response )=>{
@@ -395,9 +390,8 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
     
     try {
         
-        const { fechaDesde, fechaHasta } = req.body;
-
-        const ingresos_x_fecha = await prisma.$queryRaw`SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
+        const { fechaDesde, fechaHasta } = req.query;
+        const query = `SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
                                                                 B.nombre_usuario,
                                                                 CONCAT(F.apellido, ', ', F.nombre) as nombre_completo,
                                                                 F.cedula,
@@ -410,8 +404,18 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
 															JOIN PERSONA F ON B.id_persona = F.id_persona
                                                             JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
                                                         WHERE A.cargado_en BETWEEN CAST('${fechaDesde}' AS DATE ) AND CAST('${fechaHasta}' AS DATE ) 
-                                                        ORDER BY A.cargado_en DESC
-                                                        LIMIT 20 OFFSET ${Number(pagina)};`
+                                                        ORDER BY A.cargado_en DESC;`;
+        //console.log( query )
+        const ingresos_x_fecha = await prisma.$queryRawUnsafe( query );
+
+        //PARA  LO QUE SERIA EGRESOS
+        //----------------------------------------------------------------
+        const workbook_ingresos = new ExcelJS.Workbook();
+
+        const worksheet_ingresos = workbook_ingresos.addWorksheet('ingresos_lapacho');
+
+        // Defino las columnas
+        worksheet_ingresos.columns = columnas_ingresos;
 
         ingresos_x_fecha.forEach( ( value )=>{
             const { id_operacion_ingreso, nombre_completo, cedula,
@@ -424,6 +428,7 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
                                             fecha_actualizacion, nombre_usuario 
                                     } );
         } );
+        const fecha_reporte = new Date();
         let ruta = path.join( __dirname, `../reportes/${fecha_reporte.toLocaleString().split('/').join('_').split(':').join('_').split(', ').join( '_' )}.xlsx` );
         await workbook_ingresos.xlsx.writeFile(ruta);
         res.sendFile(ruta);
