@@ -260,12 +260,123 @@ const actualizar_evento_calendario = async ( req = request, res = response ) =>{
 
 
 
+const obtener_inscripciones_x_evento = async ( req = request, res = response ) =>{
+
+
+    try {
+        // ACA TENGO QUE OBTENER TODAS LAS INSCRIPCIONES, YA SEAN SOCIOS O NO
+        const { id_evento } = req.params;
+
+        const query_inscripciones_socios = `SELECT A.id_inscripcion, A.id_socio, B.nombre_cmp, A.fecha_inscripcion, 
+                                                    A.desc_inscripcion, CASE A.abonado WHEN True THEN 'Si' ELSE 'No' END AS pagado
+                                                    FROM INSCRIPCIONES A JOIN SOCIO B ON A.id_socio = B.id_socio
+                                                    JOIN CALENDARIO_EVENTOS C ON A.id_evento_calendario = C.id_evento_calendario
+                                                WHERE A.id_evento_calendario = ${ Number( id_evento ) }`;
+        let inscripciones_socios, inscripcionesSocios = [];
+
+
+        inscripciones_socios = await prisma.$queryRawUnsafe( query );
+        
+        if ( inscripciones_socios.length > 0 ) {
+
+            inscripciones_socios.forEach( ( element )=>{
+                //const { id_inscripcion, id_socio, nombre_cmp, fecha_inscripcion,  } = element;
+    
+                inscripcionesSocios.push( { 
+                    idInscripcion : element.id_inscripcion,
+                    idSocio : element.id_socio,
+                    nombreCmp : element.nombre_cmp,
+                    fechaInscripcion : fecha_inscripcion,
+                    descripcion : element.desc_inscripcion,
+                    pagado : element.pagado
+                } );
+    
+            } );
+        }
+
+
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Inscripciones del evento ",
+            inscripcionesSocios
+        } );
+
+    } catch (error) {
+        console.log( error );
+
+
+        res.status( 500 ).json( {
+
+            status : true,
+            msg : "Ha ocurrido un error al obtener las inscripciones "
+        } );
+        
+    }
+
+
+}
+
+
+
+const obtener_inscripciones_x_evento_no_socios = async ( req = request, res = response ) =>{
+
+
+    try {
+
+        //AHORA LAS INSCRIPCIONES DE LOS NO SOCIOS
+        const inscripciones_no_socios = await prisma.inscripciones_no_socios.findMany( { where : { id_evento_calendario_no_socio : Number( id_evento ) } } );
+        let inscripcionesNoSocios = [];
+
+        if ( inscripciones_no_socios.length > 0 ){
+            inscripciones_no_socios.forEach( ( element ) => { 
+
+                inscripcionesNoSocios.push( {
+
+                    idInscripcion : element.id_inscripcion_no_socio,
+                    nombreCmp : element.nombre_jugador,
+                    fechaInscripcion : fecha_inscripcion,
+                    descripcion : element.desc_inscripcion,
+                    pagado : (element.abonado === true) ? 'Si' : 'No'
+                    
+                } );
+                
+            });
+
+
+        }
+
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Inscripciones del evento ",
+            inscripcionesNoSocios
+        } );
+
+
+    } catch (error) {
+        console.log( error );
+
+        res.status( 500 ).json( {
+
+            status : true,
+            msg : "Ha ocurrido un error al obtener las inscripciones "
+        } );
+        
+    }
+
+
+}
+
+
+
+
 
 module.exports = {
     asignar_evento_calendario,
     obtener_eventos_calendario,
     borrar_evento_calendario,
     actualizar_evento_calendario,
-    obtener_eventos_x_fecha_calendario
+    obtener_eventos_x_fecha_calendario,
+    obtener_inscripciones_x_evento,
+    obtener_inscripciones_x_evento_no_socios
 
 }

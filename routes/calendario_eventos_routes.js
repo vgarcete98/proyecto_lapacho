@@ -8,20 +8,24 @@ const {
         asignar_evento_calendario,
         borrar_evento_calendario,
         obtener_eventos_calendario,
-        obtener_eventos_x_fecha_calendario } = require( '../controlers/calendario_eventos_controller' );
+        obtener_eventos_x_fecha_calendario, 
+        obtener_inscripciones_x_evento} = require( '../controlers/calendario_eventos_controller' );
 //-------------------------------------------------------------------------
 
 const router_eventos = Router();
 
 
-router_eventos.get( '/eventos_annio', [ /*validar_token,*/ /*/*validar_rol_usuario,*/ ], obtener_eventos_calendario );
+router_eventos.get( '/eventos_annio', [ ], obtener_eventos_calendario );
 
-router_eventos.get( '/', [ /*validar_token,*/ /*/*validar_rol_usuario,*/ ], obtener_eventos_x_fecha_calendario );
+router_eventos.get( '/', [ ], obtener_eventos_x_fecha_calendario );
 
-router_eventos.post( '/', [ /*validar_token,*/ /*/*validar_rol_usuario,*/ comprobar_disponibilidad_evento ], asignar_evento_calendario );
 
-router_eventos.delete( '/:id_evento', [ /*validar_token,*/ /*/*validar_rol_usuario,*/ comprobar_existe_evento ,comprobar_evento_borrado ], borrar_evento_calendario );
+router_eventos.get( '/inscripciones_evento/:id_evento', [  ], obtener_inscripciones_x_evento );
 
-router_eventos.put( '/:id_evento', [ /*validar_token,*/ /*/*validar_rol_usuario,*/ comprobar_existe_evento , comprobar_disponibilidad_evento ], actualizar_evento_calendario );
+router_eventos.post( '/crear_nuevo_evento', [  comprobar_disponibilidad_evento ], asignar_evento_calendario );
+
+router_eventos.delete( '/eliminar_evento/:id_evento', [ comprobar_existe_evento ,comprobar_evento_borrado ], borrar_evento_calendario );
+
+router_eventos.put( '/actualizar_evento/:id_evento', [ comprobar_existe_evento , comprobar_disponibilidad_evento ], actualizar_evento_calendario );
 
 module.exports = router_eventos;

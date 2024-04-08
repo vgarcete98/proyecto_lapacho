@@ -84,12 +84,12 @@ const borrar_egreso = async ( req = request, res = response )=>{
     //A VER BORRAR EN SI NO SE VA HACER, SOLO CAMBIAR EL ESTADO DE UNA COLUMNA QUE SE LLAMA BORRADO
     try {
 
-        const { idOperacionEgreso } = req.body;
+        const { id_egreso } = req.params;
 
         const fecha_borrado = new Date();
         const borrado_egreso = await prisma.egresos.update( { 
                                                                 data : { borrado : true, editado_en : fecha_borrado },
-                                                                where : { is_operacion_egreso : idOperacionEgreso }
+                                                                where : { is_operacion_egreso : Number( id_egreso ) }
                                                              } );
 
         const { is_operacion_egreso, monto, nro_factura, comprobante, descripcion, id_socio, id_tipo   } = borrado_egreso;
@@ -103,7 +103,7 @@ const borrar_egreso = async ( req = request, res = response )=>{
                 nroFactura : nro_factura,
                 comprobante,
                 descripcion,
-                idSocio : id_socio,
+                idSocio : Number((  typeof( id_socio) === "bigint")? String( id_socio ): id_socio ),
                 idTipo : id_tipo
             }
         } );
@@ -127,7 +127,8 @@ const actualizar_egreso = async ( req = request, res = response )=>{
 
 
     try {
-        const { idOperacionEgreso, montoNuevo, descripcionNueva, comprobanteNuevo, nroFacturaNuevo } = req.body;
+        const { id_egreso } = req.params;
+        const { montoNuevo, descripcionNueva, comprobanteNuevo, nroFacturaNuevo } = req.body;
         
         const fecha_edicion = new Date();
 
@@ -139,7 +140,7 @@ const actualizar_egreso = async ( req = request, res = response )=>{
                                                                     nro_factura : nroFacturaNuevo,
                                                                     editado_en : fecha_edicion
                                                                 },
-                                                                where : { is_operacion_egreso : idOperacionEgreso }
+                                                                where : { is_operacion_egreso : Number( id_egreso ) }
                                                              } )
         
         const { is_operacion_egreso, monto, nro_factura, descripcion, id_tipo, id_socio, editado_en } = edicion_egreso;
@@ -150,7 +151,7 @@ const actualizar_egreso = async ( req = request, res = response )=>{
             nroFactura : nro_factura,
             descripcion,
             idTipo : id_tipo,
-            idSocio : id_socio,
+            idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
             editadoEn : editado_en
 
         }
@@ -206,6 +207,7 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
                             FROM EGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
                             JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
                         WHERE A.cargado_en BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                            AND A.borrado = false OR A.borrado IS NULL
                         ORDER BY A.cargado_en DESC
                         LIMIT 20 OFFSET ${Number(pagina)}`
 
@@ -290,6 +292,7 @@ const obtener_egresos_x_fecha_excel = async ( req = request, res = response )=>{
 					        JOIN PERSONA F ON B.id_persona = F.id_persona
                             JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
                         WHERE A.cargado BETWEEN ${fecha_desde} AND ${fecha_hasta}
+                            AND A.borrado = false OR A.borrado IS NULL
                         ORDER BY A.cargado DESC`
         const egresos_x_fecha = await prisma.$queryRawUnsafe( query );
         //PARA  LO QUE SERIA EGRESOS

@@ -13,7 +13,7 @@ const MESES_ESPAÑOL = [ 'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 
 const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response ) =>{
 
     const { numero_cedula, annio } = req.query;
-    console.log( numero_cedula);
+    //console.log( numero_cedula);
     // OBTIENE LAS CUOTAS PENDIENTES DEL SOCIO EN EL AÑO
     try {
 

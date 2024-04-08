@@ -94,65 +94,39 @@ const realizar_pago_socio = async ( req = request, res = response ) => {
 
 }
 
-const obtener_comprobante_pago_cuota = async ( req = request, res = response ) =>{
+
+
+
+const anular_pago_socio = async ( req = request, res = response ) =>{
 
     try {
         
         const { id_cuota } = req.params;
 
-        const pago_cuota = await prisma.pagos_socio.findUnique( { where : { id_pago_socio : id_cuota } } );
-        const { comprobante_cuota } = pago_cuota;
-        
-        fs.readFile(comprobante_cuota, 'utf8', (err, data) => {
-            if (err) {
-              console.error( 'Error al leer el archivo:', err );
-              return;
-            }
-        });
 
+        //ANTES DE PROCEDER AL BORRADO
+
+
+        const pago_cuota = await prisma.pagos_socio.findFirst(  { where : { id_cuota_socio : Number(id_cuota) } } );
+        //console.log( pago_cuota );
+        const { id_pago_socio } = pago_cuota;
+
+        const cuota_anulada = await prisma.pagos_socio.delete(  { 
+                                                                    where : { 
+                                                                                id_pago_socio : Number( ( typeof( id_pago_socio ) === 'bigint' )? String( id_pago_socio ): id_pago_socio ) 
+                                                                            } 
+                                                                } );
+         
+        
+        //console.log( cuota_anulada );
+
+        
+        
         res.status( 200 ).json( {
             status : true,
-            archivo : data
-        } );
-
-
-    } catch (error) {
-
-        console.log( error );
-        res.status( 500 ).json( {
-            status : false,
-            msg : 'No se ha podido procesar la insercion del registro',
+            msg : 'Pago anulado con exito',
             //error
         } );
-        
-    }
-
-}
-
-
-const obtener_pagos_del_socio = async ( req = request, res = response ) =>{
-
-    try {
-        
-        //VOY A OBTENER LOS PAGOS QUE HIZO UN SOCIO EN EL AÑO
-        const pagos_del_socio = await prisma.$queryRaw`SELECT A.ID_SOCIO, A.NOMBRE_USUARIO, CONCAT( B.NOMBRE, ' ', B.APELLIDO ) AS NOMBRE_COMPLETO,
-	                                                        	B.CEDULA, C.FECHA_VENCIMIENTO AS VENCIMIENTO_CUOTA, C.DESCRIPCION, 
-	                                                        	D.ID_PAGO_SOCIO, D.NRO_FACTURA, D.MONTO_ABONADO AS MONTO_PAGADO, D.FECHA_PAGO
-	                                                        FROM SOCIO A 
-	                                                        JOIN PERSONA B ON A.ID_PERSONA = B.ID_PERSONA
-	                                                        JOIN CUOTAS_SOCIO C ON A.ID_SOCIO = C.ID_SOCIO	
-	                                                        JOIN PAGOS_SOCIO D ON C.ID_CUOTA_SOCIO = D.ID_CUOTA_SOCIO`;
-
-
-        const pagosDelSocio = []
-
-
-        res.status( 200 ).json( {
-            status : true,
-            msg : 'Pagos del socio en el año',
-            pagosDelSocio
-        } );
-
 
     } catch (error) {
 
@@ -175,7 +149,7 @@ const obtener_pagos_del_socio = async ( req = request, res = response ) =>{
 
 module.exports = {
     realizar_pago_socio,
-    obtener_comprobante_pago_cuota
+    anular_pago_socio
     
 }
 

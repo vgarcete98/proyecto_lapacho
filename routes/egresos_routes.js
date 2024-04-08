@@ -18,9 +18,9 @@ const router_egresos = Router();
 router_egresos.get('/', [],  obtener_egresos_x_fecha );
 router_egresos.get( '/tipos_egreso', obtener_tipos_egreso );
 router_egresos.get( '/reportes_egresos_excel', obtener_egresos_x_fecha_excel );
-router_egresos.post('/', [], agrega_regreso);
-router_egresos.put( '/:id_egreso',[], actualizar_egreso );
-router_egresos.delete('/:id_egreso', [], borrar_egreso);
+router_egresos.post('/agregar_gasto', [], agrega_regreso);
+router_egresos.put( '/actualizar_egreso/:id_egreso',[], actualizar_egreso );
+router_egresos.delete('/eliminar_egreso/:id_egreso', [], borrar_egreso);
 
 
 

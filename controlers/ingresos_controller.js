@@ -128,119 +128,14 @@ try {
 
 
 
-const obtener_ingresos = async ( req = request, res = response )=>{
-
-    try {
-        console.log( req.query );
-        
-        const { fechaDesde, fechaHasta, pagina } = req.query;
-
-        const [ dia_desde, mes_desde, annio_desde ] =  fechaDesde.split( '/' );
-
-        const [ dia_hasta, mes_hasta, annio_hasta ] =  fechaHasta.split( '/' );
-
-
-        const fecha_desde = new Date( Number(annio_desde), Number(mes_desde) -1 , Number(dia_desde)  );
-
-        const fecha_hasta = new Date( Number(annio_hasta), Number(mes_hasta) -1 , Number(dia_hasta) );
-
-        const query = await prisma.$queryRaw`SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
-                                            		A.id_socio, 
-                                                    B.nombre_usuario, 
-                                                    B.nombre_cmp,
-                                            		A.id_tipo AS id_tipo_ingreso, 
-                                                    C.descripcion AS tipo_ingreso,
-                                            		A.descripcion AS comentario, 
-                                                    A.monto, 
-                                                    A.cargado_en AS fecha_carga,
-                                            		A.editado_en as fecha_actualizacion		
-                                            FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
-                                            JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
-                                            WHERE A.cargado BETWEEN ${fecha_desde} AND ${fechaHasta}
-                                            LIMIT 20 OFFSET ${pagina}
-                                            ORDER BY A.cargado DESC`
-
-        const ingresosXFecha = []
-
-        if ( query.length > 0 ){
-
-            query.forEach( ( value )=>{
-
-                const { id_operacion_ingreso ,
-                        id_socio, 
-                        nombre_usuario, 
-                        nombre_cmp,
-                        id_tipo ,
-                        tipo_ingreso,
-                        comentario, 
-                        monto, 
-                        fecha_carga,
-                        fecha_actualizacion  } = value;
-
-                ingresosXFecha.push( {
-                        idOperacionIngreso : id_operacion_ingreso ,
-                        idSocio : id_socio, 
-                        nombreUsuario : nombre_usuario, 
-                        nombreCmp : nombre_cmp,
-                        idTipo : id_tipo , 
-                        nroFactura : nro_factura,
-                        tiposIngreso : tipo_ingreso,
-                        comentario, 
-                        monto, 
-                        fechaCarga : fecha_carga,
-                        fechaActualizacion : fecha_actualizacion 
-                } )
-            });
-
-
-
-        }
-
-
-        res.status( 200 ).json( {
-            status : true,
-            msj : `Ingresos de las fechas ${fechaDesde } y ${ fechaHasta }`,
-            ingresosXFecha                        
-        } );
-
-
-    } catch (error) {
-        console.log( error );
-
-        res.status( 400 ).json( {
-            status : false,
-            msg : "No se pudo obtener los ingresos, error : " + error,
-            //nuevoIngreso
-        } );
-
-
-
-
-    }
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const actualizar_ingreso = async ( req = request, res = response )=>{
 
 
     try {
-        const { idOperacionIngreso, montoNuevo, descripcionNueva, nroFacturaNuevo } = req.body;
+
+        const { id_ingreso } = req.params;
+        const { montoNuevo, descripcionNueva } = req.body;
         
         const fecha_edicion = new Date();
 
@@ -248,10 +143,9 @@ const actualizar_ingreso = async ( req = request, res = response )=>{
                                                                 data : { 
                                                                     monto : montoNuevo,
                                                                     descripcion : descripcionNueva,
-                                                                    comprobante : comprobanteNuevo,
                                                                     editado_en : fecha_edicion
                                                                 },
-                                                                where : { is_operacion_egreso : idOperacionIngreso }
+                                                                where : { column_d_operacion_ingreso : Number(id_ingreso) }
                                                              } )
         
         const { column_d_operacion_ingreso, 
@@ -262,12 +156,11 @@ const actualizar_ingreso = async ( req = request, res = response )=>{
                 editado_en } = edicion_ingreso;
         
         const ingresoEditado = {
-            idOperacionIngreso : column_d_operacion_ingreso,
+            idOperacionIngreso : Number((  typeof( column_d_operacion_ingreso) === "bigint")? String( column_d_operacion_ingreso ): column_d_operacion_ingreso ),
             monto,
-            nroFactura : nro_factura,
             descripcion,
             idTipo : id_tipo,
-            idSocio : id_socio,
+            idSocio : Number((  typeof( id_socio) === "bigint")? String( id_socio ): id_socio ),
             editadoEn : editado_en
 
         }
@@ -324,9 +217,10 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
                                                 FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
                                                 JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
                                             WHERE A.cargado_en BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                                                AND A.borrado = false
                                             ORDER BY A.cargado_en DESC
                                             LIMIT 20 OFFSET ${Number(pagina)};`
-        console.log( query_ingresos );
+        //console.log( query_ingresos );
         const query = await prisma.$queryRawUnsafe( query_ingresos );
 
                                             
@@ -404,6 +298,7 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
 															JOIN PERSONA F ON B.id_persona = F.id_persona
                                                             JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
                                                         WHERE A.cargado_en BETWEEN CAST('${fechaDesde}' AS DATE ) AND CAST('${fechaHasta}' AS DATE ) 
+                                                            AND A.borrado = false
                                                         ORDER BY A.cargado_en DESC;`;
         //console.log( query )
         const ingresos_x_fecha = await prisma.$queryRawUnsafe( query );
@@ -490,7 +385,6 @@ module.exports = {
     actualizar_ingreso,
     obtener_ingresos_x_fecha,
     obtener_ingresos_x_fecha_excel,
-    obtener_tipos_ingreso,
-    obtener_ingresos
+    obtener_tipos_ingreso
 
 }
