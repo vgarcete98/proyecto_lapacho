@@ -43,15 +43,24 @@ const agregar_ingreso = async ( req = request, res = response )=>{
                                                                     } 
                                                         } );
 
-        const { cargado_en, id_socio, monto, id_tipo, descripcion } = nuevo_ingreso;
+        const { cargado_en, id_socio, monto, id_tipo, descripcion, column_d_operacion_ingreso, editado_en } = nuevo_ingreso;
         //console.log( nuevo_ingreso );
+
+        const ingreso = await prisma.tipos_ingreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
+        //const { descripcion } = egreso;
+
+        const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
         
         const nuevoIngreso = {
-            cargadoEn : cargado_en,
+            idIngreso : column_d_operacion_ingreso,
             idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+            nombreUsuario : usuario.nombre_usuario,
+            nombreCmp : usuario.nombre_cmp,
+            tipoIngreso : ingreso.descripcion,
+            comentario : descripcion,
             monto,
-            idTipo : id_tipo,
-            descripcion
+            fechaCarga : cargado_en,
+            fechaActualizacion : editado_en,
         }
 
         res.status( 200 ).json( {
@@ -86,19 +95,29 @@ try {
                                                             where : { column_d_operacion_ingreso : Number(id_ingreso) }
                                                         } );
 
-    const { column_d_operacion_ingreso, monto, nro_factura, descripcion, id_socio, id_tipo   } = borrado_ingreso;
+    const { column_d_operacion_ingreso, monto, nro_factura, descripcion, id_socio, id_tipo, cargado_en, editado_en   } = borrado_ingreso;
+
+    const ingreso = await prisma.tipos_ingreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
+    //const { descripcion } = egreso;
+
+    const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
+    
+    const BorradoIngreso = {
+        idIngreso : column_d_operacion_ingreso,
+        idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+        nombreUsuario : usuario.nombre_usuario,
+        nombreCmp : usuario.nombre_cmp,
+        tipoIngreso : ingreso.descripcion,
+        comentario : descripcion,
+        monto,
+        fechaCarga : cargado_en,
+        fechaActualizacion : editado_en,
+    }
     
     res.status( 200 ).json( {
         status : true,
         msg : "Registro Borrado",
-        BorradoIngreso : {
-            idOperacionIngreso : column_d_operacion_ingreso,
-            monto,
-            nroFactura : nro_factura,
-            descripcion,
-            idSocio :  (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-            idTipo : id_tipo
-        }
+        BorradoIngreso
     } );
 
 
@@ -153,17 +172,24 @@ const actualizar_ingreso = async ( req = request, res = response )=>{
                 descripcion, 
                 id_tipo, 
                 monto,
-                editado_en } = edicion_ingreso;
-        
-        const ingresoEditado = {
-            idOperacionIngreso : Number((  typeof( column_d_operacion_ingreso) === "bigint")? String( column_d_operacion_ingreso ): column_d_operacion_ingreso ),
-            monto,
-            descripcion,
-            idTipo : id_tipo,
-            idSocio : Number((  typeof( id_socio) === "bigint")? String( id_socio ): id_socio ),
-            editadoEn : editado_en
+                editado_en,
+                cargado_en } = edicion_ingreso;
 
-        }
+        const ingreso = await prisma.tipos_ingreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
+        const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
+    
+        const ingresoEditado = {
+            idIngreso : column_d_operacion_ingreso,
+            idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+            nombreUsuario : usuario.nombre_usuario,
+            nombreCmp : usuario.nombre_cmp,
+            tipoIngreso : ingreso.descripcion,
+            comentario : descripcion,
+            monto,
+            fechaCarga : cargado_en,
+            fechaActualizacion : editado_en,
+        };
+        
 
         res.status( 200 ).json( {
             status : true,
@@ -220,7 +246,7 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
                                                 AND A.borrado = false
                                             ORDER BY A.cargado_en DESC
                                             LIMIT 20 OFFSET ${Number(pagina)};`
-        //console.log( query_ingresos );
+        console.log( query_ingresos );
         const query = await prisma.$queryRawUnsafe( query_ingresos );
 
                                             
@@ -300,7 +326,7 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
                                                         WHERE A.cargado_en BETWEEN CAST('${fechaDesde}' AS DATE ) AND CAST('${fechaHasta}' AS DATE ) 
                                                             AND A.borrado = false
                                                         ORDER BY A.cargado_en DESC;`;
-        //console.log( query )
+        console.log( query )
         const ingresos_x_fecha = await prisma.$queryRawUnsafe( query );
 
         //PARA  LO QUE SERIA EGRESOS

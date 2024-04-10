@@ -21,10 +21,7 @@ const rutas = require( '../routes/routes' );
 //----------------------------------------------------------------------------
 const router_socio = require( '../routes/socio_routes' )
 const router_rol = require( '../routes/roles_routes' )
-const router_tipo_reserva = require( '../routes/tipo_reserva_routes' )
 const router_login = require( '../routes/login_routes' )
-const router_usuario = require ( '../routes/usuarios_routes' );
-const tipo_socio_router = require ( '../routes/tipo_socio_route' );
 const router_accesos = require( '../routes/accesos_routes' );
 const router_reservas_club = require( '../routes/reservas_club_routes' );
 const router_pagos = require( '../routes/pago_cuotas_routes' );
@@ -34,6 +31,11 @@ const router_inscripciones = require( '../routes/inscripciones_route' );
 const router_pases_jugadores = require('../routes/pases_jugadores_routes');
 const router_profesores = require('../routes/profesores_routes');
 const router_clases = require( '../routes/clases_routes' )
+const router_ingresos = require('../routes/ingresos_routes');
+const router_egresos = require('../routes/egresos_routes');
+const { router_rutas_app } = require('../routes/rutas_app_routes');
+const router_tipo_cuota = require('../routes/tipo_cuota_routes');
+const router_cuotas = require('../routes/cuotas_routes');
 
 //----------------------------------------------------------------------------
 
@@ -42,14 +44,9 @@ const router_clases = require( '../routes/clases_routes' )
 //----------------------------------------------------------------------------
 const { middleware_request, } = require( '../middlewares/logs_middleware' );
 const validar_token = require('../middlewares///validar_token');
-const { validar_existe_usuario, validar_existe_usuario_socio } = require('../middlewares/validar_existe_usuario');
-const { validar_acceso_a_ruta } = require('../middlewares/validar_acceso_a_ruta');
 const { desencriptar_body_login } = require('../middlewares/desencriptar_login');
-const router_ingresos = require('../routes/ingresos_routes');
-const router_egresos = require('../routes/egresos_routes');
-const { router_rutas_app } = require('../routes/rutas_app_routes');
-const router_tipo_cuota = require('../routes/tipo_cuota_routes');
-const router_cuotas = require('../routes/cuotas_routes');
+const { validar_existe_usuario_socio } = require( '../middlewares/validar_existe_usuario' );
+const { validar_acceso_a_ruta } = require( '../middlewares/validar_acceso_a_ruta' );
 //----------------------------------------------------------------------------
 
 
@@ -113,17 +110,11 @@ class Server {
 
     routes () {
 
-        this.app.use( rutas.Socio.ruta, router_socio );
-        
-        this.app.use( rutas.Usuarios.ruta, router_usuario );        
-        
-        this.app.use( rutas.tipo_reserva.ruta, router_tipo_reserva );
+        this.app.use( rutas.Socio.ruta, router_socio );    
 
         this.app.use( rutas.Eventos.ruta, router_eventos );
         
         this.app.use( rutas.roles_club.ruta, router_rol );
-        
-        this.app.use( rutas.Tipo_Socio.ruta, tipo_socio_router );
 
         this.app.use( rutas.accesos_usuario.ruta, router_accesos );       
         

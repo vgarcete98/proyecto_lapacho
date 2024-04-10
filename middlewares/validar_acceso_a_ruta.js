@@ -16,16 +16,7 @@ const validar_acceso_a_ruta = async (req = request, res = response, next)=>{
             next()
         } else {
 
-            const { x_token } = req.headers;
-            //console.log( x_token );
-            const payload = jwt.verify( x_token,process.env.SECRET0RPR1VAT3K3Y );
-            //console.log ( payload );
-            req.token_trad = payload;
-
-            const { token_trad } = req;
-
-            const { id_usuario } = token_trad;  
-            //console.log( id_usuario )              
+            const { id_usuario } = req.token_trad;    
             
             const resultado = await prisma.$queryRaw`SELECT D.PATH_RUTA AS ruta
                                                         FROM ACCESOS_USUARIO A JOIN roles_usuario B ON B.id_rol_usuario = A.id_rol_usuario

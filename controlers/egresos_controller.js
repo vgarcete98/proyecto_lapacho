@@ -51,14 +51,24 @@ const agrega_regreso = async ( req = request, res = response )=>{
                                                                     } 
                                                         } )
 
-        const { cargado_en, id_socio, monto, id_tipo, descripcion } = nuevo_egreso;
+        const { cargado_en, id_socio, monto, id_tipo, descripcion, editado_en, nro_factura, is_operacion_egreso } = nuevo_egreso;
 
+        const egreso = await prisma.tipos_egreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
+        //const { descripcion } = egreso;
+
+        const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
+        
         const nuevoEgreso = {
-            cargadoEn : cargado_en,
+            idOperacionEgreso : is_operacion_egreso,
             idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+            nombreUsuario : usuario.nombre_usuario,
+            nombreCmp : usuario.nombre_cmp,
+            tipoEgreso: egreso.descripcion,
+            comentario : descripcion,
+            nroFactura : nro_factura,
             monto,
-            idTipo : id_tipo,
-            descripcion
+            fechaCarga : cargado_en,
+            fechaActualizacion : editado_en
         }
 
         res.status( 200 ).json( {
@@ -92,20 +102,30 @@ const borrar_egreso = async ( req = request, res = response )=>{
                                                                 where : { is_operacion_egreso : Number( id_egreso ) }
                                                              } );
 
-        const { is_operacion_egreso, monto, nro_factura, comprobante, descripcion, id_socio, id_tipo   } = borrado_egreso;
+        const { is_operacion_egreso, monto, nro_factura, comprobante, descripcion, id_socio, id_tipo, editado_en, cargado_en   } = borrado_egreso;
         
+
+        const egreso = await prisma.tipos_egreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
+        //const { descripcion } = egreso;
+
+        const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
+        
+        const BorradoEgreso = {
+            idOperacionEgreso : is_operacion_egreso,
+            idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+            nombreUsuario : usuario.nombre_usuario,
+            nombreCmp : usuario.nombre_cmp,
+            tipoEgreso: egreso.descripcion,
+            comentario : descripcion,
+            nroFactura : nro_factura,
+            monto,
+            fechaCarga : cargado_en,
+            fechaActualizacion : editado_en
+        }
         res.status( 200 ).json( {
             status : true,
             msg : "Registro Borrado",
-            BorradoEgreso : {
-                idOperacionEgreso : is_operacion_egreso,
-                monto,
-                nroFactura : nro_factura,
-                comprobante,
-                descripcion,
-                idSocio : Number((  typeof( id_socio) === "bigint")? String( id_socio ): id_socio ),
-                idTipo : id_tipo
-            }
+            BorradoEgreso
         } );
 
 
@@ -145,15 +165,22 @@ const actualizar_egreso = async ( req = request, res = response )=>{
         
         const { is_operacion_egreso, monto, nro_factura, descripcion, id_tipo, id_socio, editado_en } = edicion_egreso;
         
+        const egreso = await prisma.tipos_egreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
+        //const { descripcion } = egreso;
+
+        const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
+        
         const egresoEditado = {
             idOperacionEgreso : is_operacion_egreso,
-            monto,
-            nroFactura : nro_factura,
-            descripcion,
-            idTipo : id_tipo,
             idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-            editadoEn : editado_en
-
+            nombreUsuario : usuario.nombre_usuario,
+            nombreCmp : usuario.nombre_cmp,
+            tipoEgreso: egreso.descripcion,
+            comentario : descripcion,
+            nroFactura : nro_factura,
+            monto,
+            fechaCarga : editado_en,
+            fechaActualizacion : editado_en
         }
 
         res.status( 200 ).json( {
@@ -235,7 +262,7 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
                 idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
                 nombreUsuario : nombre_usuario,
                 nombreCmp : nombre_cmp,
-                tiposIngreso : tipo_ingreso,
+                tipoEgreso : tipo_ingreso,
                 comentario : comentario,
                 nroFactura : nro_factura,
                 monto : monto,
@@ -365,105 +392,6 @@ const obtener_tipos_egreso = async ( req = request, res = response )=>{
     }
 }
 
-
-
-const obtener_egresos = async ( req = request, res = response )=>{
-
-    try {
-        
-        const { fechaDesde, fechaHasta, pagina } = req.query;
-
-        const [ dia_desde, mes_desde, annio_desde ] =  fechaDesde.split( '/' );
-
-        const [ dia_hasta, mes_hasta, annio_hasta ] =  fechaHasta.split( '/' );
-
-
-        const fecha_desde = new Date( Number(annio_desde), Number(mes_desde) -1 , Number(dia_desde)  );
-
-        const fecha_hasta = new Date( Number(annio_hasta), Number(mes_hasta) -1 , Number(dia_hasta) );
-
-        const query = await prisma.$queryRaw`SELECT A.is_operacion_egreso AS id_operacion_egreso,
-                                                		A.id_socio, 
-                                                		B.nombre_usuario, 
-                                                		B.nombre_cmp,
-                                                		A.id_tipo AS id_tipo_egreso, 
-                                                		A.nro_factura,
-                                                		C.descripcion AS tipo_ingreso,
-                                                		A.descripcion AS comentario, 
-                                                		A.monto, 
-                                                		A.cargado_en AS fecha_carga,
-                                                		A.editado_en as fecha_actualizacion		
-                                                FROM EGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
-                                                JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
-                                            WHERE A.cargado BETWEEN ${fecha_desde} AND ${fechaHasta}
-                                            LIMIT 10 OFFSET ${pagina}
-                                            ORDER BY A.cargado DESC`
-
-        const egresosXFecha = []
-
-        if ( query.length > 0 ){
-
-            query.forEach( ( value )=>{
-
-                const { id_operacion_egreso ,
-                        id_socio, 
-                        nombre_usuario, 
-                        nombre_cmp,
-                        id_tipo , 
-                        nro_factura,
-                        id_tipo_egreso,
-                        comentario, 
-                        monto, 
-                        fecha_carga,
-                        fecha_actualizacion  } = value;
-
-                        
-                egresosXFecha.push( {
-                        idOperacionEgreso : id_operacion_egreso ,
-                        idSocio : id_socio, 
-                        nombreUsuario : nombre_usuario, 
-                        nombreCmp : nombre_cmp,
-                        idTipo : id_tipo_egreso , 
-                        nroFactura : nro_factura,
-                        tiposEgreso : tipo_ingreso,
-                        comentario, 
-                        monto, 
-                        fechaCarga : fecha_carga,
-                        fechaActualizacion : fecha_actualizacion 
-                } )
-            });
-
-
-
-        }
-
-
-        res.status( 200 ).json(
-            {
-                status : true,
-                msj : `Egresos de las fechas ${fechaDesde } y ${ fechaHasta }`,
-                egresosXFecha
-            }
-        )
-
-    } catch (error) {
-        console.log( error );
-
-        res.status( 400 ).json( {
-            status : false,
-            msg : "No se pudo obtener los ingresos, error : " + error,
-            //nuevoIngreso
-        } );
-
-
-
-
-    }
-
-
-
-
-}
 
 
 
