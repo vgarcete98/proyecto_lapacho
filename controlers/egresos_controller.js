@@ -8,7 +8,6 @@ const path = require( 'path' );
 const prisma = new PrismaClient();
 
 
-
 const columnas_egresos = [
     { key : 'id_operacion_egreso', header : 'Numero registro',  width: 20  },
     { key : 'nombre_usuario', header : 'Nombre Usuario',  width: 20 },            
@@ -23,7 +22,6 @@ const columnas_egresos = [
     { key : 'fecha_actualizacion', header : 'Fecha de actualizacion',  width: 20 }       
 
 ];
-
 
 
 
@@ -318,7 +316,7 @@ const obtener_egresos_x_fecha_excel = async ( req = request, res = response )=>{
 					        JOIN SOCIO B ON A.id_socio = B.id_socio
 					        JOIN PERSONA F ON B.id_persona = F.id_persona
                             JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
-                        WHERE A.cargado BETWEEN ${fecha_desde} AND ${fecha_hasta}
+                        WHERE A.cargado BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}'
                             AND A.borrado = false OR A.borrado IS NULL
                         ORDER BY A.cargado DESC`
         const egresos_x_fecha = await prisma.$queryRawUnsafe( query );
@@ -394,6 +392,61 @@ const obtener_tipos_egreso = async ( req = request, res = response )=>{
 
 
 
+const generar_grafico_x_fecha = async ( req = request, res = response) =>{
+
+
+    try {
+        const { fecha_desde, fecha_hasta } = req.query;
+    
+        const query = `SELECT A.monto, 
+                                A.fecha_pago,
+                                A.cargado_en AS fecha_carga,
+                                A.editado_en as fecha_actualizacion		
+                            FROM EGRESOS A 
+                            JOIN SOCIO B ON A.id_socio = B.id_socio
+                            JOIN PERSONA F ON B.id_persona = F.id_persona
+                            JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
+                        WHERE A.cargado BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}'
+                            AND A.borrado = false OR A.borrado IS NULL
+                        ORDER BY A.cargado DESC`;
+        let egresos_x_fecha = [];               
+        egresos_x_fecha = await prisma.$queryRawUnsafe( query );
+    
+    
+        let data = [];
+        if ( egresos_x_fecha.length > 0 ){
+    
+            //const { monto, fecha_pago } = egresos_x_fecha;
+            egresos_x_fecha.forEach( ( element ) => {
+    
+                const { monto, fecha_pago } = element;
+    
+                data.push( { x: fecha_pago, y : monto } );
+    
+            } );
+    
+    
+        }
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Datos para grafico de Egresos",
+            data
+        } );
+        
+    } catch (error) {
+        console.log( error );
+        res.status( 400 ).json( {
+            status : true,
+            msg : "No se pudo obtener los datos para el grafico :" + error,
+            //data
+        } );
+    }
+
+
+
+
+}
+
 
 
 module.exports = {
@@ -403,6 +456,7 @@ module.exports = {
     actualizar_egreso,
     obtener_egresos_x_fecha,
     obtener_egresos_x_fecha_excel,
-    obtener_tipos_egreso
+    obtener_tipos_egreso,
+    generar_grafico_x_fecha
 
 }

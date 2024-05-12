@@ -213,11 +213,11 @@ async function main() {
   // TIPOS DE EVENTOS QUE SE PUEDEN MANEJAR EN EL CLUB
   //---------------------------------------------------------------------------------
   const nuevos_tipos_evento = await prisma.eventos.createMany( { data : [
-                                                                            { desc_tipo_evento : eventos_club.aniversario_club },
-                                                                            { desc_tipo_evento : eventos_club.cena_fin_anio },
-                                                                            { desc_tipo_evento : eventos_club.liga_interna },
-                                                                            { desc_tipo_evento : eventos_club.san_juan },
-                                                                            { desc_tipo_evento : eventos_club.torneo_interno },
+                                                                            { desc_tipo_evento : eventos_club.aniversario_club, color_evento : "#FF0000" },
+                                                                            { desc_tipo_evento : eventos_club.cena_fin_anio, color_evento : "#FFA500" },
+                                                                            { desc_tipo_evento : eventos_club.liga_interna, color_evento : "#87CEEB" },
+                                                                            { desc_tipo_evento : eventos_club.san_juan, color_evento : "#008f39" },
+                                                                            { desc_tipo_evento : eventos_club.torneo_interno, color_evento : "#FFC94D" },
                                                                           ] 
                                                                   } );  
   

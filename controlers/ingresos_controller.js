@@ -399,6 +399,63 @@ const obtener_tipos_ingreso = async ( req = request, res = response )=>{
 }
 
 
+const generar_grafico_x_fecha_ingresos = async ( req = request, res = response) =>{
+
+
+
+    try {
+        const { fecha_desde, fecha_hasta } = req.query;
+        const query = `SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
+                                B.nombre_usuario,
+                                CONCAT(F.apellido, ', ', F.nombre) as nombre_completo,
+                                F.cedula,
+                                A.monto,
+                                A.cargado_en AS fecha_carga,
+                                A.editado_en as fecha_actualizacion
+                            FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
+                            JOIN PERSONA F ON B.id_persona = F.id_persona
+                            JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
+                        WHERE A.cargado_en BETWEEN CAST('${fecha_desde}' AS DATE ) AND CAST('${fecha_hasta}' AS DATE ) 
+                            AND A.borrado = false
+                        ORDER BY A.cargado_en DESC;`;
+        let ingresos_x_fecha = [];               
+        ingresos_x_fecha = await prisma.$queryRawUnsafe( query );
+    
+    
+        let data = [];
+        if ( ingresos_x_fecha.length > 0 ){
+    
+            //const { monto, fecha_pago } = egresos_x_fecha;
+            ingresos_x_fecha.forEach( ( element ) => {
+    
+                const { monto, fecha_pago } = element;
+    
+                data.push( { x: fecha_pago, y : monto } );
+    
+            } );
+    
+    
+        }
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Datos para grafico de Egresos",
+            data
+        } );
+        
+    } catch (error) {
+        console.log( error );
+        res.status( 400 ).json( {
+            status : true,
+            msg : "No se pudo obtener los datos para el grafico :" + error,
+            //data
+        } );
+    }
+
+
+}
+
+
+
 
 
 
@@ -411,6 +468,7 @@ module.exports = {
     actualizar_ingreso,
     obtener_ingresos_x_fecha,
     obtener_ingresos_x_fecha_excel,
-    obtener_tipos_ingreso
+    obtener_tipos_ingreso,
+    generar_grafico_x_fecha_ingresos
 
 }

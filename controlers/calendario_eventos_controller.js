@@ -12,7 +12,13 @@ const estados_evento = [ 'ACTIVO', 'ELIMINADO', 'SUSPENDIDO' ]
 const asignar_evento_calendario = async ( req = request, res = response ) =>{
 
     // CREA UN NUEVO EVENTO EN EL CALENDARIO
-    const { tipoEvento, fechaDesde, fechaHasta, costo, descripcion } = req.body;
+    const { tipoEvento, 
+            nombreEvento,
+            fechaDesde, 
+            fechaHasta, 
+            costo,
+            todoEldia, 
+            descripcion } = req.body;
 
     const [ fecha_desde_convertido, fecha_hasta_convertido ] = [ generar_fecha( fechaDesde ), generar_fecha( fechaHasta ) ];
     const costo_evento = costo;
@@ -27,10 +33,19 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                                                                             costo : costo_evento,
                                                                             decripcion_evento : descripcion,
                                                                             eventocreadoen : fecha_creacion,
-                                                                            estadoevento : 'ACTIVO'
+                                                                            estadoevento : 'ACTIVO',
+                                                                            todo_el_dia : (todoEldia  === "S") ? true : false,
+                                                                            nombre_evento : nombreEvento
                                                                         } 
                                                                     } );
-        const { fecha_desde_evento, fecha_hasta_evento, costo, decripcion_evento  } = nuevo_evento;
+        const { fecha_desde_evento, 
+                fecha_hasta_evento, 
+                costo, 
+                decripcion_evento,
+                id_tipo_evento,
+                todo_el_dia,
+                nombre_evento,
+                id_evento_calendario } = nuevo_evento;
         res.status( 200 ).json( {
             status : true, 
             msg : 'Evento insertado en calendario',
@@ -39,14 +54,17 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                 fechaHasta : fecha_hasta_evento,
                 descripcion : decripcion_evento,
                 costo,
-                idTipoEvento : tipoEvento
+                idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
+                idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                todoEldia : todo_el_dia,
+                nombreEvento : nombre_evento
             }
         } );
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : 'Ha ocurrido un error al crear el evento en el calendario',
+            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
             //error
         } );        
     }
@@ -370,7 +388,114 @@ const obtener_inscripciones_x_evento_no_socios = async ( req = request, res = re
 
 
 
+
+const obtener_tipos_de_evento = async (req = request, res = response)=>{
+
+    try {
+
+        const tipos_evento = await prisma.eventos.findMany();
+
+        const { id_tipo_evento, desc_tipo_evento, color } = tipos_evento;
+
+        const tiposEventos = tipos_evento.map( ( element )=>{
+            const { id_tipo_evento, desc_tipo_evento, color } = element;
+
+            return { 
+                idTipoEvento : (typeof(id_tipo_evento) ==='bigint') ? Number(id_tipo_evento.toString()) : id_tipo_evento ,
+                descTipoEvento : desc_tipo_evento,
+                color
+            };
+        } );
+
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Tipos de evento disponibles",
+            tiposEventos
+        } );
+
+        
+    } catch (error) {
+        console.log( error );
+        res.status( 400 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al obtener las inscripciones : ${error}`
+        } );
+    }
+
+
+
+
+
+
+}
+
+
+
+
+const obtener_eventos_del_mes = async (req  =request, res = response)=>{
+
+    try {
+
+        const { mes } = req.query;        
+        const annio = new Date().getFullYear();
+        const [ fecha_desde_mes, fecha_hasta_mes ] = [ new Date(annio, mes - 1, 1), new Date(annio, mes - 1, 1) ]
+        console.log( fecha_desde_mes, fecha_hasta_mes )
+        const eventos = await prisma.calendario_eventos.findMany( { 
+                                                                    where : {  
+                                                                        AND : [
+                                                                            { fecha_desde_evento : fecha_desde_mes },
+                                                                            //{ fecha_hasta_evento : fecha_hasta_mes }
+                                                                            { fecha_desde_evento : fecha_hasta_mes }
+                                                                        ]                  
+                                                                    } 
+                                                                } );
+
+        const eventosMes =  eventos.map( ( element ) =>{
+            
+            const { fecha_desde_evento, 
+                    fecha_hasta_evento, 
+                    costo, 
+                    decripcion_evento,
+                    id_tipo_evento,
+                    todo_el_dia,
+                    nombre_evento,
+                    id_evento_calendario} = eventos;
+
+            return {
+                fechaDesde : fecha_desde_evento,
+                fechaHasta : fecha_hasta_evento,
+                descripcion : decripcion_evento,
+                costo,
+                idTipoEvento : (typeof(id_tipo_evento) === 'bigint')? Number(id_tipo_evento.toString()) : id_tipo_evento,
+                idEventoCalendario : (typeof(id_evento_calendario) === 'bigint')? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                todoEldia : todo_el_dia,
+                nombreEvento : nombre_evento
+            }
+        } );
+
+        res.status( 200 ).json( {
+            status : true,
+            msg : `Eventos del mes`,
+            eventosMes
+        } );
+
+    } catch (error) {
+        console.log( error );
+        res.status( 400 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al obtener las inscripciones : ${error}`
+        } );
+    }
+
+
+
+}
+
+
+
 module.exports = {
+    obtener_tipos_de_evento,
+    obtener_eventos_del_mes,
     asignar_evento_calendario,
     obtener_eventos_calendario,
     borrar_evento_calendario,

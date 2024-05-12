@@ -4,8 +4,28 @@ const { PrismaClient } = require('@prisma/client')
 
 const ExcelJS = require('exceljs');
 
-
+const path = require( 'path' );
 const prisma = new PrismaClient();
+
+
+
+const columnas_pagos = [
+    { key : 'nombre_cmp', header : 'Nombre Socio',  width: 20  },
+    { key : 'nombre_usuario', header : 'usuario',  width: 20 },            
+    { key : 'fecha_vencimiento', header : 'Fecha de Vencimiento',  width: 20 },                
+    { key : 'enero', header : 'Enero',  width: 20  },
+    { key : 'febrero', header : 'Febrero',  width: 20 },            
+    { key : 'marzo', header : 'Marzo',  width: 20 },            
+    { key : 'abril', header : 'Abril',  width: 20 },            
+    { key : 'mayo', header : 'Mayo',  width: 20 },            
+    { key : 'junio', header : 'Junio',  width: 20 },            
+    { key : 'julio', header : 'Julio',  width: 20 },            
+    { key : 'agosto', header : 'Agosto',  width: 20 },            
+    { key : 'setiembre', header : 'Setiembre',  width: 20 },            
+    { key : 'octubre', header : 'Octubre',  width: 20 },            
+    { key : 'noviembre', header : 'Noviembre',  width: 20 },       
+    { key : 'diciembre', header : 'Diciembre',  width: 20 } 
+];
 
 
 const MESES_ESPAÑOL = [ 'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AUGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DECIEMBRE' ];
@@ -507,7 +527,72 @@ const obtener_grilla_de_cuotas = async ( req = request, res = response )=>{
 }
 
 
+const obtener_excel_cuotas_pagadas = async ( req = request, res = response ) => {
 
+    try {
+
+        const query = `SELECT concat( A.apellido,' ', A.nombre) as nombre_cmp, A.cedula, B.nombre_usuario,
+                            C.fecha_vencimiento,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 1  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS enero,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 2  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS febrero,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 3  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS marzo,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 4  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS abril,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 5  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS mayo,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 6  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS junio,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 7  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS julio,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 8  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS agosto,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 9  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS septiembre,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 10 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS octubre,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 11 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS noviembre,
+                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 12 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS diciembre
+                        FROM PERSONA A
+                        JOIN SOCIO B ON A.id_persona = B.id_persona 
+                        JOIN CUOTAS_SOCIO C ON B.id_socio = C.id_socio
+                        JOIN PAGOS_SOCIO D ON D.id_cuota_socio = C.id_cuota_socio`;
+        let pago_cuotas = [];
+        pago_cuotas = await prisma.$queryRawUnsafe( query );
+
+        //PARA  LO QUE SERIA PAGO DE CUOTAS
+        //----------------------------------------------------------------
+        const workbook_cuotas = new ExcelJS.Workbook();
+
+        const worksheet_cuotas = workbook_cuotas.addWorksheet('cuotas_lapacho');
+
+        // Defino las columnas
+        worksheet_cuotas.columns = columnas_pagos;
+        if ( pago_cuotas.length > 0 ){
+
+            pago_cuotas.forEach( ( value )=>{
+                const { ...valores } = value;
+    
+                worksheet_egresos.addRow( { 
+                                            valores
+                                        } );
+            } );
+        }                                           
+
+        const fecha_reporte = new Date();
+        let ruta = path.join( __dirname, `../reportes/${fecha_reporte.toLocaleString().split('/').join('_').split(':').join('_').split(', ').join( '_' )}.xlsx` );
+        await workbook_egresos.xlsx.writeFile(ruta);
+        res.sendFile(ruta);
+
+
+    } catch (error) {
+
+        res.status( 400 ).json( {
+            status : false,
+            msg : "No se pudo obtener el pago de cuotas de socios, error : " + error,
+            //nuevoIngreso
+        } );
+
+    }
+
+
+
+
+
+
+}
 
 
 
@@ -518,5 +603,6 @@ module.exports = {
     obtener_cuotas_pendientes_del_mes,
     obtener_cuotas_atrasadas_del_mes,
     obtener_cuotas_pagadas_del_mes,
-    obtener_grilla_de_cuotas
+    obtener_grilla_de_cuotas,
+    obtener_excel_cuotas_pagadas
 }

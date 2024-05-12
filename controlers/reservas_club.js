@@ -10,23 +10,62 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
 
     //DEVUELVO TODAS LAS RESERVAS EN EL CLUB
     try {
-        const reservas_club = await prisma.$queryRaw`SELECT C.ID_RESERVA, CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS NOMBRE_SOCIO, 
-                                                            B.ID_SOCIO, C.HORARIO_RESERVA_DESDE, 
-                                                            C.HORARIO_RESERVA_HASTA, C.FECHA_RESERVA, C.ID_MESA AS NUMERO_MESA
-                                                        FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
-                                                        JOIN SOCIO_RESERVAS D ON B.ID_SOCIO = D.ID_SOCIO
-                                                        JOIN RESERVAS C ON D.ID_SOCIO_RESERVA = C.ID_SOCIO_RESERVA
-                                                        JOIN MESAS F ON F.ID_MESA = C.ID_MESA;`;
+
+        const { fecha_desde, fecha_hasta, pagina  } = req.query;
+
+        const query = `SELECT A.id_socio_reserva, 
+                        		C.nombre || ' ' || C.apellido AS nombre_cmp,
+                        		A.fecha_reserva,
+                        		a.fecha_creacion,
+                        		A.hora_desde,
+                        		A.hora_hasta,
+                        		D.desc_mesa,
+                        		D.id_mesa,
+                        		F.desc_tipo_reserva
+                        	FROM RESERVAS A JOIN SOCIO B ON A.id_socio = B.id_socio
+                        	JOIN PERSONA C ON C.id_persona = B.id_persona
+                        	JOIN MESAS D ON D.id_mesa = A.id_mesa
+                        	JOIN TIPO_RESERVA F ON F.id_tipo_reserva = A.id_tipo_reserva
+                        WHERE A.fecha_reserva BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}'
+                        ORDER BY A.fecha_reserva DESC
+                        LIMIT 20 OFFSET ${Number(pagina)};`;
+        let reservas_club = [];
+        let reservasClub = [];
+        reservas_club = await prisma.$queryRawUnsafe( query );
+        
         if ( reservas_club.length === 0 ) {
             res.status( 200 ).json( {
                 reservas : false,
-                msg : "No existen reservas"
+                msg : "No existen reservas",
+                reservasClub
             } );
         } else {
+
+            reservasClub = reservas_club.map( ( element )=> { 
+                
+                const { id_socio_reserva, nombre_cmp, fecha_reserva, 
+                        fecha_creacion, hora_desde, hora_hasta,
+                        desc_mesa, id_mesa, desc_tipo_reserva } = element;
+                return {
+                    idSocioReserva : id_socio_reserva,
+                    nombreCmp : nombre_cmp,
+                    fechaReserva : fecha_reserva,
+                    fechaCreacion : fecha_creacion,
+                    horaDesde : hora_desde,
+                    horaHasta : hora_hasta,
+                    descMesa : desc_mesa,
+                    idMesa : id_mesa,
+                    descTipoReserva : desc_tipo_reserva
+                };
+
+
+            });
+
+
             res.status( 200 ).json( {
                 reservas : true,
                 msg : "Reservas del club",
-                reservas_club
+                reservasClub
             } );
         }        
     } catch (error) {
@@ -46,30 +85,42 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
 
 const crear_reserva_en_club = async ( req = request, res = response ) => {
 
-    const { idTipo, idSocio, fechaDesde, fechaHasta, idMesa } = req.body;
-
-    const fechaDeReserva = new Date();
     try {
+        const { idTipo, idSocio, fechaReserva, horaDesde, horaHasta, idMesa } = req.body;
+    
+        const fechaDeReserva = new Date();
         
-        const nueva_reserva = await prisma.socio_reservas.create( { data : {
-                                                                                id_socio : idSocio,
-                                                                                fecha_reserva : fechaDeReserva,
+        const nueva_reserva = await prisma.reservas.create( { data : {
+                                                                        id_socio : idSocio,
+                                                                        fecha_creacion : fechaDeReserva,
+                                                                        id_tipo_reserva : idTipo,
+                                                                        fecha_reserva : fechaReserva,
+                                                                        hora_desde : horaDesde,
+                                                                        hora_hasta : horaHasta,
+                                                                        id_mesa : idMesa
+                                                                    } 
+                                                                });
 
-                                                                            } 
-                                                                } );
-        const { id_socio_reserva } = nueva_reserva;
-        const reserva = await prisma.reservas.create( { data : {
-                                                                    id_tipo_reserva : idTipo,
-                                                                    horario_reserva_desde : fechaDesde,
-                                                                    horario_reserva_hasta : fechaHasta,
-                                                                    id_socio_reserva,
-                                                                    id_mesa : idMesa
-                                                                } 
-                                                    } );
+        const { fecha_creacion, fecha_reserva, hora_desde, 
+                hora_hasta, id_mesa, id_socio, 
+                id_socio_reserva, id_tipo_reserva, reserva_editada, reserva_eliminada } = nueva_reserva;
+
         res.status( 200 ).json( {
             status : true,
             msg : "Reserva creada exitosamente",
-            reserva
+            reserva : {
+
+                fechaCreacion : fecha_creacion, 
+                fechaReserva : fecha_reserva, 
+                horaDesde: hora_desde, 
+                horaHasta : hora_hasta, 
+                idMesa : id_mesa, 
+                idSocio : id_socio, 
+                idSocioReserva : id_socio_reserva, 
+                idTipoReserva : id_tipo_reserva, 
+                reservaEditada : reserva_editada, 
+                reservaEliminada : reserva_eliminada
+            }
         } );
         
     } catch (error) {
@@ -92,25 +143,22 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
 
 const editar_reserva_en_club = async ( req = request, res = response ) => {
 
-    const { mesa, fechaDesde, fechaHasta , idReserva} = req.body;
-
-    const fecha_reserva_editada = new Date()
-
+    
     try {
-        const reserva_editada = await prisma.socio_reservas.update( {   where : { id_reserva_socio : idReserva },
+        const { id_reserva } = req.params;
+        const { idTipo, idSocio, fechaReserva, horaDesde, horaHasta, idMesa } = req.body;
+    
+        const fecha_reserva_editada = new Date();
+        const reserva_editada = await prisma.reservas.update( {   where : { id_socio_reserva : id_reserva },
                                                                         data : {
-                                                                                    reserva_editada : fecha_reserva_editada
+                                                                                    id_tipo_reserva : idTipo, 
+                                                                                    id_socio : idSocio, 
+                                                                                    //fechafechaReserva, 
+                                                                                    //horaDesde,
+                                                                                    //horaHasta, 
+                                                                                    //idMesa
                                                                                 } 
                                                                     } );
-        const { id_socio_reserva } = reserva_editada
-        const reserva = await prisma.reservas.update ( { 
-                                                            where : { id_reserva : id_socio_reserva },
-                                                            data : { 
-                                                                horario_reserva_desde : fechaDesde,
-                                                                horario_reserva_hasta : fechaHasta,
-                                                                id_mesa : mesa
-                                                            }
-                                                    } );
         res.status( 200 ).json( {
             status : true,
             msg : "Reserva editada con exito",
@@ -165,6 +213,46 @@ const borrar_reserva_en_club = async ( req = request, res = response ) => {
 
 }
 
+
+
+const obtener_mesas_reserva = async ( req = request, res = response ) =>{
+
+
+    try {
+        
+        //const query = `SELECT id_mesa, desc_mesa FROM MESAS`;
+        const mesas_disponibles = await prisma.mesas.findMany();
+        let mesasDisponibles = [];
+        if ( mesas_disponibles.length > 0 ){
+            mesas_disponibles.forEach( ( element )=> {
+                const { desc_mesa, id_mesa } = element;
+                mesasDisponibles.push ( {
+                    idMesa : id_mesa,
+                    descMesa : desc_mesa
+                } )
+
+            } )
+        }
+
+        
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Mesas disponibles para reserva",
+            mesasDisponibles
+        } );
+        
+        
+    } catch (error) {
+        console.log ( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : "Ha ocurrido un error al eliminar la reserva",
+            //error
+        } );
+
+    }
+
+}
 
 
 

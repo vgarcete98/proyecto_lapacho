@@ -45,6 +45,8 @@ model calendario_eventos {
   costo                   Int
   estadoevento            String?                   @db.VarChar(20)
   decripcion_evento       String?                   @db.VarChar(255)
+  nombre_evento           String?                   @db.VarChar(255)
+  todo_el_dia             Boolean
   eventos                 eventos                   @relation(fields: [id_tipo_evento], references: [id_tipo_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_calendario_eventos_fk")
   inscripciones           inscripciones[]
   inscripciones_no_socios inscripciones_no_socios[]
@@ -79,6 +81,7 @@ model cuotas_socio {
 model eventos {
   id_tipo_evento     BigInt               @id(map: "eventos_pk") @default(autoincrement())
   desc_tipo_evento   String               @db.VarChar(255)
+  color_evento       String?              @db.VarChar(255)
   calendario_eventos calendario_eventos[]
 }
 
@@ -150,15 +153,19 @@ model persona {
 }
 
 model reservas {
-  id_reserva            BigInt           @id(map: "reservas_pk")
-  id_tipo_reserva       BigInt
-  id_mesa               BigInt
-  horario_reserva_desde String?          @db.VarChar(20)
-  horario_reserva_hasta String?          @db.VarChar(20)
-  fecha_para_reserva    DateTime?        @db.Date
-  mesas                 mesas            @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reservas_fk")
-  tipo_reserva          tipo_reserva     @relation(fields: [id_tipo_reserva], references: [id_tipo_reserva], onDelete: NoAction, onUpdate: NoAction, map: "tipo_reserva_reservas_fk")
-  socio_reservas        socio_reservas[]
+  id_socio_reserva  BigInt       @id(map: "reservas_pk") @default(autoincrement())
+  id_socio          BigInt
+  id_mesa           BigInt
+  id_tipo_reserva   BigInt
+  reserva_eliminada Boolean?
+  fecha_reserva     DateTime?    @db.Date
+  reserva_editada   DateTime?    @db.Date
+  fecha_creacion    DateTime     @db.Date
+  hora_desde        String?      @db.VarChar(10)
+  hora_hasta        String?      @db.VarChar
+  mesas             mesas        @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reservas_fk")
+  socio             socio        @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_socio_reservas_fk")
+  tipo_reserva      tipo_reserva @relation(fields: [id_tipo_reserva], references: [id_tipo_reserva], onDelete: NoAction, onUpdate: NoAction, map: "tipo_reserva_reservas_fk")
 }
 
 model roles_usuario {
@@ -197,10 +204,10 @@ model socio {
   inscripciones        inscripciones[]
   pases_socio          pases_socio[]
   refinanciacion_socio refinanciacion_socio[]
+  reservas             reservas[]
   accesos_usuario      accesos_usuario        @relation(fields: [id_acceso_socio], references: [id_acceso], onDelete: NoAction, onUpdate: NoAction, map: "accesos_usuario_socio_fk")
   persona              persona                @relation(fields: [id_persona], references: [id_persona], onDelete: NoAction, onUpdate: NoAction, map: "persona_socio_fk")
   tipo_socio           tipo_socio             @relation(fields: [id_tipo_socio], references: [id_tipo_socio], onDelete: NoAction, onUpdate: NoAction, map: "tipo_socio_socio_fk")
-  socio_reservas       socio_reservas[]
 }
 
 model socio_reservas {
@@ -210,8 +217,6 @@ model socio_reservas {
   reserva_eliminada Boolean?
   fecha_reserva     DateTime? @db.Date
   reserva_editada   DateTime? @db.Date
-  reservas          reservas  @relation(fields: [id_reserva_socio], references: [id_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_socio_reservas_fk")
-  socio             socio     @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_socio_reservas_fk")
 }
 
 model tipo_cuota {

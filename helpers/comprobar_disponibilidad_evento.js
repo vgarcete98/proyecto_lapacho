@@ -11,7 +11,7 @@ const comprobar_disponibilidad_evento = async ( req = request, res = response, n
     try {
         const { fechaDesde, fechaHasta } = req.body;
         const [ fecha_desde_convertido, fecha_hasta_convertido ] = [ generar_fecha( fechaDesde ), generar_fecha( fechaHasta ) ];
-        console.log( fecha_desde_convertido, fecha_hasta_convertido );
+        //console.log( fecha_desde_convertido, fecha_hasta_convertido );
         const evento = await prisma.calendario_eventos.findFirst( { 
                                                                     where : {  
                                                                         AND : [
@@ -24,7 +24,16 @@ const comprobar_disponibilidad_evento = async ( req = request, res = response, n
             next();
         }else {
 
-            const { fecha_desde_evento, fecha_hasta_evento, costo, decripcion_evento  } = evento;
+            const { fecha_desde_evento, 
+                    fecha_hasta_evento, 
+                    costo, 
+                    decripcion_evento,
+                    id_tipo_evento,
+                    todo_el_dia,
+                    nombre_evento,
+                    id_evento_calendario } = evento;
+
+            //console.log( evento );
             res.status( 400 ).json( {
                 status : true,
                 msg : 'Esa fecha para ese evento no se encuentra libre',
@@ -33,6 +42,10 @@ const comprobar_disponibilidad_evento = async ( req = request, res = response, n
                     fechaHasta : fecha_hasta_evento,
                     descripcion : decripcion_evento,
                     costo,
+                    idTipoEvento : (typeof(id_tipo_evento) === 'bigint')? Number(id_tipo_evento.toString()) : id_tipo_evento,
+                    idEventoCalendario : (typeof(id_evento_calendario) === 'bigint')? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                    todoEldia : todo_el_dia,
+                    nombreEvento : nombre_evento
                     //idTipoEvento : tipoEvento
                 }
             } );
