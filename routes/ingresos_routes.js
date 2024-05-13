@@ -9,7 +9,8 @@ const { actualizar_ingreso,
         borrar_ingreso,
         obtener_ingresos_x_fecha,
         obtener_ingresos_x_fecha_excel,
-        obtener_tipos_ingreso } = require( '../controlers/ingresos_controller' )
+        obtener_tipos_ingreso, 
+        generar_grafico_x_fecha_ingresos} = require( '../controlers/ingresos_controller' )
 
 
 
@@ -18,6 +19,7 @@ const router_ingresos = Router();
 
 router_ingresos.get( '/', [], obtener_ingresos_x_fecha );
 router_ingresos.get( '/tipos_ingreso', [], obtener_tipos_ingreso );
+router_ingresos.get( '/obtener_grafico_ingresos', [], generar_grafico_x_fecha_ingresos );
 router_ingresos.get( '/reportes_ingresos_excel', [  ], obtener_ingresos_x_fecha_excel );
 router_ingresos.post('/agregar_ingreso', [], agregar_ingreso );
 router_ingresos.put( '/actualizar_ingreso/:id_ingreso', [] , actualizar_ingreso);

@@ -25,21 +25,35 @@ const obtener_tipos_reserva = async ( req = request, res = response ) => {
 
 const crear_tipo_reserva = async ( req = request, res = response ) => {
 
-    const { desc_tipo_reserva } = req.body;
+    try {
+        
+        const { descTipoReserva } = req.body;
+    
+        const { desc_tipo_reserva, id_tipo_reserva } = await prisma.tipo_reserva.create( { data : { desc_tipo_reserva : descTipoReserva} } );
+        res.status( 200 ).json(
+    
+            {
+                status : true,
+                msj : 'Tipo de reserva creada',
+                tipoReserva : {
+                    descTipoReserva : desc_tipo_reserva,
+                    idTipoReserva : id_tipo_reserva
+                }
+            }
+    
+        );
+    } catch (error) {
+        console.log ( error );
+        res.status( 400 ).json(  
+            {
+                status : false,
+                msj : `No se pudo crear el tipo de reserva ${ error }`,
+            }
+        );
+    }
 
-    const tipo_reserva = await prisma.$executeRaw`INSERT INTO public.Tipo_Reserva(
-                                                    desc_tipo_reserva )
-                                                VALUES ( ${ desc_tipo_reserva })`;
 
-    res.status( 200 ).json(
 
-        {
-            status : true,
-            msj : 'Tipo de reserva creada',
-            tipo_reserva
-        }
-
-    );
 
 }
 
@@ -47,21 +61,44 @@ const crear_tipo_reserva = async ( req = request, res = response ) => {
 
 const actualizar_tipo_reserva = async ( req = request, res = response ) => {
 
-    const { id_reserva } = req.params;
-    const { new_desc_tipo_reserva } = req.body;
-    const tipo_reserva = await prisma.$executeRaw`UPDATE public.Tipo_Reserva
-                                                    SET desc_tipo_reserva= ${ new_desc_tipo_reserva }
-                                                WHERE id_tipo_reserva = ${id_reserva}`;
 
-    res.status( 200 ).json(
+    try {
+        //const { id_reserva } = req.params;
+        const { descTipoReserva, idTipoReserva } = req.body;
 
-        {
-            status : true,
-            msj : 'Tipo de reserva actualizada',
-            tipo_reserva
-        }
 
-    );
+        
+        const { desc_tipo_reserva, id_tipo_reserva } = await prisma.tipo_reserva.update( { 
+                                                                    where : { id_tipo_reserva : idTipoReserva},  
+                                                                    data : { desc_tipo_reserva : descTipoReserva }
+                                                                } );
+    
+        res.status( 200 ).json(
+    
+            {
+                status : true,
+                msj : 'Tipo de reserva actualizada',
+                tipoReserva : {
+                    descTipoReserva : desc_tipo_reserva,
+                    idTipoReserva : id_tipo_reserva
+                }
+            }
+    
+        );
+        
+    } catch (error) {
+        console.log( error );
+        res.status( 400 ).json(
+    
+            {
+                status : false,
+                msj : `No se pudo actualizar el tipo de reserva : ${error}`,
+                //tipo_reserva
+            }
+    
+        );
+    }
+
 
 }
 
@@ -70,21 +107,36 @@ const actualizar_tipo_reserva = async ( req = request, res = response ) => {
 
 const eliminar_tipo_reserva = async ( req = request, res = response ) => {
 
-    const { id_reserva } = req.params;
-    //const { new_desc_tipo_reserva } = req.body;
-    const tipo_reserva = await prisma.$executeRaw`UPDATE public.Tipo_Reserva
-                                                    SET desc_tipo_reserva= ${ new_desc_tipo_reserva }
-                                                WHERE id_tipo_reserva = ${id_reserva}`;
+    try {
+        
+        const { id_tipo } = req.params;
+        //const { new_desc_tipo_reserva } = req.body;
+        const { desc_tipo_reserva, id_tipo_reserva } = await prisma.tipo_reserva.delete( { where : { id_tipo_reserva : Number(id_tipo) } } );
 
-    res.status( 200 ).json(
-
-        {
-            status : true,
-            msj : 'Tipo de reserva Eliminada',
-            tipo_reserva
-        }
-
-    );
+        res.status( 200 ).json(
+    
+            {
+                status : true,
+                msj : 'Tipo de reserva Eliminada',
+                tipoReserva : {
+                    descTipoReserva : desc_tipo_reserva,
+                    idTipoReserva : id_tipo_reserva
+                }
+            }
+    
+        );
+    } catch (error) {
+        //console.log( error );
+        res.status( 400 ).json(
+    
+            {
+                status : false,
+                msj : `No se pudo actualizar el tipo de reserva : ${error}`,
+                //tipo_reserva
+            }
+    
+        );
+    }
 
 }
 

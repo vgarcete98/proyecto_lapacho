@@ -406,9 +406,10 @@ const generar_grafico_x_fecha = async ( req = request, res = response) =>{
                             JOIN SOCIO B ON A.id_socio = B.id_socio
                             JOIN PERSONA F ON B.id_persona = F.id_persona
                             JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
-                        WHERE A.cargado BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}'
+                        WHERE A.cargado_en BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}'
                             AND A.borrado = false OR A.borrado IS NULL
-                        ORDER BY A.cargado DESC`;
+                        ORDER BY A.cargado_en DESC`;
+        console.log( query );
         let egresos_x_fecha = [];               
         egresos_x_fecha = await prisma.$queryRawUnsafe( query );
     

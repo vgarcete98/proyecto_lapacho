@@ -405,19 +405,16 @@ const generar_grafico_x_fecha_ingresos = async ( req = request, res = response) 
 
     try {
         const { fecha_desde, fecha_hasta } = req.query;
-        const query = `SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
-                                B.nombre_usuario,
-                                CONCAT(F.apellido, ', ', F.nombre) as nombre_completo,
-                                F.cedula,
-                                A.monto,
+        const query = `SELECT A.monto,
                                 A.cargado_en AS fecha_carga,
                                 A.editado_en as fecha_actualizacion
                             FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
                             JOIN PERSONA F ON B.id_persona = F.id_persona
                             JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
-                        WHERE A.cargado_en BETWEEN CAST('${fecha_desde}' AS DATE ) AND CAST('${fecha_hasta}' AS DATE ) 
+                        WHERE A.cargado_en BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}' 
                             AND A.borrado = false
                         ORDER BY A.cargado_en DESC;`;
+        console.log( query );
         let ingresos_x_fecha = [];               
         ingresos_x_fecha = await prisma.$queryRawUnsafe( query );
     

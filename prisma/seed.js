@@ -454,16 +454,25 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                                 } );
 
   //--------------------------------------------------------------------------------------------------------------
-  
-  //const tipos_pagos = await prisma.tipo_pagos.createMany( { data : [
-  //                                                                      { desc_tipo_pago : 'PAGO_ALQUILER' },
-  //                                                                      { desc_tipo_pago : 'PAGO_PERSONAL' },
-  //                                                                      { desc_tipo_pago : 'COBRO_DE_CUOTAS' },
-  //                                                                      { desc_tipo_pago : 'PAGO_DE_SERVICIOS' },
-  //                                                                      { desc_tipo_pago : 'PAGO_MANTENIMIENTO' },
-  //                                                                      { desc_tipo_pago : 'INGRESOS_X_ACTIVIDAD' }
-  //                                                                  ] 
-  //                                                      } );
+  const mesas_disponibles = await prisma.mesas.createMany( { 
+                                                              data : [
+                                                                { desc_mesa : 'MESA 1' },
+                                                                { desc_mesa : 'MESA 2' },
+                                                                { desc_mesa : 'MESA 3' },
+                                                                { desc_mesa : 'MESA 4' },
+                                                                { desc_mesa : 'MESA 5' },
+                                                                { desc_mesa : 'MESA 6' }
+                                                              ] 
+
+                                                          } );
+
+
+  const tipos_reserva = await prisma.tipo_reserva.createMany( {
+                                                                data : [
+                                                                  { desc_tipo_reserva : "RESERVA DE MESA" }
+                                                                ]
+                                                            } );
+
   //--------------------------------------------------------------------------------------------------------------
   
   const clubes_para_pases = await prisma.clubes_habilitados.createMany( { 

@@ -565,7 +565,7 @@ const obtener_excel_cuotas_pagadas = async ( req = request, res = response ) => 
             pago_cuotas.forEach( ( value )=>{
                 const { ...valores } = value;
     
-                worksheet_egresos.addRow( { 
+                worksheet_cuotas.addRow( { 
                                             valores
                                         } );
             } );
@@ -573,7 +573,7 @@ const obtener_excel_cuotas_pagadas = async ( req = request, res = response ) => 
 
         const fecha_reporte = new Date();
         let ruta = path.join( __dirname, `../reportes/${fecha_reporte.toLocaleString().split('/').join('_').split(':').join('_').split(', ').join( '_' )}.xlsx` );
-        await workbook_egresos.xlsx.writeFile(ruta);
+        await workbook_cuotas.xlsx.writeFile(ruta);
         res.sendFile(ruta);
 
 
