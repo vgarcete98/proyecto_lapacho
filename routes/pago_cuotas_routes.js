@@ -11,7 +11,7 @@ const { comprobar_pago_cuota_socio } = require( '../helpers/comprobar_pago_cuota
 const router_pagos = Router();
 
 
-router_pagos.post( '/socio/pagar_cuota/:id_socio', [ comprobar_pago_cuota_socio ], realizar_pago_socio );
+router_pagos.post( '/socio/pagar_cuota', [ comprobar_pago_cuota_socio ], realizar_pago_socio );
 
 router_pagos.delete( '/socio/anular_pago/:id_cuota', [ ], anular_pago_socio );
 

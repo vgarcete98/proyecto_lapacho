@@ -12,7 +12,7 @@ const MESES_ESPAÑOL = [ 'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 
 const realizar_pago_socio = async ( req = request, res = response ) => {
 
     try {
-        const { idCuotaSocio, nroFactura, montoAbonado, numeroCedula, descripcionPago } = req.body;
+        const { idSocio, idCuotaSocio, nroFactura, montoAbonado, numeroCedula, descripcionPago } = req.body;
 
         let idCuotaSocioConvertido = 1;
         let montoAbonadoConvertido = 0;
@@ -22,8 +22,8 @@ const realizar_pago_socio = async ( req = request, res = response ) => {
 
         const fechaPago = new Date();
         //----------------------------------------------------------------------------------------------------------------------------
-        const { id_socio } = req.params;
-        const socio = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
+        //const { id_socio } = req.params;
+        const socio = await prisma.socio.findUnique( { where : { id_socio : Number( idSocio ) } } );
 
         const nombre_socio = socio.nombre + ' ' + socio.apellido;
         const pago_socio = await prisma.pagos_socio.create( {   
