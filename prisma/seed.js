@@ -35,69 +35,69 @@ async function main() {
   }
 
 //-----------------------------------------------------------------------------------------------------------------
-  const tipos_ruta_app = await prisma.tipos_ruta_app.createMany(
+  const modulos = await prisma.modulos.createMany(
                                                                   {
                                                                     data : [
-                                                                      { descripcion : 'SOCIOS' },
-                                                                      { descripcion : 'PAGO_CUOTAS' },
-                                                                      { descripcion : 'PASES_CLUBES_JUGADORES' },
-                                                                      { descripcion : 'EVENTOS' },
-                                                                      { descripcion : 'ACCESOS_SOCIO' },
-                                                                      { descripcion : 'INSCRIPCIONES_EVENTOS' },
-                                                                      { descripcion : 'LOGIN_CLUB' },
-                                                                      { descripcion : 'PROFESORES' },    
-                                                                      { descripcion : 'RESERVAS' },
-                                                                      { descripcion : 'SEGURIDAD' },
-                                                                      { descripcion : 'GASTOS_INGRESOS' },   
-                                                                      { descripcion : 'RUTAS_DE_APP' },
-                                                                      { descripcion : 'TIPO_CUOTAS' }                                                                      
+                                                                      { nombre_modulo : 'SOCIOS' },
+                                                                      { nombre_modulo : 'PAGO_CUOTAS' },
+                                                                      { nombre_modulo : 'PASES_CLUBES_JUGADORES' },
+                                                                      { nombre_modulo : 'EVENTOS' },
+                                                                      { nombre_modulo : 'SEGURIDAD' },
+                                                                      { nombre_modulo : 'INSCRIPCIONES_EVENTOS' },
+                                                                      { nombre_modulo : 'PROFESORES' },    
+                                                                      { nombre_modulo : 'RESERVAS' },
+                                                                      { nombre_modulo : 'INGRESOS_CLUB' },   
+                                                                      { nombre_modulo : 'EGRESOS_CLUB' }, 
+                                                                      { nombre_modulo : 'CLASES' },                                                                      
                                                                     ]
                                                                   }
                                                                 );
 //-----------------------------------------------------------------------------------------------------------------------------
 
+// PRIMER ROL CREADO
+//--------------------------------------------------------------------------------------------------------------
+const rol_usuario = await prisma.roles_usuario.createMany( { data : [
+                                                                      { descripcion_rol : 'ADMINISTRADOR' },
+                                                                      { descripcion_rol :  'SOCIO' },
+                                                                      { descripcion_rol :  'SOCIO_PROFESOR' }
+                                                                    ] 
+                                                        } );
+//--------------------------------------------------------------------------------------------------------------
+
 //-----------------------------------------------------------------------------------------------------------------------------
   const rutas_app = await prisma.rutas_app.createMany(
                                                             {
                                                               data : [
-                                                                { path_ruta : '/socio', id_tipo_ruta_app : 1  },
-                                                                { path_ruta : '/usuario', id_tipo_ruta_app : 1  },
-                                                                { path_ruta : '/tipo_reserva', id_tipo_ruta_app : 9  },
-                                                                { path_ruta : '/eventos', id_tipo_ruta_app : 4  },
-                                                                { path_ruta : '/roles', id_tipo_ruta_app : 10  },
-                                                                { path_ruta : '/tipo_socio', id_tipo_ruta_app : 1  },
-                                                                { path_ruta : '/accesos', id_tipo_ruta_app : 10  },
-                                                                { path_ruta : '/auth', id_tipo_ruta_app : 7  },
-                                                                { path_ruta : '/reserva_en_club', id_tipo_ruta_app :  9 },
-                                                                { path_ruta : '/pagos_socio', id_tipo_ruta_app : 2  },
-                                                                { path_ruta : '/gastos_club', id_tipo_ruta_app : 11  },
-                                                                { path_ruta : '/calendario_eventos', id_tipo_ruta_app :  4 },
-                                                                { path_ruta : '/inscripciones', id_tipo_ruta_app :  6 },
-                                                                { path_ruta : '/pases_jugadores', id_tipo_ruta_app : 3  },
-                                                                { path_ruta : '/profesores', id_tipo_ruta_app : 8  },
-                                                                { path_ruta : '/agendamiento_clases', id_tipo_ruta_app : 9 },
-                                                                { path_ruta : '/rutas_app', id_tipo_ruta_app : 9 },
-                                                                { path_ruta : '/ingresos', id_tipo_ruta_app : 9 },
-                                                                { path_ruta : '/egresos', id_tipo_ruta_app : 12 },
-                                                                { path_ruta : '/tipo_cuotas', id_tipo_ruta_app : 13 }
+                                                                //----------------------------------------
+                                                                { path_ruta : '/socio', id_modulo : 1, accion : 'CREAR SOCIO'  },
+                                                                { path_ruta : '/socio', id_modulo : 1, accion : 'VER SOCIO'  },
+                                                                { path_ruta : '/socio', id_modulo : 1, accion : 'ACTUALIZAR SOCIO'  },
+                                                                { path_ruta : '/socio', id_modulo : 1, accion : 'BORRAR SOCIO'  },
+                                                                //----------------------------------------
+
+                                                                //----------------------------------------
+                                                                { path_ruta : '/cuotas_club/cuota_socio', id_modulo : 2, accion : 'VER CUOTAS DE SOCIO'  },
+                                                                { path_ruta : '/pagos_socio/socio/pagar_cuota', id_modulo : 2, accion : 'PAGAR CUOTA'  },
+                                                                { path_ruta : '/pagos_socio/socio/anular_pago', id_modulo : 2, accion : 'ANULAR PAGO CUOTA'  },
+                                                                { path_ruta : '/cuotas_club/cuotas_reporte', id_modulo : 2, accion : 'REPORTE DE CUOTAS'  },
+                                                                //----------------------------------------
+
+
+
+
+                                                                //----------------------------------------
+                                                                //{ path_ruta : '/socio', id_modulo : 1  },
+                                                                //----------------------------------------
+
                                                               ]
                                                             }
                                                           );
 //---------------------------------------------------------------------------------------------------------------------------------
  
-  // PIRMER ROL CREADO
-  //--------------------------------------------------------------------------------------------------------------
-  const rol_usuario = await prisma.roles_usuario.createMany( { data : [
-                                                                        { descripcion_rol : 'ADMINISTRADOR' },
-                                                                        { descripcion_rol :  'SOCIO' },
-                                                                        { descripcion_rol :  'SOCIO_PROFESOR' }
-                                                                      ] 
-                                                          } );
-  //--------------------------------------------------------------------------------------------------------------
 
   //RUTAS ASIGNADAS A ROLES POR DEFECTO A ADMINISTRADOR
   //--------------------------------------------------------------------------------------------------------------
-  const rutas_habilitadas = await prisma.rutas_habilitadas_rol.createMany(
+  const rutas_habilitadas = await prisma.accesos_usuario.createMany(
                                                                             {
                                                                               data : [
                                                                                 { id_rol_usuario : 1, id_ruta_app : 1 },
@@ -108,18 +108,6 @@ async function main() {
                                                                                 { id_rol_usuario : 1, id_ruta_app : 6 },
                                                                                 { id_rol_usuario : 1, id_ruta_app : 7 },
                                                                                 { id_rol_usuario : 1, id_ruta_app : 8 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 9 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 10 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 11 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 12 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 13 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 14 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 15 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 16 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 17 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 18 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 19 },
-                                                                                { id_rol_usuario : 1, id_ruta_app : 20 }
                                                                               ]
                                                                             }
 
@@ -130,21 +118,21 @@ async function main() {
 
  //RUTAS ASIGNADAS A ROLES POR DEFECTO A SOCIOS
   //--------------------------------------------------------------------------------------------------------------
-  const rutas_habilitadas_rol_socio = await prisma.rutas_habilitadas_rol.createMany(
-                                                                                      {
-                                                                                        data : [
-                                                                                          { id_rol_usuario : 2, id_ruta_app : 3 },
-                                                                                          { id_rol_usuario : 2, id_ruta_app : 4 },                                                                                
-                                                                                          { id_rol_usuario : 2, id_ruta_app : 9 },
-                                                                                          { id_rol_usuario : 2, id_ruta_app : 10 },
-                                                                                          { id_rol_usuario : 2, id_ruta_app : 11 },
-                                                                                          { id_rol_usuario : 2, id_ruta_app : 13 },
-                                                                                          { id_rol_usuario : 2, id_ruta_app : 14 },
-                                                                                          { id_rol_usuario : 2, id_ruta_app : 16 },
-                                                                                        ]
-                                                                                      }
-
-                                                                                    );
+  //const rutas_habilitadas_rol_socio = await prisma.rutas_habilitadas_rol.createMany(
+  //                                                                                    {
+  //                                                                                      data : [
+  //                                                                                        { id_rol_usuario : 2, id_ruta_app : 3 },
+  //                                                                                        { id_rol_usuario : 2, id_ruta_app : 4 },                                                                                
+  //                                                                                        { id_rol_usuario : 2, id_ruta_app : 9 },
+  //                                                                                        { id_rol_usuario : 2, id_ruta_app : 10 },
+  //                                                                                        { id_rol_usuario : 2, id_ruta_app : 11 },
+  //                                                                                        { id_rol_usuario : 2, id_ruta_app : 13 },
+  //                                                                                        { id_rol_usuario : 2, id_ruta_app : 14 },
+  //                                                                                        { id_rol_usuario : 2, id_ruta_app : 16 },
+  //                                                                                      ]
+  //                                                                                    }
+//
+  //                                                                                  );
   const tipos_ingresos = await prisma.tipos_ingreso.createMany( {
                                                               data : [
                                                                 { descripcion : "CUOTAS"  },
@@ -167,17 +155,6 @@ async function main() {
                                                               ]
                                                             });
 
-
-
-  // ACCESOS PARA ESE USUARIO
-  //---------------------------------------------------------------------------------
-  const acceso_usuario = await prisma.accesos_usuario.createMany( { data : [
-                                                                              { descripcion_acceso : 'ACCESO_TOTAL', id_rol_usuario : 1 },
-                                                                              { descripcion_acceso : 'ACCESO_NORMAL', id_rol_usuario : 2 },
-                                                                              { descripcion_acceso : 'ACCESO_PROFESOR', id_rol_usuario : 3 },
-                                                                            ] 
-                                                                } );
-  //---------------------------------------------------------------------------------
 
   // TIPO DE SOCIO QUE MANEJA EL USUARIO
   //---------------------------------------------------------------------------------
@@ -372,21 +349,21 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                               id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "Victor Garcete", numero_telefono : "0985552004", id_persona : 1,
                                                               nombre_usuario : "v_garcete", contrasea : "12345678", estado_usuario : 1, 
-                                                              creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "ACTIVO" 
+                                                              creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 2
                                                             },
 
                                                             { 
                                                               id_tipo_socio : 4, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "ADMINISTRADOR CLUB", numero_telefono : "----------", id_persona : 2,
                                                               nombre_usuario : "ADMINISTRADOR_CLUB", contrasea : pass_admin , estado_usuario : 1, 
-                                                              creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "ACTIVO" 
+                                                              creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 1
                                                             },
 
                                                             { 
                                                               id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "Lucas Torres", numero_telefono : "------------", id_persona : 2,
                                                               nombre_usuario : "lucas.torres", contrasea : "12345678", estado_usuario : 2, 
-                                                              creadoen : new Date(), id_acceso_socio : 1, tipo_usuario : "SUSPENDIDO" 
+                                                              creadoen : new Date(), tipo_usuario : "SUSPENDIDO" , id_rol_usuario : 1 
                                                             }
                                                           ] 
                                               } );

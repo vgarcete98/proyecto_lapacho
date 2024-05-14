@@ -6,7 +6,7 @@ const { agregar_permiso_a_usuario,
         obtener_rutas_aplicacion,
         obtener_rutas_de_usuario,
         quitar_permiso_a_usuario, 
-        obtener_rutas_de_usuario_faltantes} = require( '../controlers/rutas_accesos_controller' )
+        obtener_rutas_de_usuario_faltantes} = require( '../controlers/rutas_app_controller' )
 
 
 const router_rutas_app = Router();

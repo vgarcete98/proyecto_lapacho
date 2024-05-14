@@ -113,14 +113,11 @@ const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response 
 }
 
 
-const obtener_cuotas_pagadas_x_socio = async ( req = request, res = response ) =>{
+const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
 
-    const { numero_cedula, annio } = req.query;
-    //console.log( numero_cedula);
-    // OBTIENE LAS CUOTAS PENDIENTES DEL SOCIO EN EL AÑO
     try {
-
-
+        
+        const { numero_cedula, annio } = req.query;
 
         const query = `SELECT CAST ( C.ID_CUOTA_SOCIO AS INTEGER ) AS idCuotaSocio ,
                                 CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocio, 
@@ -130,18 +127,17 @@ const obtener_cuotas_pagadas_x_socio = async ( req = request, res = response ) =
                                 C.FECHA_VENCIMIENTO AS fechaVencimiento,
                                 C.fecha_pago_realizado as fecha_pago,
                                 D.desc_tipo_cuota as tipo_cuota,
-                                C.monto_cuota as monto
+                                D.monto_cuota
                             FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
                             JOIN CUOTAS_SOCIO C ON C.ID_SOCIO = B.ID_SOCIO
                             JOIN TIPO_CUOTA D ON D.ID_TIPO_CUOTA = C.ID_TIPO_CUOTA
                         WHERE EXTRACT(YEAR FROM C.FECHA_VENCIMIENTO) = ${annio}
-                            AND C.PAGO_REALIZADO = true AND A.CEDULA = '${numero_cedula}';`
-        
-        const cuotas_pagadas = await prisma.$queryRawUnsafe( query );
+                                AND A.CEDULA = '${numero_cedula}';`
+        const cuotas_socio = await prisma.$queryRawUnsafe( query );
 
-        //console.log( cuotas_pendientes );
         let cuotasPagadas = [];
-        cuotasPagadas = cuotas_pagadas.map( ( element ) =>{
+
+        cuotasPagadas = cuotas_socio.map( ( element ) =>{
 
             const { idcuotasocio, nombresocio, id_socio, 
                     fechavencimiento, cedula, numero_mes,
@@ -168,7 +164,7 @@ const obtener_cuotas_pagadas_x_socio = async ( req = request, res = response ) =
 
                 {
                     status : false,
-                    msj : 'El socio no registra pagos ',
+                    msj : 'El socio no registra cuotas',
                     //cantidad : cuotas_pendientes.length
                 }
             );
@@ -177,16 +173,16 @@ const obtener_cuotas_pagadas_x_socio = async ( req = request, res = response ) =
 
                 {
                     status : true,
-                    msj : 'Pagos realizados del socio',
+                    msj : 'Cuotas del socio',
                     cuotasPagadas
                 }
             );
         } 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : 'No se pudo obtener los pagos del socio',
+            msg : `No se pudo obtener las cuotas del socio : ${error}`,
             //error
         } );
         
@@ -194,13 +190,6 @@ const obtener_cuotas_pagadas_x_socio = async ( req = request, res = response ) =
 
 
 }
-
-
-
-
-
-
-
 
 
 
@@ -599,10 +588,8 @@ const obtener_excel_cuotas_pagadas = async ( req = request, res = response ) => 
 
 module.exports = {
     obtener_cuotas_pendientes_x_socio,
-    obtener_cuotas_pagadas_x_socio,
+    obtener_cuotas_x_socio,
     obtener_cuotas_pendientes_del_mes,
-    obtener_cuotas_atrasadas_del_mes,
-    obtener_cuotas_pagadas_del_mes,
     obtener_grilla_de_cuotas,
     obtener_excel_cuotas_pagadas
 }

@@ -7,6 +7,7 @@ const ExcelJS = require('exceljs');
 const path = require( 'path' );
 const prisma = new PrismaClient();
 
+const { generar_fecha } = require( '../helpers/generar_fecha' )
 
 const columnas_egresos = [
     { key : 'id_operacion_egreso', header : 'Numero registro',  width: 20  },
@@ -31,10 +32,6 @@ const agrega_regreso = async ( req = request, res = response )=>{
         const { idTipoEgreso, descripcionEgreso, montoEngreso, idSocio, nroFactura, fechaPago } = req.body;
         const fecha_carga = new Date();
 
-        const [ dia, mes, annio ] =  fechaPago.split( '/' );
-
-        const fechaDePago = new Date( Number(annio), Number(mes) -1 , Number(dia)  );
-
 
         const nuevo_egreso = await prisma.egresos.create( { data : {  
                                                                         cargado_en : fecha_carga,
@@ -44,12 +41,13 @@ const agrega_regreso = async ( req = request, res = response )=>{
                                                                         id_tipo : idTipoEgreso,
                                                                         descripcion : descripcionEgreso,
                                                                         nro_factura : nroFactura,
-                                                                        fecha_pago : fechaDePago,
+                                                                        fecha_pago : generar_fecha( fechaPago ),
+                                                                        fecha_egreso : generar_fecha( fechaPago ),
                                                                         comprobante : ''
                                                                     } 
                                                         } )
 
-        const { cargado_en, id_socio, monto, id_tipo, descripcion, editado_en, nro_factura, is_operacion_egreso } = nuevo_egreso;
+        const { cargado_en, id_socio, monto, id_tipo, descripcion, editado_en, nro_factura, is_operacion_egreso, fecha_pago } = nuevo_egreso;
 
         const egreso = await prisma.tipos_egreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
         //const { descripcion } = egreso;
@@ -65,6 +63,7 @@ const agrega_regreso = async ( req = request, res = response )=>{
             comentario : descripcion,
             nroFactura : nro_factura,
             monto,
+            fechaPago : fecha_pago,
             fechaCarga : cargado_en,
             fechaActualizacion : editado_en
         }
@@ -100,7 +99,7 @@ const borrar_egreso = async ( req = request, res = response )=>{
                                                                 where : { is_operacion_egreso : Number( id_egreso ) }
                                                              } );
 
-        const { is_operacion_egreso, monto, nro_factura, comprobante, descripcion, id_socio, id_tipo, editado_en, cargado_en   } = borrado_egreso;
+        const { is_operacion_egreso, monto, nro_factura, comprobante, descripcion, id_socio, id_tipo, editado_en, cargado_en, fecha_pago  } = borrado_egreso;
         
 
         const egreso = await prisma.tipos_egreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
@@ -117,6 +116,7 @@ const borrar_egreso = async ( req = request, res = response )=>{
             comentario : descripcion,
             nroFactura : nro_factura,
             monto,
+            fechaPago : fecha_pago,
             fechaCarga : cargado_en,
             fechaActualizacion : editado_en
         }
@@ -145,23 +145,23 @@ const actualizar_egreso = async ( req = request, res = response )=>{
 
 
     try {
-        const { id_egreso } = req.params;
-        const { montoNuevo, descripcionNueva, comprobanteNuevo, nroFacturaNuevo } = req.body;
-        
-        const fecha_edicion = new Date();
+        const { idTipoEgreso, descripcionEgreso, montoEngreso, idSocio, nroFactura, fechaPago, idEgreso , idOperacionEgreso} = req.body;
 
         const edicion_egreso = await prisma.egresos.update( { 
                                                                 data : { 
-                                                                    monto : montoNuevo,
-                                                                    descripcion : descripcionNueva,
-                                                                    comprobante : comprobanteNuevo,
-                                                                    nro_factura : nroFacturaNuevo,
-                                                                    editado_en : fecha_edicion
+                                                                    monto : Number(montoEngreso),
+                                                                    descripcion : descripcionEgreso,
+                                                                    comprobante : nroFactura,
+                                                                    nro_factura : nroFactura,
+                                                                    id_tipo : idTipoEgreso,
+                                                                    fecha_pago : generar_fecha( fechaPago ),
+                                                                    id_socio : idSocio,
+                                                                    editado_en : new Date()
                                                                 },
-                                                                where : { is_operacion_egreso : Number( id_egreso ) }
+                                                                where : { is_operacion_egreso : Number( idOperacionEgreso ) }
                                                              } )
         
-        const { is_operacion_egreso, monto, nro_factura, descripcion, id_tipo, id_socio, editado_en } = edicion_egreso;
+        const { is_operacion_egreso, monto, nro_factura, descripcion, id_tipo, id_socio, editado_en, fecha_pago } = edicion_egreso;
         
         const egreso = await prisma.tipos_egreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
         //const { descripcion } = egreso;
@@ -177,6 +177,7 @@ const actualizar_egreso = async ( req = request, res = response )=>{
             comentario : descripcion,
             nroFactura : nro_factura,
             monto,
+            fechaPago : fecha_pago,
             fechaCarga : editado_en,
             fechaActualizacion : editado_en
         }
@@ -227,17 +228,18 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
                                 A.descripcion AS comentario,
                                 A.monto,
                                 A.nro_factura,
+                                A.fecha_pago,
                                 A.cargado_en AS fecha_carga,
                                 A.editado_en as fecha_actualizacion
                             FROM EGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
                             JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
-                        WHERE A.cargado_en BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                        WHERE A.fecha_pago BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
                             AND A.borrado = false OR A.borrado IS NULL
-                        ORDER BY A.cargado_en DESC
+                        ORDER BY A.fecha_pago DESC
                         LIMIT 20 OFFSET ${Number(pagina)}`
 
 
-
+        //console.log ( query )
         const egresos_x_fecha = await prisma.$queryRawUnsafe(query);
 
         let egresosXFecha = [];
@@ -250,6 +252,7 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
                     tipo_ingreso,
                     comentario,
                     monto,
+                    fecha_pago,
                     nro_factura,
                     fecha_carga,
                     fecha_actualizacion } = value;
@@ -264,6 +267,7 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
                 comentario : comentario,
                 nroFactura : nro_factura,
                 monto : monto,
+                fechaPago : fecha_pago,
                 fechaCarga : fecha_carga,
                 fechaActualizacion : fecha_actualizacion
             } );
@@ -300,7 +304,15 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
 const obtener_egresos_x_fecha_excel = async ( req = request, res = response )=>{
     try {
         
-        const { fecha_desde, fecha_hasta } = req.params;
+        const { fechaDesde, fechaHasta } = req.query;
+        const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
+
+        const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
+
+        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
+
+        const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;
+
         const query = `SELECT A.is_operacion_egreso AS id_operacion_egreso,
                             	B.nombre_usuario, 
                             	CONCAT(F.apellido, ', ', F.nombre) as nombre_completo,
@@ -316,9 +328,9 @@ const obtener_egresos_x_fecha_excel = async ( req = request, res = response )=>{
 					        JOIN SOCIO B ON A.id_socio = B.id_socio
 					        JOIN PERSONA F ON B.id_persona = F.id_persona
                             JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
-                        WHERE A.cargado BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}'
+                        WHERE A.fecha_pago BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
                             AND A.borrado = false OR A.borrado IS NULL
-                        ORDER BY A.cargado DESC`
+                        ORDER BY A.fecha_pago DESC`
         const egresos_x_fecha = await prisma.$queryRawUnsafe( query );
         //PARA  LO QUE SERIA EGRESOS
         //----------------------------------------------------------------
@@ -406,7 +418,7 @@ const generar_grafico_x_fecha = async ( req = request, res = response) =>{
                             JOIN SOCIO B ON A.id_socio = B.id_socio
                             JOIN PERSONA F ON B.id_persona = F.id_persona
                             JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
-                        WHERE A.cargado_en BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}'
+                        WHERE A.fecha_pago BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}'
                             AND A.borrado = false OR A.borrado IS NULL
                         ORDER BY A.cargado_en DESC`;
         console.log( query );

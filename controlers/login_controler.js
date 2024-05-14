@@ -5,7 +5,7 @@ const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient();
 
-const { generar_token } = require( '../helpers/generar_token' )
+const { generar_token } = require('../helpers/generar_token');
 
 
 const login = async ( req = request, res = response )=> {
@@ -13,13 +13,21 @@ const login = async ( req = request, res = response )=> {
     const { usuario, contraseña } = req.body;
     //console.log( usuario, contraseña )
     try {
-        const consulta_usuario = await prisma.$queryRaw`SELECT CAST ( id_socio AS INTEGER ) AS id_usuario, 
-                                                                CAST ( id_acceso_socio AS INTEGER ) AS id_acceso,
-                                                                tipo_usuario, nombre_usuario, contrasea 
-                                                            FROM  public.Socio
-                                                        WHERE nombre_usuario = ${ usuario } AND contrasea = ${ contraseña }`;
-        //console.log( consulta_usuario.lenght() );
-        if ( consulta_usuario.length === 0 ) { 
+        //const consulta_usuario = await prisma.$queryRaw`SELECT CAST ( id_socio AS INTEGER ) AS id_usuario, 
+        //                                                        CAST ( id_acceso_socio AS INTEGER ) AS id_acceso,
+        //                                                        tipo_usuario, nombre_usuario, contrasea 
+        //                                                    FROM  public.Socio
+        //                                                WHERE nombre_usuario = ${ usuario } AND contrasea = ${ contraseña }`;
+
+        const socio = await prisma.socio.findFirst( { where : { 
+                                                                    AND : [
+                                                                        { nombre_usuario : usuario },
+                                                                        { contrasea : contraseña }
+                                                                    ]
+                                                                } 
+                                                    } );
+        //console.log( socio );
+        if ( socio === undefined ) { 
             res.status( 400 ).json(
                 {
                     status : true,
@@ -29,32 +37,41 @@ const login = async ( req = request, res = response )=> {
                 }
             );
         }else {
-            //console.log ( consulta_usuario );
-            const [ primer_resultado, ...resto ] = consulta_usuario;
-            const { id_usuario, tipo_usuario, id_acceso } = primer_resultado;
-            //console.log( primer_resultado, resto );
-            const token = await generar_token( id_usuario, id_acceso );
 
-            const consulta_acceso = await prisma.accesos_usuario.findUnique( { where : { id_acceso  } } );
-            const { descripcion_acceso } = consulta_acceso
+            const { id_socio, id_rol_usuario,  } = socio;
+            
+            const idRolUsuario  = ( typeof( id_rol_usuario ) === 'bigint' )? Number( id_rol_usuario.toString() ) : id_rol_usuario;
+
+            const idUsuario = ( typeof( id_socio ) === 'bigint' )? Number( id_socio.toString() ) : id_socio;
+            
+            const token = await generar_token( idUsuario, idRolUsuario );
             //console.log ( consulta_acceso );
+            
+            const { descripcion_rol } = await prisma.roles_usuario.findUnique( { where : { id_rol_usuario : idRolUsuario } } );
+
+            const { descripcion_acceso } = await prisma.accesos_usuario.findFirst( { where : { id_rol_usuario : idRolUsuario } } );
+
+
             res.status( 200 ).json(
                 {
                     status : true,
                     msj : 'Login OK',
                     //usuario,
                     token,
-                    acceso : { tipo_usuario, descripcion_acceso }
+                    acceso : { 
+                        tipoUsuario : descripcion_rol, 
+                        descripcionAcceso : descripcion_acceso 
+                    }
                 }
             );
         }
     } catch ( error ) {
-        console.log ( "Ha ocurrido un error al realizar la consulta " + error );
+        //console.log ( "Ha ocurrido un error al realizar la consulta " + error );
         res.status( 500 ).json(
         
             {
                 status : false,
-                msj : 'Ha ocurrido un error al realizar la consulta, No se pudo generar el token',
+                msj : `Ha ocurrido un error al cargar el socio : ${ error }`,
                 //mensaje_error : error
             }
     

@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const path = require( 'path' );
 const ExcelJS = require('exceljs');
 
-
+const { generar_fecha } = require( '../helpers/generar_fecha' )
 
 const columnas_ingresos = [
 
@@ -16,7 +16,8 @@ const columnas_ingresos = [
     { key : 'nombre_completo', header : 'Nombre Completo',  width: 20 },            
     { key : 'cedula', header : 'Cedula',  width: 20 },            
     { key : 'comentario', header : 'Comentario',  width: 20 },            
-    { key : 'monto', header : 'Monto',  width: 20 },            
+    { key : 'monto', header : 'Monto',  width: 20 }, 
+    { key : 'fecha_ingreso', header : 'Fecha de Operacion',  width: 20 },          
     { key : 'cargado_en', header : 'Fecha de Carga',  width: 20 },            
     { key : 'editado_en', header : 'Fecha de Edicion',  width: 20 }   
 
@@ -29,21 +30,20 @@ const agregar_ingreso = async ( req = request, res = response )=>{
 
     try {
         
-        const { idTipoIngreso, descripcionIngreso, montoIngreso, idSocio } = req.body;
-        const fecha_carga = new Date();
-
+        const { idTipoIngreso, descripcionIngreso, montoIngreso, idSocio, fechaIngreso } = req.body;
         const nuevo_ingreso = await prisma.ingresos.create( { data : {  
-                                                                        cargado_en : fecha_carga,
-                                                                        editado_en : fecha_carga,
+                                                                        cargado_en : new Date(),
+                                                                        //editado_en : fecha_carga,
                                                                         monto : montoIngreso,
                                                                         id_socio : idSocio,
                                                                         id_tipo : idTipoIngreso,
+                                                                        fecha_ingreso : generar_fecha( fechaIngreso ),
                                                                         descripcion : descripcionIngreso,
                                                                         borrado : false,
                                                                     } 
                                                         } );
 
-        const { cargado_en, id_socio, monto, id_tipo, descripcion, column_d_operacion_ingreso, editado_en } = nuevo_ingreso;
+        const { cargado_en, id_socio, monto, id_tipo, descripcion, column_d_operacion_ingreso, editado_en, fecha_ingreso } = nuevo_ingreso;
         //console.log( nuevo_ingreso );
 
         const ingreso = await prisma.tipos_ingreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
@@ -59,6 +59,7 @@ const agregar_ingreso = async ( req = request, res = response )=>{
             tipoIngreso : ingreso.descripcion,
             comentario : descripcion,
             monto,
+            fechaIngreso : fecha_ingreso,
             fechaCarga : cargado_en,
             fechaActualizacion : editado_en,
         }
@@ -87,15 +88,16 @@ const borrar_ingreso = async ( req = request, res = response )=>{
 //A VER BORRAR EN SI NO SE VA HACER, SOLO CAMBIAR EL ESTADO DE UNA COLUMNA QUE SE LLAMA BORRADO
 try {
 
-    const { id_ingreso } = req.params;
+    const { idIngreso } = req.body;
 
     const fecha_borrado = new Date();
-    const borrado_ingreso = await prisma.ingresos.update( { 
-                                                            data : { borrado : true, editado_en : fecha_borrado },
-                                                            where : { column_d_operacion_ingreso : Number(id_ingreso) }
+    const borrado_ingreso = await prisma.ingresos.delete( { 
+                                                            where : { column_d_operacion_ingreso : Number(idIngreso) }
                                                         } );
 
-    const { column_d_operacion_ingreso, monto, nro_factura, descripcion, id_socio, id_tipo, cargado_en, editado_en   } = borrado_ingreso;
+    const { column_d_operacion_ingreso, monto, nro_factura, 
+            descripcion, id_socio, id_tipo, 
+            cargado_en, editado_en, fecha_ingreso   } = borrado_ingreso;
 
     const ingreso = await prisma.tipos_ingreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
     //const { descripcion } = egreso;
@@ -109,6 +111,7 @@ try {
         nombreCmp : usuario.nombre_cmp,
         tipoIngreso : ingreso.descripcion,
         comentario : descripcion,
+        fechaIngreso : fecha_ingreso,
         monto,
         fechaCarga : cargado_en,
         fechaActualizacion : editado_en,
@@ -153,18 +156,17 @@ const actualizar_ingreso = async ( req = request, res = response )=>{
 
     try {
 
-        const { id_ingreso } = req.params;
-        const { montoNuevo, descripcionNueva } = req.body;
-        
-        const fecha_edicion = new Date();
+        const { idTipoIngreso, descripcionIngreso, montoIngreso, idSocio, idIngreso, fechaIngreso } = req.body;
 
         const edicion_ingreso = await prisma.ingresos.update( { 
                                                                 data : { 
-                                                                    monto : montoNuevo,
-                                                                    descripcion : descripcionNueva,
-                                                                    editado_en : fecha_edicion
+                                                                    monto : montoIngreso,
+                                                                    descripcion : descripcionIngreso,
+                                                                    fecha_ingreso : generar_fecha( fechaIngreso ),
+                                                                    editado_en : new Date(),
+                                                                    id_tipo : idTipoIngreso
                                                                 },
-                                                                where : { column_d_operacion_ingreso : Number(id_ingreso) }
+                                                                where : { column_d_operacion_ingreso : Number(idIngreso) }
                                                              } )
         
         const { column_d_operacion_ingreso, 
@@ -173,7 +175,8 @@ const actualizar_ingreso = async ( req = request, res = response )=>{
                 id_tipo, 
                 monto,
                 editado_en,
-                cargado_en } = edicion_ingreso;
+                cargado_en,
+                fecha_ingreso } = edicion_ingreso;
 
         const ingreso = await prisma.tipos_ingreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
         const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
@@ -186,6 +189,7 @@ const actualizar_ingreso = async ( req = request, res = response )=>{
             tipoIngreso : ingreso.descripcion,
             comentario : descripcion,
             monto,
+            fechaIngreso : fecha_ingreso,
             fechaCarga : cargado_en,
             fechaActualizacion : editado_en,
         };
@@ -238,15 +242,16 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
                                                     C.descripcion AS tipo_ingreso,
                                                     A.descripcion AS comentario,
                                                     A.monto,
+                                                    A.fecha_ingreso AS fecha_ingreso,
                                                     A.cargado_en AS fecha_carga,
                                                     A.editado_en as fecha_actualizacion
                                                 FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
                                                 JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
-                                            WHERE A.cargado_en BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                                            WHERE A.fecha_ingreso BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
                                                 AND A.borrado = false
-                                            ORDER BY A.cargado_en DESC
+                                            ORDER BY A.fecha_ingreso DESC
                                             LIMIT 20 OFFSET ${Number(pagina)};`
-        console.log( query_ingresos );
+        //console.log( query_ingresos );
         const query = await prisma.$queryRawUnsafe( query_ingresos );
 
                                             
@@ -264,7 +269,8 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
                         id_tipo ,
                         tipo_ingreso,
                         comentario, 
-                        monto, 
+                        monto,
+                        fecha_ingreso, 
                         fecha_carga,
                         fecha_actualizacion  } = value;
 
@@ -278,6 +284,7 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
                         tiposIngreso : tipo_ingreso,
                         comentario, 
                         monto, 
+                        fechaIngreso : fecha_ingreso,
                         fechaCarga : fecha_carga,
                         fechaActualizacion : fecha_actualizacion 
                 } )
@@ -311,6 +318,14 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
     try {
         
         const { fechaDesde, fechaHasta } = req.query;
+        const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
+
+        const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
+
+        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
+
+        const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;        
+
         const query = `SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
                                                                 B.nombre_usuario,
                                                                 CONCAT(F.apellido, ', ', F.nombre) as nombre_completo,
@@ -318,15 +333,16 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
                                                                 C.descripcion AS tipo_ingreso,
                                                                 A.descripcion AS comentario,
                                                                 A.monto,
+                                                                A.fecha_ingreso AS fecha_ingreso,
                                                                 A.cargado_en AS fecha_carga,
                                                                 A.editado_en as fecha_actualizacion
                                                             FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
 															JOIN PERSONA F ON B.id_persona = F.id_persona
                                                             JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
-                                                        WHERE A.cargado_en BETWEEN CAST('${fechaDesde}' AS DATE ) AND CAST('${fechaHasta}' AS DATE ) 
+                                                        WHERE A.fecha_ingreso BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
                                                             AND A.borrado = false
-                                                        ORDER BY A.cargado_en DESC;`;
-        console.log( query )
+                                                        ORDER BY A.fecha_ingreso DESC;`;
+        //console.log( query )
         const ingresos_x_fecha = await prisma.$queryRawUnsafe( query );
 
         //PARA  LO QUE SERIA EGRESOS
@@ -406,6 +422,7 @@ const generar_grafico_x_fecha_ingresos = async ( req = request, res = response) 
     try {
         const { fecha_desde, fecha_hasta } = req.query;
         const query = `SELECT A.monto,
+                                A.fecha_ingreso AS fecha_ingreso,
                                 A.cargado_en AS fecha_carga,
                                 A.editado_en as fecha_actualizacion
                             FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
@@ -414,7 +431,7 @@ const generar_grafico_x_fecha_ingresos = async ( req = request, res = response) 
                         WHERE A.cargado_en BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}' 
                             AND A.borrado = false
                         ORDER BY A.cargado_en DESC;`;
-        console.log( query );
+        //console.log( query );
         let ingresos_x_fecha = [];               
         ingresos_x_fecha = await prisma.$queryRawUnsafe( query );
     
@@ -425,9 +442,9 @@ const generar_grafico_x_fecha_ingresos = async ( req = request, res = response) 
             //const { monto, fecha_pago } = egresos_x_fecha;
             ingresos_x_fecha.forEach( ( element ) => {
     
-                const { monto, fecha_pago } = element;
+                const { monto, fecha_ingreso } = element;
     
-                data.push( { x: fecha_pago, y : monto } );
+                data.push( { x: fecha_ingreso, y : monto } );
     
             } );
     
