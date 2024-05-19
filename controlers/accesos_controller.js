@@ -8,32 +8,82 @@ const prisma = new PrismaClient();
 const obtener_accesos = async ( req = request, res = response ) => {
 
     try {
-        const accesos_para_usuarios = await prisma.$queryRaw`select CAST ( id_acceso AS INTEGER ) AS id_acceso, 
-                                                        CAST ( id_rol_usuario AS INTEGER ) AS id_rol_usuario , 
-                                                    descripcion_acceso
-                                                from accesos_usuario;`;
+        //OBTIENE TODOS LOS ACCESOS CON SUS ACCIONES CORRESPONDIENTES
+        let accesos = [];
+        accesos = await prisma.$queryRaw`SELECT C.ID_RUTA_APP, C.PATH_RUTA, D.ID_MODULO, D.nombre_modulo
+                                        	FROM rutas_app C JOIN modulos D ON D.id_modulo = C.id_modulo
+                                        ORDER BY C.ID_RUTA_APP`;
+        let accesosDisponibles = [];
 
-        const accesos = accesos_para_usuarios.map( ( element )=>{
-            const { id_acceso, descripcion_acceso } = element;
+        accesosDisponibles = accesos.map( ( element )=>{
+            const { id_ruta_app, path_ruta, id_modulo, nombre_modulo } = element;
             return {
-                idAcceso : id_acceso,
-                descripcionAcceso : descripcion_acceso
+                idRutaApp : id_ruta_app, 
+                pathRuta : path_ruta, 
+                idModulo : id_modulo, 
+                nombreModulo : nombre_modulo
             }
         } )
         res.status( 200 ).json(
             {
                 status : true,
                 msj : 'Accesos para usuarios',
-                accesos
-
+                accesosDisponibles
             }
         );      
     } catch (error) {
-        console.log ( error );
+        //console.log ( error );
 
         res.status( 500 ).json( { 
             status : false,
-            msg : 'No se pudo obtener la lista de roles',
+            msg : `No se pudo obtener la lista de roles : ${error}`,
+            //error
+        } );
+        
+    }
+
+
+}
+
+const obtener_accesos_rol = async ( req = request, res = response ) => {
+
+    try {
+        //OBTIENE LOS ACCESOS ASIGNADOS A ESE ROL Y LOS QUE NO
+        let accesos = [];
+        accesos = await prisma.$queryRaw`SELECT C.ID_RUTA_APP, C.PATH_RUTA, D.ID_MODULO, D.nombre_modulo,
+	                                        COALESCE(verifica_acceso_rol( C.ID_RUTA_APP, 'ADMINISTRADOR' ), 0 ) AS id_acceso ,
+	                                        CASE WHEN C.ID_RUTA_APP IN ( SELECT C.ID_RUTA_APP
+	                                        									FROM ACCESOS_USUARIO A JOIN roles_usuario B ON B.id_rol_usuario = A.id_rol_usuario
+	                                        									JOIN rutas_app C ON C.id_ruta_app = A.id_ruta_app
+	                                        									JOIN modulos D ON D.id_modulo = C.id_modulo
+	                                        								WHERE B.descripcion_rol = 'ADMINISTRADOR' ) THEN 'ASIGNADO' ELSE'NO_ASIGNADO' END AS tiene_permiso
+	                                        FROM rutas_app C JOIN modulos D ON D.id_modulo = C.id_modulo`;
+        let accesosDisponibles = [];
+
+        accesosDisponibles = accesos.map( ( element )=>{
+            const { id_ruta_app, path_ruta, id_modulo, nombre_modulo, id_acceso, tiene_permiso } = element;
+            return {
+                idRutaApp : id_ruta_app, 
+                pathRuta : path_ruta, 
+                idModulo : id_modulo, 
+                nombreModulo : nombre_modulo,
+                idAcceso : id_acceso,
+                tienePermiso : tiene_permiso
+            }
+        } )
+        res.status( 200 ).json(
+            {
+                status : true,
+                msj : 'Accesos para usuarios',
+                accesosDisponibles
+            }
+        );      
+    } catch (error) {
+        //console.log ( error );
+
+        res.status( 500 ).json( { 
+            status : false,
+            msg : `No se pudo obtener la lista de roles : ${error}`,
             //error
         } );
         
@@ -45,26 +95,33 @@ const obtener_accesos = async ( req = request, res = response ) => {
 
 
 
-const crear_accesos = async ( req = request, res = response ) => {
-
-    const { idRolUsuario, descripcionAcceso } = req.body;
+const editar_modulos = async ( req = request, res = response ) => {
 
     try {
-        const nuevo_acceso = await prisma.$executeRaw`INSERT INTO public.accesos_usuario(
-            id_rol_usuario, descripcion_acceso)
-            VALUES ( ${ idRolUsuario }, ${ descripcionAcceso } );`
 
+        const { nombreModulo, idModulo } = req.body;
+        const { id_modulo, nombre_modulo } = await prisma.modulos.update( 
+                                                                            { 
+                                                                                data : { nombre_modulo : nombreModulo },
+                                                                                where : { id_modulo : Number( idModulo ) } 
+                                                                            }
+                                                                             
+                                                                        );
         res.status( 200 ).json({
             status : true,
-            msj : 'Acceso Creado',
-            descripcionAcceso
+            msj : 'Modulo Editado con exito',
+            modulo : {
+                idModulo : id_modulo, 
+                nombreModulo : nombre_modulo
+            }
 
         });
+
+        
     } catch (error) {
-        console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : 'No se ha podido crear el acceso con exito',
+            msg : `No se ha podido editar el modulo con exito : ${ error }`,
             //error
         } )
     }
@@ -72,132 +129,73 @@ const crear_accesos = async ( req = request, res = response ) => {
 
 }
 
-const obtener_accesos_usuarios= async ( req = request, res = response ) => {
 
-    //const { descripcion_rol } = req.body;
+const eliminar_modulos = async ( req = request, res = response ) => {
 
-    // OBTENGO LOS ACCESOS QUE POSEEN CADA UNO DE LOS USUARIOS DE LA APLICACION
     try {
-        const usuarios_acceso = await prisma.$queryRaw`SELECT CAST ( A.ID_USUARIO AS INTEGER ) AS idUsuario, 
-                                                                CAST ( A.ID_SOCIO AS INTEGER ) AS idSocio, 
-                                                                A.TIPO_USUARIO AS tipoUsuario, A.NOMBRE_USUARIO AS nombreUsuario,
-                                                                CAST ( B.ID_ACCESO AS INTEGER ) AS idAcceso, 
-                                                                B.DESCRIPCION_ACCESO AS descripcionAcceso
-                                                        FROM USUARIO A JOIN ACCESOS_USUARIO B
-                                                            ON A.ID_ACCESO = B.ID_ACCESO;`;
-        if ( usuarios_acceso.length === 0 ) {
 
-            res.status( 200 ).json(
+        const { nombreModulo, idModulo } = req.body;
+        const { id_modulo, nombre_modulo } = await prisma.modulos.delete( 
+                                                                            { 
+                                                                                //data : { nombre_modulo : nombreModulo },
+                                                                                where : { id_modulo : Number( idModulo ) } 
+                                                                            }
+                                                                             
+                                                                        );
+        res.status( 200 ).json({
+            status : true,
+            msj : 'Modulo Eliminado con exito',
+            modulo : {
+                idModulo : id_modulo, 
+                nombreModulo : nombre_modulo
+            }
 
-                {
-                    status : true,
-                    msj : 'No existen Accesos de usuario para mostrar ',
-                    usuariosAcceso : usuarios_acceso
-                }
+        });
 
-            );
-        } else {
-
-            const usuariosAcceso = usuarios_acceso.map( ( element ) => {
-                
-                const { idusuario, idsocio, tipousuario, nombreusuario, idacceso, descripcionacceso } = element;
-                return {
-                    idUsuario : idusuario,
-                    idSocio : idsocio,
-                    tipoUsuario : tipousuario,
-                    nombreUsuario : nombreusuario,
-                    idAcceso : idacceso,
-                    descripcionAcceso : descripcionacceso
-                }
-
-            });
-
-            res.status( 200 ).json(
-
-                {
-                    status : true,
-                    msj : 'Accesos de usuario',
-                    usuariosAcceso
-                }
-
-            );      
-        }
-      
-    } catch (error) {
-
-        console.log( error );
-        res.status( 500 ).json( {
-            status : false,
-            msg : 'Ha ocurrido un error al consultar los accesos de usuario',
-            //error
-        } );
-    }
-
-
-}
-
-
-
-const obtener_acceso_usuario= async ( req = request, res = response ) => {
-
-    const { id_usuario } = req.params;
-
-    // OBTENGO LOS ACCESOS QUE POSEEN CADA UNO DE LOS USUARIOS DE LA APLICACION
-    try {
-        const usuario_acceso = await prisma.$queryRaw`SELECT CAST ( A.ID_USUARIO AS INTEGER ) AS idUsuario, 
-                                                                CAST ( A.ID_SOCIO AS INTEGER ) AS idSocio, 
-                                                                A.TIPO_USUARIO AS tipoUsuario, A.NOMBRE_USUARIO AS nombreUsuario,
-                                                                CAST ( B.ID_ACCESO AS INTEGER ) AS idAcceso, 
-                                                                B.DESCRIPCION_ACCESO AS descripcionAcceso
-                                                        FROM USUARIO A JOIN ACCESOS_USUARIO B ON A.ID_ACCESO = B.ID_ACCESO
-                                                        WHERE A.ID_USUARIO = ${ Number(id_usuario) };`;
-        if ( usuario_acceso.length === 0 ) {
-
-            res.status( 200 ).json(
-
-                {
-                    status : true,
-                    msj : 'No existen Accesos de usuario para mostrar ',
-                    usuariosAcceso : usuarios_acceso
-                }
-
-            );
-        } else {
-
-            
-            const usuarioAcceso = usuario_acceso.map( ( element ) => {
-                
-                const { idusuario, idsocio, tipousuario, nombreusuario, idacceso, descripcionacceso } = element;
-                return {
-                    idUsuario : idusuario,
-                    idSocio : idsocio,
-                    tipoUsuario : tipousuario,
-                    nombreUsuario : nombreusuario,
-                    idAcceso : idacceso,
-                    descripcionAcceso : descripcionacceso
-                }
-
-            });
-            const [ primer_resultado, ...resto  ] = usuarioAcceso;
-            res.status( 200 ).json(
-
-                {
-                    status : true,
-                    msj : 'Accesos de usuario',
-                    usuarioAcceso : primer_resultado
-                }
-
-            );      
-        }
-      
-    } catch (error) {
         
-        console.log( error );
+    } catch (error) {
         res.status( 500 ).json( {
             status : false,
-            msg : 'Ha ocurrido un error al consultar los accesos de usuario',
+            msg : `No se ha podido eliminar el modulo con exito : ${ error }`,
             //error
-        } );
+        } )
+    }
+
+
+}
+
+
+
+
+
+const obtener_modulos = async ( req = request, res = response ) => {
+
+    try {
+        let modulos, modulos_sistema = [];
+        modulos_sistema = await prisma.modulos.findMany();
+        modulos = modulos_sistema.map( ( element )=>{  
+                                            const { id_modulo, nombre_modulo } = element;
+                                            return {
+                                                idModulo : id_modulo,
+                                                nombreModulo : nombre_modulo
+                                            }
+                                    } );
+
+
+        res.status( 200 ).json({
+            status : true,
+            msj : 'Modulos del sistema',
+            modulos
+
+        });
+
+        
+    } catch (error) {
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se ha podido obtener los modulos del sistema : ${ error }`,
+            //error
+        } )
     }
 
 
@@ -208,6 +206,196 @@ const obtener_acceso_usuario= async ( req = request, res = response ) => {
 
 
 
+const crear_modulos = async ( req = request, res = response ) => {
+
+    try {
+
+        const { nombreModulo } = req.body;
+        const { id_modulo, nombre_modulo } = await prisma.modulos.create( { data : { nombre_modulo : nombreModulo } } );
+        res.status( 200 ).json({
+            status : true,
+            msj : 'Acceso Creado',
+            modulo : {
+                idModulo : id_modulo, 
+                nombreModulo : nombre_modulo
+            }
+
+        });
+
+        
+    } catch (error) {
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se ha podido crear el modulo con exito : ${ error }`,
+            //error
+        } )
+    }
+
+
+}
+
+
+const crear_accesos = async ( req = request, res = response ) => {
+
+    
+    try {
+        const { idModulo, funcion, pathRuta } = req.body;
+
+        const { id_modulo, id_ruta_app, accion, path_ruta } = await prisma.rutas_app.create( { data : { 
+                                                                                                        accion : funcion, 
+                                                                                                        id_modulo : idModulo, 
+                                                                                                        path_ruta : pathRuta 
+                                                                                                    } 
+                                                                                            } );
+
+        res.status( 200 ).json({
+            status : true,
+            msj : 'Acceso Creado',
+            acceso : {
+                idModulo : id_modulo, 
+                idRutaApp : id_ruta_app, 
+                funcion : accion, 
+                pathRuta : path_ruta
+            }
+
+        });
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se ha podido crear el acceso con exito : ${ error }`,
+            //error
+        } )
+    }
+
+
+}
+
+
+const asignar_accesos = async ( req = request, res = response ) => {
+
+    try {
+
+        const { idRolUsuario, idRutaApp, idSocio } = req.body;
+
+        const { id_acceso, id_rol_usuario, id_ruta_app,  } = await prisma.accesos_usuario.create( { data : { 
+                                                                        id_rol_usuario : idRolUsuario, 
+                                                                        id_ruta_app : idRutaApp, 
+                                                                        id_usuario_crea : idSocio 
+                                                                    } 
+                                                        } );
+
+        res.status( 200 ).json({
+            status : true,
+            msj : 'Acceso Asignado',
+            acceso : {
+                idRolUsuario : id_rol_usuario, 
+                idRutaApp : id_ruta_app,
+                idAcceso : id_acceso
+            }
+
+        });
+    } catch (error) {
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se ha podido crear el acceso con exito : ${ error }`,
+            //error
+        } )
+    }
+}
+
+
+
+const quitar_accesos = async ( req = request, res = response ) => {
+
+    try {
+        //QUITA EL ACCESO ASIGNADO A UN ROL
+        const { idRolUsuario, idRutaApp, idSocio, idAcceso } = req.body;
+
+        const { id_acceso, id_rol_usuario, id_ruta_app,  } = await prisma.accesos_usuario.delete( { where : { id_acceso : Number( idAcceso ) } } );
+
+        res.status( 200 ).json({
+            status : true,
+            msj : 'Acceso quitado',
+            acceso : {
+                idRolUsuario : id_rol_usuario, 
+                idRutaApp : id_ruta_app,
+                idAcceso : id_acceso
+            }
+
+        });
+
+    } catch (error) {
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se ha podido quitar el acceso al rol con exito : ${ error }`,
+            //error
+        } )
+    }
+}
+
+
+const eliminar_accesos = async ( req = request, res = response ) => {
+    try {
+        //ELIMINA UN ACCESO CREADO
+        const { idRutaApp, pathRuta ,idModulo ,nombreModulo } = req.body;
+
+        const { id_modulo, id_ruta_app, accion, path_ruta } = await prisma.rutas_app.delete( { where : { id_ruta_app : idRutaApp } } );
+
+        res.status( 200 ).json({
+            status : true,
+            msj : 'Acceso Creado',
+            acceso : {
+                idModulo : id_modulo, 
+                idRutaApp : id_ruta_app, 
+                funcion : accion, 
+                pathRuta : path_ruta
+            }
+
+        });
+
+    } catch (error) {
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se ha podido eliminar el acceso con exito : ${ error }`,
+            //error
+        } )
+    }
+}
+
+
+const editar_accesos = async ( req = request, res = response ) => {
+    try {
+        const { idModulo, funcion, pathRuta, idRutaApp } = req.body;
+
+        const { id_modulo, id_ruta_app, accion, path_ruta } = await prisma.rutas_app.update( { 
+                                                                                                data : { 
+                                                                                                        accion : funcion, 
+                                                                                                        id_modulo : idModulo, 
+                                                                                                        path_ruta : pathRuta 
+                                                                                                },
+                                                                                                where : { id_ruta_app : idRutaApp } 
+                                                                                            } );
+
+        res.status( 200 ).json({
+            status : true,
+            msj : 'Acceso Creado',
+            acceso : {
+                idModulo : id_modulo, 
+                idRutaApp : id_ruta_app, 
+                funcion : accion, 
+                pathRuta : path_ruta
+            }
+
+        });
+    } catch (error) {
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se ha podido editar el acceso con exito : ${ error }`,
+            //error
+        } )
+    }
+}
 
 
 
@@ -215,7 +403,21 @@ const obtener_acceso_usuario= async ( req = request, res = response ) => {
 
 
 module.exports = {
-
+//------------------------------------------------
     obtener_accesos,
     crear_accesos,
+    eliminar_accesos,
+    editar_accesos,
+    asignar_accesos,
+    quitar_accesos,
+    obtener_accesos_rol,
+//------------------------------------------------
+
+//------------------------------------------------
+    crear_modulos,
+    obtener_modulos,
+    editar_modulos,
+    eliminar_modulos,
+//------------------------------------------------
+
 }

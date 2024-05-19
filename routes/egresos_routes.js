@@ -1,6 +1,6 @@
 const Router = require( 'express' )
 
-const  { obtener_data_socio  } = require('../helpers/verficar_socio_carga');
+//const  { obtener_data_socio  } = require('../helpers/verficar_socio_carga');
 
 const { actualizar_egreso,
         agrega_regreso,
@@ -18,9 +18,9 @@ router_egresos.get('/', [],  obtener_egresos_x_fecha );
 router_egresos.get( '/obtener_datos_grafico', [], generar_grafico_x_fecha )
 router_egresos.get( '/tipos_egreso', obtener_tipos_egreso );
 router_egresos.get( '/reportes_egresos_excel', obtener_egresos_x_fecha_excel );
-router_egresos.post('/agregar_gasto', [ obtener_data_socio ], agrega_regreso);
-router_egresos.put( '/actualizar_egreso',[ obtener_data_socio ], actualizar_egreso );
-router_egresos.delete('/eliminar_egreso/:id_egreso', [ obtener_data_socio ], borrar_egreso);
+router_egresos.post('/agregar_gasto', [ ], agrega_regreso);
+router_egresos.put( '/actualizar_egreso',[ ], actualizar_egreso );
+router_egresos.delete('/eliminar_egreso/:id_egreso', [ ], borrar_egreso);
 
 
 

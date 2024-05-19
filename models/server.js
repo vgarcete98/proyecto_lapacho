@@ -47,6 +47,7 @@ const validar_token = require('../middlewares///validar_token');
 const { desencriptar_body_login } = require('../middlewares/desencriptar_login');
 const { validar_existe_usuario_socio } = require( '../middlewares/validar_existe_usuario' );
 const { validar_acceso_a_ruta } = require( '../middlewares/validar_acceso_a_ruta' );
+const { obtener_data_socio } = require('../helpers/verficar_socio_carga');
 //----------------------------------------------------------------------------
 
 
@@ -91,7 +92,7 @@ class Server {
 
         //this.app.use(validar_acceso_a_ruta);//y ve si tiene la ruta habilitada
 
-
+        this.app.use( obtener_data_socio );
         //this.app.use( multer )
 
         this.app.use(function( err, req , res , next ) {

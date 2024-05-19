@@ -175,7 +175,7 @@ model roles_usuario {
   estado_rol_usuario   Int?              @db.SmallInt
   rol__creado_en       DateTime?         @db.Date
   rol_editado_en       DateTime?         @db.Date
-  id_usuario_crea_rol  DateTime?         @db.Date
+  id_usuario_crea_rol  Int?
   id_usuario_edita_rol Int?
   accesos_usuario      accesos_usuario[]
   socio                socio[]

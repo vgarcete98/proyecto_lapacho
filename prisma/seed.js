@@ -74,7 +74,6 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                 { path_ruta : '/socio', id_modulo : 1, accion : 'ACTUALIZAR SOCIO'  },
                                                                 { path_ruta : '/socio', id_modulo : 1, accion : 'BORRAR SOCIO'  },
                                                                 //----------------------------------------
-
                                                                 //----------------------------------------
                                                                 { path_ruta : '/cuotas_club/cuota_socio', id_modulo : 2, accion : 'VER CUOTAS DE SOCIO'  },
                                                                 { path_ruta : '/pagos_socio/socio/pagar_cuota', id_modulo : 2, accion : 'PAGAR CUOTA'  },
@@ -82,7 +81,31 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                 { path_ruta : '/cuotas_club/cuotas_reporte', id_modulo : 2, accion : 'REPORTE DE CUOTAS'  },
                                                                 //----------------------------------------
 
+                                                                //----------------------------------------
+                                                                { path_ruta : '/roles/obtener_roles' , id_modulo :  5, accion : 'VER ROLES'  },
+                                                                { path_ruta : '/roles/crear_rol' ,  id_modulo : 5, accion : 'CREAR ROLES'  },
+                                                                { path_ruta : '/roles/borrar_rol' ,  id_modulo : 5, accion : 'BORRAR ROLES'  },
+                                                                { path_ruta : '/roles/editar_rol' ,  id_modulo : 5, accion : 'EDITAR ROLES'  },
 
+                                                                //----------------------------------------
+                                                                { path_ruta : '/accesos/crear_accesos' ,  id_modulo : 5, accion : 'CREAR ACCESO PARA ROLES'  },
+                                                                { path_ruta : '/accesos/editar_accesos' ,  id_modulo : 5, accion : 'EDITAR ACCESO PARA ROLES'  },
+                                                                { path_ruta : '/accesos/borrar_accesos' ,  id_modulo : 5, accion : 'BORRAR ACCESO PARA ROLES'  },
+                                                                { path_ruta : '/accesos/obtener_accesos' ,  id_modulo : 5, accion : 'VER ACCESO PARA ROLES'  },
+                                                                { path_ruta : '/accesos/asignar_accesos' ,  id_modulo : 5, accion : 'ASIGNAR ACCESO A ROL'  },
+                                                                { path_ruta : '/accesos/quitar_accesos' ,  id_modulo : 5, accion : 'REPORTE DE CUOTAS'  },
+                                                                //----------------------------------------
+
+                                                                //----------------------------------------
+                                                                { path_ruta : '/accesos/crear_modulos' ,  id_modulo : 5, accion : 'VER CUOTAS DE SOCIO'  },
+                                                                { path_ruta : '/accesos/editar_modulos' ,  id_modulo : 5, accion : 'PAGAR CUOTA'  },
+                                                                { path_ruta : '/accesos/obtener_modulos' ,  id_modulo : 5, accion : 'ANULAR PAGO CUOTA'  },
+                                                                { path_ruta : '/accesos/eliminar_modulos' ,  id_modulo : 5, accion : 'REPORTE DE CUOTAS'  },
+                                                                //----------------------------------------
+
+                                                                { path_ruta : '/profesores', id_modulo : 7, accion : 'BORRAR SOCIO'  },
+                                                                
+                                                        
 
 
                                                                 //----------------------------------------
@@ -462,7 +485,18 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                                           ] 
                                                                       } );
 
-
+  const func_verifica_id_acceso_roles = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION verifica_acceso_rol(RUTA_APP INTEGER, rol VARCHAR)
+                                                                RETURNS INTEGER AS $$
+                                                                DECLARE
+                                                                    ID_ACCESO INTEGER;
+                                                                BEGIN
+                                                                  SELECT B.ID_ACCESO INTO ID_ACCESO 
+                                                                    FROM roles_usuario A JOIN accesos_usuario B on A.id_rol_usuario = B.id_rol_usuario
+                                                                  WHERE A.descripcion_rol = rol AND B.id_ruta_app = RUTA_APP;
+                                                                                                                                  
+                                                                  RETURN ID_ACCESO;
+                                                                END;
+                                                                $$ LANGUAGE plpgsql;` 
 
 }
 

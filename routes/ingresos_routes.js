@@ -1,7 +1,7 @@
 const Router = require( 'express' )
 
 
-const  { obtener_data_socio  } = require('../helpers/verficar_socio_carga');
+//const  { obtener_data_socio  } = require('../helpers/verficar_socio_carga');
 
 
 const { actualizar_ingreso,
@@ -21,8 +21,8 @@ router_ingresos.get( '/', [], obtener_ingresos_x_fecha );
 router_ingresos.get( '/tipos_ingreso', [], obtener_tipos_ingreso );
 router_ingresos.get( '/obtener_grafico_ingresos', [], generar_grafico_x_fecha_ingresos );
 router_ingresos.get( '/reportes_ingresos_excel', [  ], obtener_ingresos_x_fecha_excel );
-router_ingresos.post('/agregar_ingreso', [ obtener_data_socio ], agregar_ingreso );
-router_ingresos.put( '/actualizar_ingreso', [ obtener_data_socio ] , actualizar_ingreso);
+router_ingresos.post('/agregar_ingreso', [ ], agregar_ingreso );
+router_ingresos.put( '/actualizar_ingreso', [ ] , actualizar_ingreso);
 router_ingresos.delete( '/borrar_ingreso/:id_ingreso', [  ], borrar_ingreso );
 
 
