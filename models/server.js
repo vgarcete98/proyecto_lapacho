@@ -30,7 +30,6 @@ const router_eventos = require( '../routes/calendario_eventos_routes' );
 const router_inscripciones = require( '../routes/inscripciones_route' );
 const router_pases_jugadores = require('../routes/pases_jugadores_routes');
 const router_profesores = require('../routes/profesores_routes');
-const router_clases = require( '../routes/clases_routes' )
 const router_ingresos = require('../routes/ingresos_routes');
 const router_egresos = require('../routes/egresos_routes');
 const { router_rutas_app } = require('../routes/rutas_app_routes');
@@ -48,6 +47,7 @@ const { desencriptar_body_login } = require('../middlewares/desencriptar_login')
 const { validar_existe_usuario_socio } = require( '../middlewares/validar_existe_usuario' );
 const { validar_acceso_a_ruta } = require( '../middlewares/validar_acceso_a_ruta' );
 const { obtener_data_socio } = require('../helpers/verficar_socio_carga');
+const router_agendamientos_clase = require('../routes/agendamiento_clases_routes');
 //----------------------------------------------------------------------------
 
 
@@ -135,7 +135,7 @@ class Server {
 
         this.app.use( rutas.profesores.ruta, router_profesores );
 
-        this.app.use (rutas.clases_particulares.ruta, router_clases );
+        this.app.use (rutas.clases_particulares.ruta, router_agendamientos_clase );
 
         this.app.use( rutas.ingresos_del_club.ruta, router_ingresos );
 

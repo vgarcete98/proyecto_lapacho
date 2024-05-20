@@ -4,54 +4,77 @@ const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient();
 
-const { comprobar_horario_profesor } = require( '../helpers/comprobar_disponibilidad_profesor' );
 const { generar_fecha } = require( '../helpers/generar_fecha' );
 
 
 const obtener_clases_del_dia = async ( req = request, res = response ) =>{
 
-    // OBTENGO LAS CLASES DEL DIA Y LAS MANDO CON SU ID Y EL NOMBRE DEL PROFESOR ASOCIADO
+    // OBTENGO LAS CLASES POR LAS FECHAS INDICADAS 
 
     try {
-        const clases_del_dia = await prisma.$queryRaw`SELECT CAST ( B.ID_AGENDAMIENTO AS INTEGER ) AS ID_AGENDAMIENTO, A.NOMBRE_PROFESOR, 
-                                                                B.FECHA_AGENDAMIENTO, B.HORARIO_INICIO, B.HORARIO_HASTA
-                                                            FROM AGENDAMIENTO_CLASE B JOIN PROFESORES A ON A.ID_PROFESOR = B.ID_PROFESOR
-                                                        WHERE EXTRACT ( MONTH FROM B.FECHA_AGENDAMIENTO ) = EXTRACT ( MONTH FROM CURRENT_DATE) AND 	
-                                                                EXTRACT ( DAY FROM B.FECHA_AGENDAMIENTO ) = EXTRACT ( DAY FROM CURRENT_DATE) AND 
-                                                                EXTRACT ( YEAR FROM B.FECHA_AGENDAMIENTO) = EXTRACT ( YEAR FROM CURRENT_DATE);`;        
+
+        const { fechaDesde, fechaHasta, pagina } = req.query;
+
+        const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
+
+        const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
+
+        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
+
+        const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
+
+        const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
+                        		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
+                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado
+                        	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
+                        	JOIN mesas C ON C.id_mesa = A.id_mesa
+                        	JOIN socio D ON D.id_socio = A.id_socio
+                        WHERE A.fecha_agendamiento BETWEEN  BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                        ORDER BY A.fecha_agendamiento DESC
+                        LIMIT 20 OFFSET ${Number(pagina)}`
+        let clases_del_dia, clasesDelDia = [];
+        clases_del_dia = await prisma.$queryRawUnsafe( query );  
+
+
         if ( clases_del_dia.length === 0 ){
             res.status( 200 ).json( {
                 status : false,
                 msg : "No se encontraron clases para el dia de hoy",
-                cantidad : clases_del_dia.length,
-                clasesDelDia : []
+                clasesDelDia
             } );
         }else {
 
             const clasesDelDia = clases_del_dia.map( ( element )=>{
-                const { id_agendamiento, nombre_profesor,
+                const { id_agendamiento, id_profesor, nombre_profesor, id_socio, nombre_cmp,
+                        id_mesa, desc_mesa, clase_abonada, monto_abonado,
                         fecha_agendamiento, horario_inicio, horario_hasta } = element;
                 return {
-                    idAgendamiento : id_agendamiento, 
+                    idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
+                    idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+                    nombreSocio : nombre_cmp,
                     nombreProfesor : nombre_profesor,
+                    idProfesor : id_profesor,
+                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
+                    mesa : desc_mesa,
                     fechaAgendamiento : fecha_agendamiento, 
                     horarioInicio : horario_inicio, 
-                    horarioHasta : horario_hasta
+                    horarioHasta : horario_hasta,
+                    claseAgendada : clase_abonada,
+                    montoAbonado : monto_abonado
                 }
             } );
             res.status( 200 ).json( {
                 status : true,
                 msg : "Clases para el dia de hoy",
-                cantidad : clases_del_dia.length,
                 clasesDelDia
             } );
         }
     } catch (error) {
-        console.log ( ` Error encontrado ${error}` );
+        //console.log ( ` Error encontrado ${error}` );
 
         res.status( 500 ).json( {
             status : false,
-            msg : "Ocurrio un error al realizar la consulta",
+            msg : `Ocurrio un error al consultar las clases x Fecha : ${error}`,
             //error
         } );
     }
@@ -59,51 +82,166 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
 
 
 }
+
+
+
+const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =>{
+
+    // OBTENGO LAS CLASES POR LAS FECHAS INDICADAS 
+
+    try {
+
+        const { fechaDesde, fechaHasta, pagina } = req.query;
+
+        const { idSocio } = req.body;
+        //console.log( idSocio );
+        const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
+
+        const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
+
+        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
+
+        const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
+
+        const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
+                        		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
+                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado
+                        	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
+                        	JOIN mesas C ON C.id_mesa = A.id_mesa
+                        	JOIN socio D ON D.id_socio = A.id_socio
+                        WHERE A.fecha_agendamiento BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                                AND D.id_socio = ${Number( idSocio )}
+                        ORDER BY A.fecha_agendamiento DESC
+                        LIMIT 20 OFFSET ${Number(pagina)}`
+        let clases_del_dia, clasesDelDia = [];
+        clases_del_dia = await prisma.$queryRawUnsafe( query );  
+
+
+        if ( clases_del_dia.length === 0 ){
+            res.status( 200 ).json( {
+                status : false,
+                msg : "No se encontraron clases para el dia de hoy",
+                clasesDelDia
+            } );
+        }else {
+
+            const clasesDelDia = clases_del_dia.map( ( element )=>{
+                const { id_agendamiento, id_profesor, nombre_profesor, id_socio, nombre_cmp,
+                        id_mesa, desc_mesa, clase_abonada, monto_abonado,
+                        fecha_agendamiento, horario_inicio, horario_hasta } = element;
+                return {
+                    idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
+                    idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+                    nombreSocio : nombre_cmp,
+                    nombreProfesor : nombre_profesor,
+                    idProfesor : id_profesor,
+                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
+                    mesa : desc_mesa,
+                    fechaAgendamiento : fecha_agendamiento, 
+                    horarioInicio : horario_inicio, 
+                    horarioHasta : horario_hasta,
+                    claseAgendada : clase_abonada,
+                    montoAbonado : monto_abonado
+                }
+            } );
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Clases para el dia de hoy",
+                clasesDelDia
+            } );
+        }
+    } catch (error) {
+        //console.log ( ` Error encontrado ${error}` );
+
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ocurrio un error al consultar las clases x Fecha : ${error}`,
+            //error
+        } );
+    }
+
+
+
+}
+
 
 
 
 
 const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>{
 
-    const { id_profesor } = req.params;
 
-    const clase_hoy = new Date();
     // voy a devolver las clases del dia para ese profesor
     try {
-        const clases_del_dia = await prisma.agendamiento_clase.findMany( { 
-                                                                            where : {
-                                                                                id_profesor,
-                                                                                fecha_agendamiento : clase_hoy
-                                                                            }
-                                                                        } );
-        if ( clases_del_dia === null ) {
+        const { fechaDesde, fechaHasta, pagina, id_profesor } = req.query;
+    
+        const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
+    
+        const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
+    
+        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
+    
+        const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
+
+        const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
+                        		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
+                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado
+                        	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
+                        	JOIN mesas C ON C.id_mesa = A.id_mesa
+                        	JOIN socio D ON D.id_socio = A.id_socio
+                        WHERE A.fecha_agendamiento BETWEEN  DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                                AND B.id_profesor = ${ Number( id_profesor ) }
+                        ORDER BY A.fecha_agendamiento DESC
+                        LIMIT 20 OFFSET ${Number(pagina)}`;
+        //console.log( query )
+        let clases_del_dia, clasesDelDia = [];
+        clases_del_dia = await prisma.$queryRawUnsafe( query ); 
+
+        if ( clases_del_dia.length === 0 ){
             res.status( 200 ).json( {
                 status : false,
-                msg : "No se han encontrado registros",
-                clases_del_dia
+                msg : "No se encontraron clases para el dia de hoy",
+                clasesDelDia
             } );
-
         }else {
+
+            const clasesDelDia = clases_del_dia.map( ( element )=>{
+                const { id_agendamiento, id_profesor, nombre_profesor, id_socio, nombre_cmp,
+                        id_mesa, desc_mesa, clase_abonada, monto_abonado,
+                        fecha_agendamiento, horario_inicio, horario_hasta } = element;
+                return {
+                    idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
+                    idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+                    nombreSocio : nombre_cmp,
+                    nombreProfesor : nombre_profesor,
+                    idProfesor : id_profesor,
+                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
+                    mesa : desc_mesa,
+                    fechaAgendamiento : fecha_agendamiento, 
+                    horarioInicio : horario_inicio, 
+                    horarioHasta : horario_hasta,
+                    claseAgendada : clase_abonada,
+                    montoAbonado : monto_abonado
+                }
+            } );
             res.status( 200 ).json( {
                 status : true,
-                msg : "Clases del dia para profesor " + id_profesor,
-                clases_del_dia,
-                cantidad : clases_del_dia.length
+                msg : "Clases para el dia de hoy",
+                clasesDelDia
             } );
         }
     } catch (error) {
-        console.log( error );
+        //console.log ( ` Error encontrado ${error}` );
+
         res.status( 500 ).json( {
             status : false,
-            msg : "Ha ocurrido un error al consultar los registros",
+            msg : `Ocurrio un error al consultar las clases x Fecha : ${error}`,
             //error
         } );
     }
 
+
 }
-
-
-
 
 
 
@@ -111,70 +249,56 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
 
 const agendar_una_clase = async ( req = request, res = response ) =>{
 
-
-    const { idSocio, idProfesor, fechaParaLaClase, inicio, fin } = req.body;
-
     // VOY A COMPROBAR LAS CLASES QUE HAY EN EL DIA PRIMERO PARA PODER VER SI SE PUEDE RESERVAR O NO
-    const disponibilidad = await comprobar_horario_profesor( fechaParaLaClase, inicio, fin, idProfesor );
-    const fecha_para_la_clase = generar_fecha( fechaParaLaClase );
-    //console.log( fecha_para_la_clase );
-    if ( disponibilidad === true ) {
+    try {
+        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa } = req.body;
         
-        try {
-            const agendar_clase = await prisma.agendamiento_clase.create( { 
-                                                                            data : { 
-                                                                                        id_socio : idSocio,
-                                                                                        id_profesor : idProfesor,
-                                                                                        fecha_agendamiento : fecha_para_la_clase,
-                                                                                        horario_inicio : inicio,
-                                                                                        horario_hasta : fin,
-                                                                                        creadoen : new Date(),
-                                                                                        clase_eliminada : false
-                                                                                    } 
-                                                                        } );
-            const claseAgendada = {};
+        const { id_agendamiento, id_socio, id_profesor, 
+                fecha_agendamiento, horario_inicio, horario_hasta, 
+                clase_abonada, monto_abonado } = await prisma.agendamiento_clase.create( { 
+                                                                                            data : { 
+                                                                                                        id_socio : idSocio,
+                                                                                                        id_profesor : idProfesor,
+                                                                                                        id_mesa : Number( idMesa ),
+                                                                                                        fecha_agendamiento : generar_fecha( fechaAgendamiento ),
+                                                                                                        horario_inicio : inicio,
+                                                                                                        horario_hasta : fin,
+                                                                                                        creadoen : new Date(),
+                                                                                                        //clase_eliminada : false,
+                                                                                                    } 
+                                                                                        } );
+        const { nombre_profesor } = await prisma.profesores.findUnique( { where : { id_profesor :  Number( idProfesor )} } );
+        const { nombre_cmp } = await prisma.socio.findUnique( { where : { id_socio :  Number( idSocio )} } );
+        const { desc_mesa, id_mesa } = await prisma.mesas.findUnique( { where : { id_mesa :  Number( idMesa )} } );
 
-            const { fecha_agendamiento, horario_hasta, horario_inicio } = agendar_clase;
-            const profesor = await prisma.profesores.findUnique( { where : { id_profesor : idProfesor } } );
-            const { nombre_profesor } = profesor;
-            
-            claseAgendada.profesor = nombre_profesor;
-            claseAgendada.fechaAgendamiento = fecha_agendamiento;
-            claseAgendada.horarioHasta = horario_hasta;
-            claseAgendada.horarioInicio = horario_inicio;
-
-            if ( agendar_clase === null ) {
-                res.status( 200 ).json( {
-                    status : false,
-                    msg : "No se pudo insertar el registro",
-                    claseAgendada : {}
-                } );
-            }else {
-                res.status( 200 ).json( {
-                    status : true,
-                    msg : "registro insertado",
-                    claseAgendada
-                } );
-            }
-        } catch (error) {
-    
-            console.log ( error );
-            res.status( 500 ).json( {
-                status : false,
-                msg : "Ocurrio un error al insertar el registro",
-                //error
-            } );
-    
-        }
-
-    } else {
         res.status( 200 ).json( {
-            status : false,
-            msg : "No se pudo agendar la clase, ya existe una en el mismo horario",
-            agendar_clase
+            status : true,
+            msg : "Clase Creada",
+            claseAgendada : {
+                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento) , 
+                idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+                nombreSocio : nombre_cmp,
+                nombreProfesor : nombre_profesor,
+                idProfesor : id_profesor,
+                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa) ,
+                mesa : desc_mesa,
+                fechaAgendamiento : fecha_agendamiento, 
+                horarioInicio : horario_inicio, 
+                horarioHasta : horario_hasta,
+                claseAgendada : clase_abonada,
+                montoAbonado : monto_abonado
+            }
         } );
-    }
 
+    } catch (error) {
+        //console.log ( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ocurrio un error al insertar el registro : ${error}`,
+            //error
+        } );
+
+    }
 
 
 
@@ -182,35 +306,55 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
 
 const editar_una_clase = async ( req = request, res = response ) =>{
 
-    // Voy a cambiar en todo caso la hora en que se desea agendar ya que por diseño de la BD no se puede cambiar de profesor
-    // En todo caso generar una nueva
-    const id_clase = req.params;
-    const { horarioInicio, horarioHasta } = req.body;
-    const fecha_editada = new Date();
-
     try {
-        const clase_editada = await prisma.agendamiento_clase.update( { 
-                                                                        where : { id_agendamiento : id_clase },
-                                                                        data : {
+        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento } = req.body;
+        
+        const { id_agendamiento, id_socio, id_profesor, 
+                fecha_agendamiento, horario_inicio, horario_hasta, 
+                clase_abonada, monto_abonado } = await prisma.agendamiento_clase.update( { 
+                                                                                            data : { 
+                                                                                                        id_socio : idSocio,
+                                                                                                        id_profesor : idProfesor,
+                                                                                                        fecha_agendamiento : generar_fecha( fechaParaLaClase ),
+                                                                                                        horario_inicio : inicio,
+                                                                                                        horario_hasta : fin,
+                                                                                                        clase_eliminada : false,
+                                                                                                        id_mesa : Number( idMesa ),
+                                                                                                        editadoen : new Date()
+                                                                                                    },
+                                                                                            where : { id_agendamiento : Number( idAgendamiento ) }
+                                                                                        } );
+        const { nombre_profesor } = await prisma.profesores.findUnique( { where : { id_profesor :  Number( idProfesor )} } );
+        const { nombre_cmp } = await prisma.socio.findUnique( { where : { id_socio :  Number( idSocio )} } );
+        const { desc_mesa, id_mesa } = await prisma.mesas.findUnique( { where : { id_mesa :  Number( idMesa )} } );
 
-                                                                            editadoen : fecha_editada,
-                                                                            horario_inicio : horarioInicio,
-                                                                            horario_hasta : horarioHasta
-                                                                        }
-                                                                    } );
         res.status( 200 ).json( {
             status : true,
-            msg : 'Clase editada con exito',
-            clase_editada
+            msg : "Clase Editada",
+            claseAgendada : {
+                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento) , 
+                idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+                nombreSocio : nombre_cmp,
+                nombreProfesor : nombre_profesor,
+                idProfesor : id_profesor,
+                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa) ,
+                mesa : desc_mesa,
+                fechaAgendamiento : fecha_agendamiento, 
+                horarioInicio : horario_inicio, 
+                horarioHasta : horario_hasta,
+                claseAgendada : clase_abonada,
+                montoAbonado : monto_abonado
+            }
         } );
+
     } catch (error) {
-        console.log ( error );
+        //console.log ( error );
         res.status( 500 ).json( {
             status : false,
-            msg : 'No se pudo editar la clase',
+            msg : `Ocurrio un error al editar el registro : ${error}`,
             //error
         } );
-        
+
     }
 
 
@@ -220,59 +364,57 @@ const editar_una_clase = async ( req = request, res = response ) =>{
 
 const abonar_una_clase = async ( req = request, res = response ) =>{
 
-    const { id_de_clase } = req.params;
-
-    const { montoAbonadoXClase } = req.body;
 
     try {
+        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento, monto } = req.body;
         
+        const { id_agendamiento, id_socio, id_profesor, 
+                fecha_agendamiento, horario_inicio, horario_hasta, 
+                clase_abonada, monto_abonado } = await prisma.agendamiento_clase.update( { 
+                                                                                            data : { 
+                                                                                                        id_socio : idSocio,
+                                                                                                        id_profesor : idProfesor,
+                                                                                                        fecha_agendamiento : generar_fecha( fechaParaLaClase ),
+                                                                                                        horario_inicio : inicio,
+                                                                                                        horario_hasta : fin,
+                                                                                                        clase_eliminada : false,
+                                                                                                        id_mesa : Number( idMesa ),
+                                                                                                        editadoen : new Date(),
+                                                                                                        monto_abonado : monto,
+                                                                                                        clase_abonada : true
+                                                                                                    },
+                                                                                            where : { id_agendamiento : Number( idAgendamiento ) }
+                                                                                        } );
+        const { nombre_profesor } = await prisma.profesores.findUnique( { where : { id_profesor :  Number( idProfesor )} } );
+        const { nombre_cmp } = await prisma.socio.findUnique( { where : { id_socio :  Number( idSocio )} } );
+        const { desc_mesa, id_mesa } = await prisma.mesas.findUnique( { where : { id_mesa :  Number( idMesa )} } );
 
-        const clase_a_abonar = await prisma.agendamiento_clase.findUnique( { where : { id_agendamiento : id_de_clase } } );
-
-        const { monto_abonado, clase_abonada, id_profesor } = clase_a_abonar;
-
-        if ( monto_abonado === montoAbonadoXClase || clase_abonada === true ) {  
-            res.status( 400 ).json( {
-                status : false,
-                msg : "Ya se ha abonado la totalidad de esta clase",
-                clase_a_abonar
-            } );
-        } else {
-
-            const costo_x_hora_profesor = await prisma.profesores.findUnique( { where : { id_profesor } } );
-            const { costo_x_hora } = costo_x_hora_profesor;
-            let abonar_x_clase;
-            if ( monto_abonado_x_clase ===  costo_x_hora ){
-                abonar_x_clase = await prisma.agendamiento_clase.update( { 
-                    where : { id_agendamiento : id_de_clase },
-                    data : {
-                                clase_abonada : montoAbonadoXClase,
-                                clase_abonada : true
-                            } 
-                } );
-            }else {
-
-                abonar_x_clase = await prisma.agendamiento_clase.update( { 
-                    where : { id_agendamiento : id_de_clase },
-                    data : {
-                                clase_abonada : montoAbonadoXClase,
-                            } 
-                } );
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Clase Abonada",
+            claseAgendada : {
+                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento) , 
+                idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+                nombreSocio : nombre_cmp,
+                nombreProfesor : nombre_profesor,
+                idProfesor : id_profesor,
+                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa) ,
+                mesa : desc_mesa,
+                fechaAgendamiento : fecha_agendamiento, 
+                horarioInicio : horario_inicio, 
+                horarioHasta : horario_hasta,
+                claseAgendada : clase_abonada,
+                montoAbonado : monto_abonado
             }
-
-            res.status( 200 ).json( { status : true, msg : "Clase abonada", abonar_x_clase } );
-
-
-        }
-
+        } );
 
     } catch (error) {
 
-        console.log ( error );
+        //console.log ( error );
 
         res.status( 500 ).json( {
             status : false,
-            msg : "No se pudo abonar por la clase, ocurrio un error",
+            msg : `No se pudo abonar por la clase, ocurrio un error ${ error }`,
             //error
         } );
     }
@@ -283,20 +425,34 @@ const abonar_una_clase = async ( req = request, res = response ) =>{
 
 const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
 
-    const { id_de_clase } = req.params;
-
     try {
 
-        const clase_para_eliminar = await prisma.agendamiento_clase.update( { 
-            where : { id_agendamiento : id_de_clase },
-            data : {
-                clase_eliminada : true
-            }
-        } );
+        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento } = req.body;
+        
+        const { id_agendamiento, id_socio, id_profesor, 
+                fecha_agendamiento, horario_inicio, horario_hasta, 
+                clase_abonada, monto_abonado } = await prisma.agendamiento_clase.delete( { where : { id_agendamiento : Number( idAgendamiento ) } } );
+
+        const { nombre_profesor } = await prisma.profesores.findUnique( { where : { id_profesor :  Number( idProfesor )} } );
+        const { nombre_cmp } = await prisma.socio.findUnique( { where : { id_socio :  Number( idSocio )} } );
+        const { desc_mesa, id_mesa } = await prisma.mesas.findUnique( { where : { id_mesa :  Number( idMesa )} } );
         res.status( 200 ).json( {
             status : true,
-            msg : "Clase eliminada exitosamente",
-            clase_para_eliminar
+            msg : "Clase Borrada",
+            claseAgendada : {
+                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento) , 
+                idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
+                nombreSocio : nombre_cmp,
+                nombreProfesor : nombre_profesor,
+                idProfesor : id_profesor,
+                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa) ,
+                mesa : desc_mesa,
+                fechaAgendamiento : fecha_agendamiento, 
+                horarioInicio : horario_inicio, 
+                horarioHasta : horario_hasta,
+                claseAgendada : clase_abonada,
+                montoAbonado : monto_abonado
+            }
         } );
 
     } catch (error) {
@@ -308,17 +464,7 @@ const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
         } );
     }
 
-
-
-
 }
-
-
-
-
-
-
-
 
 
 module.exports = {
@@ -328,6 +474,7 @@ module.exports = {
     abonar_una_clase,
     obtener_clases_del_dia,
     obtener_clases_x_profesor_dia,
-    eliminar_clase_con_profesor
+    eliminar_clase_con_profesor,
+    obtener_clases_del_dia_x_socio
 
 }

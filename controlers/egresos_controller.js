@@ -284,7 +284,7 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
         } );
 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 400 ).json( {
             status : false,
             msg : "No se pudo obtener los egresos por fecha, error : " + error,

@@ -1,27 +1,52 @@
 const { PrismaClient } = require('@prisma/client')
-
+const { request, response } = require('express')
 const prisma = new PrismaClient();
 
 
 
-const comprobar_horario_profesor = async ( fecha_clase  = new Date(), inicio = '', fin = '', profesor = 1 )=> {
+const comprobar_horario_profesor = async ( req = request, res = response, next)=> {
 
-    const [ dia, mes, anio ] = [ fecha_clase.getDate, fecha_clase.getMonth, fecha_clase.getFullYear ]
+    try {
+        
+        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa } = req.body;
 
-    const clases_del_dia = await prisma.$queryRaw`SELECT B.ID_AGENDAMIENTO, A.NOMBRE_PROFESOR, B.FECHA_AGENDAMIENTO, 
-                                                    B.HORARIO_INICIO, B.HORARIO_HASTA
-                                                FROM AGENDAMIENTO_CLASE B JOIN PROFESORES A ON A.ID_PROFESOR = B.ID_PROFESOR
-                                                WHERE EXTRACT ( MONTH FROM B.FECHA_AGENDAMIENTO ) = ${ mes } AND 	
-                                                    EXTRACT ( DAY FROM B.FECHA_AGENDAMIENTO ) = ${ dia } AND 
-                                                    EXTRACT ( YEAR FROM B.FECHA_AGENDAMIENTO) = ${ anio } AND 
-                                                    A.ID_PROFESOR = ${ profesor };`
-    if ( clases_del_dia.length === 0 ){
-        // HAY CLASES DISPONIBLES PARA ESE DIA Y CON ESE PROFESOR
-        return true;
-    } else {
-        console.log ( "clase que coincide, no se puede reservar" );
-        return false;
+        const [ dia_desde, mes_desde, annio_desde ] = fechaAgendamiento.split( '/' );
+        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
+        
+        const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
+                                                        		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
+                                                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado
+                                                        	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
+                                                        	JOIN mesas C ON C.id_mesa = A.id_mesa
+                                                        	JOIN socio D ON D.id_socio = A.id_socio
+                                                        WHERE A.fecha_agendamiento BETWEEN  DATE '${fecha_desde_format}' AND DATE '${fecha_desde_format}'
+                                                                AND B.id_profesor = ${ Number( idProfesor ) }
+                                                                AND C.id_mesa = ${ Number( idMesa ) }
+                                                        ORDER BY A.fecha_agendamiento DESC`
+
+        const clases_del_dia = await prisma.$queryRawUnsafe( query );
+        
+        if ( clases_del_dia.length === 0 ){
+            // HAY CLASES DISPONIBLES PARA ESE DIA Y CON ESE PROFESOR
+            next()
+        } else {
+            //console.log ( "clase que coincide, no se puede reservar" );
+            res.status( 400 ).json( {
+                status : true,
+                msg : "clase que coincide, no se puede reservar",
+                //claseAgendada
+            } );
+        }
+    } catch (error) {
+        //console.log( error );
+        res.status( 400 ).json( {
+            status : false,
+            msg : `No se pudo verificar las clases coincidentes, error : ${error}`,
+            //nuevoIngreso
+        } );
     }
+
+
 
 
 }

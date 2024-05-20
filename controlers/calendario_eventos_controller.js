@@ -438,8 +438,8 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
 
         const { mes } = req.query;        
         const annio = new Date().getFullYear();
-        const [ fecha_desde_mes, fecha_hasta_mes ] = [ new Date(annio, mes - 1, 1), new Date(annio, mes - 1, 1) ]
-        console.log( fecha_desde_mes, fecha_hasta_mes )
+        const [ fecha_desde_mes, fecha_hasta_mes ] = [ new Date(annio, mes - 1, 1), new Date(annio, mes, 0) ]
+        //console.log( fecha_desde_mes, fecha_hasta_mes )
         const eventos = await prisma.calendario_eventos.findMany( { 
                                                                     where : {  
                                                                         AND : [
