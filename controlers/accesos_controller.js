@@ -50,32 +50,47 @@ const obtener_accesos_rol = async ( req = request, res = response ) => {
     try {
         //OBTIENE LOS ACCESOS ASIGNADOS A ESE ROL Y LOS QUE NO
         let accesos = [];
-        accesos = await prisma.$queryRaw`SELECT C.ID_RUTA_APP, C.PATH_RUTA, D.ID_MODULO, D.nombre_modulo,
-	                                        COALESCE(verifica_acceso_rol( C.ID_RUTA_APP, 'ADMINISTRADOR' ), 0 ) AS id_acceso ,
-	                                        CASE WHEN C.ID_RUTA_APP IN ( SELECT C.ID_RUTA_APP
-	                                        									FROM ACCESOS_USUARIO A JOIN roles_usuario B ON B.id_rol_usuario = A.id_rol_usuario
-	                                        									JOIN rutas_app C ON C.id_ruta_app = A.id_ruta_app
-	                                        									JOIN modulos D ON D.id_modulo = C.id_modulo
-	                                        								WHERE B.descripcion_rol = 'ADMINISTRADOR' ) THEN 'ASIGNADO' ELSE'NO_ASIGNADO' END AS tiene_permiso
-	                                        FROM rutas_app C JOIN modulos D ON D.id_modulo = C.id_modulo`;
-        let accesosDisponibles = [];
-
-        accesosDisponibles = accesos.map( ( element )=>{
-            const { id_ruta_app, path_ruta, id_modulo, nombre_modulo, id_acceso, tiene_permiso } = element;
-            return {
-                idRutaApp : id_ruta_app, 
-                pathRuta : path_ruta, 
-                idModulo : id_modulo, 
-                nombreModulo : nombre_modulo,
-                idAcceso : id_acceso,
-                tienePermiso : tiene_permiso
-            }
-        } )
+        const { rol } = req.query;
+        const query = `SELECT D.ID_MODULO AS "idModulo",
+                            D.nombre_modulo AS "nombreModulo",
+                            '[' || STRING_AGG(
+                                json_build_object(
+                                    'idRutaApp', C.ID_RUTA_APP,
+                                    'pathRuta', C.PATH_RUTA,
+                                    'accion', C.accion,
+                                    'idAcceso', COALESCE(verifica_acceso_rol(C.ID_RUTA_APP, '${rol}'), 0),
+                                    'tienePermiso',
+                                        CASE 
+                                            WHEN C.ID_RUTA_APP IN (
+                                                SELECT C.ID_RUTA_APP
+                                                FROM ACCESOS_USUARIO A 
+                                                JOIN roles_usuario B ON B.id_rol_usuario = A.id_rol_usuario
+                                                JOIN rutas_app C ON C.id_ruta_app = A.id_ruta_app
+                                                JOIN modulos D ON D.id_modulo = C.id_modulo
+                                                WHERE B.descripcion_rol = '${rol}'
+                                            ) 
+                                            THEN 'ASIGNADO' 
+                                            ELSE 'NO_ASIGNADO' 
+                                        END
+                                )::TEXT, 
+                                ','
+                            ) || ']' AS "accesosDisponibles"
+                        FROM 
+                            rutas_app C 
+                        JOIN 
+                            modulos D ON D.id_modulo = C.id_modulo
+                        GROUP BY 
+                            D.ID_MODULO, 
+                            D.nombre_modulo;`
+        accesos = await prisma.$queryRawUnsafe( query );
+        accesos.forEach((element) => {
+            element.accesosDisponibles = JSON.parse( element.accesosDisponibles );
+        });
         res.status( 200 ).json(
             {
                 status : true,
                 msj : 'Accesos para usuarios',
-                accesosDisponibles
+                accesos
             }
         );      
     } catch (error) {

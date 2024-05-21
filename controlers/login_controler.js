@@ -44,13 +44,14 @@ const login = async ( req = request, res = response )=> {
 
             const idUsuario = ( typeof( id_socio ) === 'bigint' )? Number( id_socio.toString() ) : id_socio;
             
-            const token = await generar_token( idUsuario, idRolUsuario );
+
             //console.log ( consulta_acceso );
             
             const { descripcion_rol } = await prisma.roles_usuario.findUnique( { where : { id_rol_usuario : idRolUsuario } } );
-
+            
             const { descripcion_acceso } = await prisma.accesos_usuario.findFirst( { where : { id_rol_usuario : idRolUsuario } } );
-
+            
+            const token = await generar_token( idUsuario, idRolUsuario, descripcion_rol );
 
             res.status( 200 ).json(
                 {

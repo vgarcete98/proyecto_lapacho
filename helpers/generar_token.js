@@ -2,11 +2,11 @@ const { sign } = require('jsonwebtoken');
 
 
 
-const generar_token = ( id_usuario = '', tipo_usuario = '' )=>{
+const generar_token = ( id_usuario = '', tipo_usuario = '', rol = '' )=>{
 
     return new Promise( ( resolve, reject ) =>{
 
-        const payload = { id_usuario, tipo_usuario };
+        const payload = { id_usuario, tipo_usuario, rol };
         sign( payload, process.env.SECRET0RPR1VAT3K3Y, 
             { expiresIn: '4h' }, 
             ( error, token )=>{

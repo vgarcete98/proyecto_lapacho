@@ -228,66 +228,57 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
 
 
   const funcion_trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION generar_cuotas_socio()
-                                                            RETURNS TRIGGER AS $$
-                                                                                                                          
-                                                            DECLARE
-                                                                fecha_inicio DATE;
+                                                          RETURNS TRIGGER AS $$
+                                                          DECLARE
+                                                              fecha_inicio DATE;
                                                               fecha_loop DATE;
                                                               fecha_vencimiento_cuota DATE; -- SERIA EL 5 DE CADA MES
-                                                              meses_a_sumar INT := 36;
-                                                              contador INTEGER;
                                                               tipo_cuota BIGINT;
                                                               monto_cuota_socio INTEGER;
-                                                            BEGIN
-                                                                                                                          
-                                                                -- Define el rango de fechas y el producto para el que deseas calcular el total de cuotas
-                                                                fecha_inicio := NOW();
-                                                              fecha_vencimiento_cuota := DATE_TRUNC('month', fecha_inicio);
-                                                                                                                          
-                                                              contador := 1;
+                                                          BEGIN
+                                                              -- Define el rango de fechas y el producto para el que deseas calcular el total de cuotas
+                                                              fecha_inicio := NOW();
+                                                              fecha_loop := DATE_TRUNC('month', fecha_inicio);
+                                                              fecha_vencimiento_cuota := fecha_loop + INTERVAL '4 days';  -- Ajustamos para que sea el 5 de cada mes
                                                                                                                           
                                                               IF NEW.ID_TIPO_SOCIO = 1 THEN
-                                                                tipo_cuota := 1;				
-                                                                ELSE
-                                                                    IF NEW.ID_TIPO_SOCIO = 2 THEN --ES UN SOCIO MENOR DE EDAD
+                                                                  tipo_cuota := 1;				
+                                                              ELSIF NEW.ID_TIPO_SOCIO = 2 THEN -- ES UN SOCIO MENOR DE EDAD
                                                                   tipo_cuota := 2;
-                                                                  ELSE -- SERIA UN SOCIO FAMILIAR
+                                                              ELSE -- SERIA UN SOCIO FAMILIAR
                                                                   tipo_cuota := 3;			
-                                                                  END IF;
-                                                                END IF;	
+                                                              END IF;
                                                                                                                           
-                                                                                                                          
-                                                              fecha_loop := DATE_TRUNC('month', fecha_inicio);
                                                               SELECT MONTO_CUOTA INTO monto_cuota_socio FROM TIPO_CUOTA A WHERE A.ID_TIPO_CUOTA = tipo_cuota LIMIT 1;
+                                                                                                                          
                                                               LOOP
-                                                                    -- Incrementa el contador
-                                                                    contador := contador + 1;
-                                                                                                                          
-                                                                fecha_loop := fecha_loop + INTERVAL '1 months';
-                                                                fecha_vencimiento_cuota := DATE_TRUNC('month', fecha_loop) + INTERVAL '4 days';
-                                                                                                                          
-                                                                                                                          
-                                                                                                                          
-                                                                                                                          
-                                                                INSERT INTO CUOTAS_SOCIO ( id_socio, id_tipo_cuota, id_tipo_descuento, 
-                                                                              fecha_vencimiento, descripcion, pago_realizado, monto_cuota)
-                                                                  VALUES ( NEW.ID_SOCIO, tipo_cuota, 1,
-                                                                        fecha_vencimiento_cuota, CONCAT ( 'CUOTA : ', fecha_vencimiento_cuota ), false, monto_cuota_socio );
-                                                                          
-                                                                  
-                                                                    -- Comprueba la condición de salida
-                                                                    IF contador >36  THEN
-                                                                        EXIT; -- Sale del bucle si el contador es mayor que 36
-                                                                    END IF;
-                                                                END LOOP;
-                                                                  
+                                                                  -- Inserta la cuota del socio
+                                                                  INSERT INTO CUOTAS_SOCIO (
+                                                                      id_socio, id_tipo_cuota, id_tipo_descuento, 
+                                                                      fecha_vencimiento, descripcion, pago_realizado, monto_cuota
+                                                                  )
+                                                                  VALUES (
+                                                                      NEW.ID_SOCIO, tipo_cuota, 1,
+                                                                      fecha_vencimiento_cuota, CONCAT('CUOTA : ', fecha_vencimiento_cuota), false, monto_cuota_socio
+                                                                  );
+                                                                
+                                                                  -- Incrementa el bucle en un mes
+                                                                  fecha_loop := fecha_loop + INTERVAL '1 month';
+                                                                  fecha_vencimiento_cuota := fecha_loop + INTERVAL '4 days'; -- Ajustamos para que sea el 5 de cada mes
+                                                                
+                                                                  -- Comprueba la condición de salida
+                                                                  IF EXTRACT(YEAR FROM fecha_loop) > EXTRACT(YEAR FROM fecha_inicio) OR
+                                                                     (EXTRACT(YEAR FROM fecha_loop) = EXTRACT(YEAR FROM fecha_inicio) AND EXTRACT(MONTH FROM fecha_loop) = 12) THEN
+                                                                      EXIT; -- Sale del bucle después de diciembre del mismo año
+                                                                  END IF;
+                                                              END LOOP;
+                                                                
                                                               RETURN NEW;
-                                                                  
-                                                            END;
-                                                            $$ LANGUAGE plpgsql;`
+                                                          END;
+                                                          $$ LANGUAGE plpgsql;`;
 
 
-  /*const procedimiento_genera_cuotas = await prisma.$executeRaw`CREATE OR REPLACE PROCEDURE genera_cuotas_annio()
+  const procedimiento_genera_cuotas = await prisma.$executeRaw`CREATE OR REPLACE PROCEDURE genera_cuotas_annio()
                                                                 AS $$
                                                                 DECLARE
                                                                     socio_fila RECORD;
@@ -312,7 +303,7 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                 
                                                                     END LOOP;
 
-                                                                END $$ LANGUAGE plpgsql;`*/
+                                                                END $$ LANGUAGE plpgsql;`
 
   const trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_generar_cuotas_socio
                                                   AFTER INSERT ON SOCIO
@@ -484,6 +475,7 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                                             { nombre_club_habilitado : 'VILLARRICA', esta_habilitado : true, creadoen : new Date() }
                                                                           ] 
                                                                       } );
+
 
   const func_verifica_id_acceso_roles = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION verifica_acceso_rol(RUTA_APP INTEGER, rol VARCHAR)
                                                                 RETURNS INTEGER AS $$

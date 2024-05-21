@@ -5,6 +5,8 @@ const express = require( 'express' );
 const { PrismaClient } = require('@prisma/client')
 const { request, response } = require('express')
 //const prisma = new PrismaClient();
+const schedule = require('node-schedule');
+
 //----------------------------------------------------
 
 const listEndpoints = require('express-list-endpoints')
@@ -48,8 +50,21 @@ const { validar_existe_usuario_socio } = require( '../middlewares/validar_existe
 const { validar_acceso_a_ruta } = require( '../middlewares/validar_acceso_a_ruta' );
 const { obtener_data_socio } = require('../helpers/verficar_socio_carga');
 const router_agendamientos_clase = require('../routes/agendamiento_clases_routes');
+const { comprobar_acceso_rol } = require('../helpers/comprobar_acceso_rol');
 //----------------------------------------------------------------------------
 
+//CRON JOBS QUE VOY A NECESITAR
+//----------------------------------------------------------------------------
+const { cron_job_genera_cuotas_anio } = require( '../helpers/cron_job_genera_cuotas_anio' )
+//----------------------------------------------------------------------------
+
+
+// LA FUNCION QUE SE VA EJECUTAR PARA GENERARME LAS CUOTAS DEL AÑO
+//----------------------------------------------------------------------------
+const job = schedule.scheduleJob('0 1 0 1 1 *', cron_job_genera_cuotas_anio);
+//PARA TEST DEL CRON JOB
+//const job = schedule.scheduleJob('40 * * * *', cron_job_genera_cuotas_anio);
+//----------------------------------------------------------------------------
 
 class Server {
 
@@ -94,6 +109,7 @@ class Server {
 
         this.app.use( obtener_data_socio );
         //this.app.use( multer )
+        this.app.use( comprobar_acceso_rol );
 
         this.app.use(function( err, req , res , next ) {
             
