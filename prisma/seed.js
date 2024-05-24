@@ -267,10 +267,9 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                   fecha_vencimiento_cuota := fecha_loop + INTERVAL '4 days'; -- Ajustamos para que sea el 5 de cada mes
                                                                 
                                                                   -- Comprueba la condición de salida
-                                                                  IF EXTRACT(YEAR FROM fecha_loop) > EXTRACT(YEAR FROM fecha_inicio) OR
-                                                                     (EXTRACT(YEAR FROM fecha_loop) = EXTRACT(YEAR FROM fecha_inicio) AND EXTRACT(MONTH FROM fecha_loop) = 12) THEN
-                                                                      EXIT; -- Sale del bucle después de diciembre del mismo año
-                                                                  END IF;
+                                                                  IF EXTRACT(MONTH FROM fecha_loop) = 12) THEN
+                                                                  EXIT; -- Sale del bucle después de diciembre del mismo año
+                                                              END IF;
                                                               END LOOP;
                                                                 
                                                               RETURN NEW;
@@ -488,8 +487,185 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                                                                                                   
                                                                   RETURN ID_ACCESO;
                                                                 END;
-                                                                $$ LANGUAGE plpgsql;` 
+                                                                $$ LANGUAGE plpgsql;` ;
 
+
+  const socios_prueba = [  
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Tenace Puentes'      , 'Antonio José Emilio' ,'416483', TO_DATE('27/7/1959'  , 'DD/MM/YYYY')   ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Fu', 'Alisan' ,'4276911', TO_DATE('23/07/1990', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Cuyer Aguilera', 'Axel Augusto Andrés' ,'4645373', TO_DATE('25/3/1997', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Gavilán Villalba', 'Axel Rafael' ,'3844124', TO_DATE('22/10/1994', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Oviedo Osorio', 'Carlos Fernando' ,'2572658', TO_DATE('12/8/1988', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Duarte Romero', 'Diego Enrique' ,'5030385', TO_DATE('28/08/1997', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Hermosilla Benítez', 'Diego Luis Alberto' ,'5771846', TO_DATE('18/12/2003', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Pastore Acosta', 'Diego Manuel' ,'4293184', TO_DATE('8/4/1997', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Gauto Ojeda', 'Diego Osmar' ,'3258546', TO_DATE('15/02/1981', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Florentin Cuenca', 'Dora Esther' ,'5025922', TO_DATE('4/9/2001', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Chenú Vargas', 'Eduardo' ,'897242', TO_DATE('4/11/1971', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Pastore Acosta', 'Ivan Santino' ,'6779965', TO_DATE('23/8/2008', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Harasic Muñoz', 'Jerko Nicolás' ,'2963942', TO_DATE('21/6/1990', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Duré Barrios', 'Jorge' ,'2966570', TO_DATE('21/04/78', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Echagüe Ramirez', 'Jorge Guillermo' ,'4318501', TO_DATE('25/6/1990', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Pastore Acosta', 'José Gabriel' ,'4332930', TO_DATE('27/2/1992', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Acosta González', 'José Milciades' ,'1043896', TO_DATE('5/7/1968', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Arce Quevedo', 'Juan Andrés' ,'1201906', TO_DATE('4/12/1978', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Ovelar Jara', 'Lucero Arami' ,'3603156', TO_DATE('31/7/1992', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Gomez Olmedo', 'Luis Antonio' ,'4414358', TO_DATE('22/7/1997', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Rotela Samaniego', 'Luis Armando' ,'786592', TO_DATE('5/6/1967', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Britez Chamorro', 'Manuel Gaspar' ,'839735', TO_DATE('6/1/1966', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Barboza Alvarez', 'Marcelo Hernán' ,'1723774', TO_DATE('19/11/1971', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Martínez López', 'María de Fátima' ,'4658254', TO_DATE('2/4/1997', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Rolón', 'Mauro Javier' ,'3805309', TO_DATE('2/1/1991', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Hermosilla Benítez', 'Melina Beatriz' ,'4651673', TO_DATE('30/03/1998', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Gavilán Cabrera', 'Oscar Moisés' ,'794426', TO_DATE('12/12/1965', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Morales Reichert', 'Oscar' ,'601593', TO_DATE('10/5/1959', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Ferreira Barrios', 'Roberto' ,'1193374', TO_DATE('18/12/1970', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Gavilán Villalba', 'Sandy Soledad' ,'3465225', TO_DATE('20/11/1992', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Teresa Insfrán', 'Teresa' ,'4669899', TO_DATE('17/09/1988', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Zelada Ramírez', 'Valeria Thaiz' ,'6322913', TO_DATE('9/1/2003', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Garcete Domecq', 'Vanesa Monserrat' ,'4923094', TO_DATE('10/12/2001', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Garcete Domecq', 'Victor Andrés' ,'4365710', TO_DATE('29/5/1998', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Aguirre Antonelli', 'Victor César' ,'870704', TO_DATE('20/07/1966', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Garcete Tribucio', 'Victor Edgar' ,'1479268', TO_DATE('2/1/1972', 'DD/MM/YYYY') ) ; `,
+    `INSERT INTO public.persona ( apellido, nombre, cedula, fecha_nacimiento) VALUES ( 'Monges Lopez', 'Victor Rubén' ,'4302281', TO_DATE('6/9/1997', 'DD/MM/YYYY') ) ; `
+  ];     
+  
+  socios_prueba.map( async ( element ) =>{
+    await prisma.$executeRawUnsafe( element );
+  } );
+
+  await prisma.$executeRaw`INSERT INTO public.socio (id_tipo_socio, id_persona, id_rol_usuario, tipo_usuario, nombre_usuario, contrasea, estado_usuario, nombre_cmp, estado_socio, creadoen) 
+                                                          select 2, A.id_persona, 2, 'ACTIVO', (lower( left  (a.nombre, 1) || split_part(A.apellido,' ', 1))) as nombre_usuario, 'Test123Lapacho', 1, A.nombre || ',' || A.apellido as nombre_cmp, 1, current_date  
+                                                        from PERSONA A 
+                                                      where  A.id_persona not in ( 1, 2, 3 );`;
+
+  const actualiza_socios_prueba = [
+    `UPDATE public.socio SET numero_telefono='0991-700500', direccion='Tte. 2do Eladio Escobar N 3073 c/ Evasio Perinciolo Merlo casa 2 / Condomio Barrio San Jorge / Asunción.', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '416483');`,
+    `UPDATE public.socio SET numero_telefono='0981-783278', direccion='Austria 1975 / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '4276911');`,
+    `UPDATE public.socio SET numero_telefono='0981-704101', direccion='Epifanio Mendez Fleitas (264) / Ñemby', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '4645373');`,
+    `UPDATE public.socio SET numero_telefono='0982-859829', direccion='Cnel.Cabrera 554 e/ Bertoni y 4 de Julio', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '3844124');`,
+    `UPDATE public.socio SET numero_telefono='0981-545498', direccion='Mompox 1628 / Fernando de la Mora', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '2572658');`,
+    `UPDATE public.socio SET numero_telefono='0971-766788', direccion='Dr Caballero 1218 c/ Lillo /Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '5030385');`,
+    `UPDATE public.socio SET numero_telefono='0976-141152', direccion='R.I. 18 Pitiantuta c/ Boggiani 564 / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '5771846');`,
+    `UPDATE public.socio SET numero_telefono='0983-843968', direccion='San Miguel casi Tte Bareiro / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '4293184');`,
+    `UPDATE public.socio SET numero_telefono='0985-175451', direccion='Tte. Benigno Cáceres  456 c/ José Pappalardo - Bo. Itay / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '3258546');`,
+    `UPDATE public.socio SET numero_telefono='0983-970034', direccion='Bolivar casi San Martin 304 / Capiata', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '5025922');`,
+    `UPDATE public.socio SET numero_telefono='0981-436370', direccion='Mayor Emilio Pastore 1280 casi Juan Rivarola', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '897242');`,
+    `UPDATE public.socio SET numero_telefono='0982-666430', direccion='San Miguel casi Tte Bareiro / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '6779965');`,
+    `UPDATE public.socio SET numero_telefono='0981-100550', direccion='Cnel.Cabrera 554 e/ Bertoni y 4 de Julio', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '2963942');`,
+    `UPDATE public.socio SET numero_telefono='0981-466394', direccion='Ibañez Rojas casi Lapachos / Luque', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '2966570');`,
+    `UPDATE public.socio SET numero_telefono='0961-930640', direccion='Lapacho N° 2335 c/ San Andrés', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '4318501');`,
+    `UPDATE public.socio SET numero_telefono='0991-214694', direccion='San Miguel casi Tte Bareiro / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '4332930');`,
+    `UPDATE public.socio SET numero_telefono='0985-355626', direccion='Oasis y Teniente Pino / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '1043896');`,
+    `UPDATE public.socio SET numero_telefono='0983-144376', direccion='Araucanos casi Adela Speratti / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '1201906');`,
+    `UPDATE public.socio SET numero_telefono='0971-329080', direccion='Hermínio Giménez 205 c/ Iturbe / Fernando de la Mora', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '3603156');`,
+    `UPDATE public.socio SET numero_telefono='0971-512257', direccion='Teniente Ettiene  1644 c/ Storm / Fernando de la Mora / Zona Norte', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '4414358');`,
+    `UPDATE public.socio SET numero_telefono='0981-418575', direccion='Cañada Del Carmen 2450 /Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '786592');`,
+    `UPDATE public.socio SET numero_telefono='0981-870362', direccion='Estero Bellaco 2239 c / Acosta Ñu / Lambar', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '839735');`,
+    `UPDATE public.socio SET numero_telefono='0981-812540', direccion='ITURBE 771 / ASUNCION', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '1723774');`,
+    `UPDATE public.socio SET numero_telefono='0981-167550', direccion='Manuel Ortiz Guerrero Número 42 / Mariano Roque Alonso', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '4658254');`,
+    `UPDATE public.socio SET numero_telefono='0981-966114', direccion='Ingavi esq. Atyra 2717 / Fernando de la Mora', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '3805309');`,
+    `UPDATE public.socio SET numero_telefono='0976-144406', direccion='R.I. 18 Pitiantuta c/ Boggiani 564 / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '4651673');`,
+    `UPDATE public.socio SET numero_telefono='0981-701592 ', direccion='Cnel.Cabrera 554 e/ Bertoni y 4 de Julio', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '794426');`,
+    `UPDATE public.socio SET numero_telefono='0981-378373', direccion='Mayor Lamas Carissimo 716 / Villa Aurelia / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '601593');`,
+    `UPDATE public.socio SET numero_telefono='0981-324214', direccion='Mompox 446 casi Florencio Villamayor / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '1193374');`,
+    `UPDATE public.socio SET numero_telefono='0981-560513', direccion='Cnel.Cabrera 554 e/ Bertoni y 4 de Julio', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '3465225');`,
+    `UPDATE public.socio SET numero_telefono='0986-378454', direccion='Madame Lynch c/Alejo Silva / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '4669899');`,
+    `UPDATE public.socio SET numero_telefono='0984-971073', direccion='Dr. Brizuela casi Overava', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '6322913');`,
+    `UPDATE public.socio SET numero_telefono='0985-474456', direccion='Americo merlo 812 Asunción ', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '4923094');`,
+    `UPDATE public.socio SET numero_telefono='0981-211756', direccion='Tte. Mauricio Escobar 495 esquina Zurbaran. No Jara. ASUNCIÓN', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '870704');`,
+    `UPDATE public.socio SET numero_telefono=' 0981-933563', direccion='Americo merlo 812 Asunción ', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '1479268');`,
+    `UPDATE public.socio SET numero_telefono='0976-349050', direccion='Aztecas 4595/ Jon Von Sastrow / Asunción', editadoen= CURRENT_DATE WHERE id_persona= (SELECT id_persona FROM persona WHERE cedula = '4302281');`
+  ];
+  actualiza_socios_prueba.map( async ( element ) =>{
+    await prisma.$executeRawUnsafe( element );
+  } );
+
+
+
+
+  
+  const func_verifica_eventos_u_reservas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION verifica_eventos_u_reservas()
+                                                                    RETURNS TRIGGER AS $$
+                                                                    BEGIN
+                                                                      
+														  	                                      	IF ( EXISTS  (SELECT ID_EVENTO_CALENDARIO 
+																                                      			FROM CALENDARIO_EVENTOS 
+																                                      		WHERE NEW.FECHA_AGENDAMIENTO BETWEEN FECHA_DESDE_EVENTO AND FECHA_HASTA_EVENTO)) THEN 
+                                                                        
+																                                      	RAISE EXCEPTION 'No se puede agendar esa clase, hay un evento que lo impide';
+																                                      	RETURN NULL; -- Impide la operación
+                                                                        
+																                                      ELSIF ( EXISTS (SELECT ID_SOCIO_RESERVA 
+																                                      				FROM RESERVAS 
+																                                      			WHERE  (NEW.FECHA_AGENDAMIENTO = FECHA_RESERVA) 
+																                                      		   			AND (NEW.HORARIO_INICIO = HORA_DESDE AND NEW.HORARIO_HASTA = HORA_HASTA) 
+																                                      		  			AND (ID_MESA = NEW.ID_MESA) )) THEN 
+																                                      	RAISE EXCEPTION 'No se puede agendar esa clase, hay una reserva que lo impide';
+    														                                      		RETURN NULL; -- Impide la operación
+																                                      ELSE 
+																                                      	RETURN NEW;
+																                                      END IF;
+                                                                          
+                                                                    END;
+                                                                    $$ LANGUAGE plpgsql;`
+
+  const trigger_func_verifica_eventos_u_reservas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_verifica_eventos_u_reservas
+                                                                                BEFORE INSERT OR UPDATE ON AGENDAMIENTO_CLASE
+                                                                                FOR EACH ROW
+                                                                                EXECUTE FUNCTION verifica_eventos_u_reservas()`;
+
+
+
+
+  const func_verifica_eventos_o_clases = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION verifica_eventos_o_clases()
+                                                                            RETURNS TRIGGER AS $$
+                                                                            BEGIN
+
+														  	                                              	IF ( EXISTS  (SELECT ID_EVENTO_CALENDARIO 
+																                                              			FROM CALENDARIO_EVENTOS 
+																                                              		WHERE NEW.FECHA_RESERVA BETWEEN FECHA_DESDE_EVENTO AND FECHA_HASTA_EVENTO)) THEN 
+                                                                                
+																                                              	RAISE EXCEPTION 'No se puede agendar esa reserva, hay un evento que lo impide';
+																                                              	RETURN NULL; -- Impide la operación
+                                                                                
+																                                              ELSIF ( EXISTS (SELECT ID_AGENDAMIENTO 
+																                                              				FROM RESERVAS 
+																                                              			WHERE  (NEW.FECHA_RESERVA = FECHA_AGENDAMIENTO) 
+																                                              		   			AND (NEW.HORA_DESDE = HORARIO_INICIO AND NEW.HORA_HASTA = HORARIO_HASTA) 
+																                                              		  			AND (ID_MESA = NEW.ID_MESA) )) THEN 
+																                                              	RAISE EXCEPTION 'No se puede agendar esa Reserva, hay una clase que lo impide';
+    														                                              		RETURN NULL; -- Impide la operación
+																                                              ELSE 
+																                                              	RETURN NEW;
+																                                              END IF;
+
+                                                                            END;
+                                                                          $$ LANGUAGE plpgsql;`;
+
+  const trigger_func_verifica_eventos_o_clases = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_verifica_eventos_o_clases
+                                                                            BEFORE INSERT OR UPDATE ON RESERVAS
+                                                                            FOR EACH ROW
+                                                                            EXECUTE FUNCTION verifica_eventos_o_clases();`;
+
+
+  const func_verifica_reservas_o_clases = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION verifica_reservas_o_clases()
+                                                                          RETURNS TRIGGER AS $$
+                                                                          BEGIN                                                
+
+															                                              DELETE FROM public.reservas
+															                                              	WHERE fecha_reserva BETWEEN NEW.FECHA_DESDE_EVENTO AND FECHA_HASTA_EVENTO;
+
+															                                              DELETE FROM public.agendamiento_clase
+															                                              	WHERE fecha_hasta_evento BETWEEN NEW.FECHA_DESDE_EVENTO AND FECHA_HASTA_EVENTO;
+															                                              RETURN NEW;
+
+                                                                          END;
+                                                                        $$ LANGUAGE plpgsql;`
+  const trigger_func_verifica_reservas_o_clases = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_verifica_reservas_o_clases
+                                                                              BEFORE INSERT OR UPDATE ON CALENDARIO_EVENTOS
+                                                                              FOR EACH ROW
+                                                                              EXECUTE FUNCTION verifica_reservas_o_clases();`;                                                                                        
 }
 
 

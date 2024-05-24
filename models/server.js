@@ -61,7 +61,7 @@ const { cron_job_genera_cuotas_anio } = require( '../helpers/cron_job_genera_cuo
 
 // LA FUNCION QUE SE VA EJECUTAR PARA GENERARME LAS CUOTAS DEL AÑO
 //----------------------------------------------------------------------------
-const job = schedule.scheduleJob('0 1 0 1 1 *', cron_job_genera_cuotas_anio);
+//const job = schedule.scheduleJob('0 1 0 1 1 *', cron_job_genera_cuotas_anio);
 //PARA TEST DEL CRON JOB
 //const job = schedule.scheduleJob('40 * * * *', cron_job_genera_cuotas_anio);
 //----------------------------------------------------------------------------
