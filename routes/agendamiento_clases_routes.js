@@ -10,6 +10,7 @@ const { abonar_una_clase,
         obtener_clases_x_profesor_dia, 
         obtener_clases_del_dia_x_socio} = require( '../controlers/agendamiento_clases_controller' );
 const { comprobar_horario_profesor } = require('../helpers/comprobar_disponibilidad_profesor');
+const { obtener_data_socio } = require('../helpers/verficar_socio_carga');
 
 const router_agendamientos_clase = Router();
 
@@ -20,13 +21,13 @@ router_agendamientos_clase.get( '/obtener_clases_x_fecha_socio', [], obtener_cla
 
 router_agendamientos_clase.get( '/obtener_clases_x_fecha_profesor', [], obtener_clases_x_profesor_dia );
 
-router_agendamientos_clase.post( '/agendar_clase', [ comprobar_horario_profesor ], agendar_una_clase );
+router_agendamientos_clase.post( '/agendar_clase', [ comprobar_horario_profesor, obtener_data_socio ], agendar_una_clase );
 
 router_agendamientos_clase.delete( '/cancelar_clase', [], eliminar_clase_con_profesor );
 
-router_agendamientos_clase.put( '/pagar_x_clase', [], abonar_una_clase );
+router_agendamientos_clase.put( '/pagar_x_clase', [ obtener_data_socio  ], abonar_una_clase );
 
-router_agendamientos_clase.put( '/editar_clase', [ ], editar_una_clase );
+router_agendamientos_clase.put( '/editar_clase', [ obtener_data_socio ], editar_una_clase );
 
 
 module.exports = router_agendamientos_clase;

@@ -318,7 +318,7 @@ const obtener_socios = async ( req = request, res = response ) => {
                         ${ ( nombre !== undefined ) && (apellido !== undefined )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre} ${apellido}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
-        //console.log( query );
+        console.log( query );
         socios = await prisma.$queryRawUnsafe( query );
 
         if ( socios.length === 0 ){

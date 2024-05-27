@@ -267,7 +267,7 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                   fecha_vencimiento_cuota := fecha_loop + INTERVAL '4 days'; -- Ajustamos para que sea el 5 de cada mes
                                                                 
                                                                   -- Comprueba la condición de salida
-                                                                  IF EXTRACT(MONTH FROM fecha_loop) = 12) THEN
+                                                                  IF (EXTRACT(MONTH FROM fecha_loop) = 12) THEN
                                                                   EXIT; -- Sale del bucle después de diciembre del mismo año
                                                               END IF;
                                                               END LOOP;
@@ -589,20 +589,31 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                                     RETURNS TRIGGER AS $$
                                                                     BEGIN
                                                                       
-														  	                                      	IF ( EXISTS  (SELECT ID_EVENTO_CALENDARIO 
-																                                      			FROM CALENDARIO_EVENTOS 
-																                                      		WHERE NEW.FECHA_AGENDAMIENTO BETWEEN FECHA_DESDE_EVENTO AND FECHA_HASTA_EVENTO)) THEN 
+														  	                                      IF ( EXISTS  (SELECT ID_EVENTO_CALENDARIO 
+																                                      		          	FROM CALENDARIO_EVENTOS 
+																                                      		          WHERE NEW.FECHA_AGENDAMIENTO BETWEEN FECHA_DESDE_EVENTO AND FECHA_HASTA_EVENTO)) THEN 
                                                                         
 																                                      	RAISE EXCEPTION 'No se puede agendar esa clase, hay un evento que lo impide';
 																                                      	RETURN NULL; -- Impide la operación
                                                                         
-																                                      ELSIF ( EXISTS (SELECT ID_SOCIO_RESERVA 
+																                                     ELSIF ( EXISTS (SELECT ID_SOCIO_RESERVA 
 																                                      				FROM RESERVAS 
 																                                      			WHERE  (NEW.FECHA_AGENDAMIENTO = FECHA_RESERVA) 
-																                                      		   			AND (NEW.HORARIO_INICIO = HORA_DESDE AND NEW.HORARIO_HASTA = HORA_HASTA) 
+																                                      		   			AND (NEW.HORARIO_INICIO, NEW.HORARIO_HASTA) OVERLAPS (HORA_DESDE, HORA_HASTA) 
 																                                      		  			AND (ID_MESA = NEW.ID_MESA) )) THEN 
 																                                      	RAISE EXCEPTION 'No se puede agendar esa clase, hay una reserva que lo impide';
     														                                      		RETURN NULL; -- Impide la operación
+																                                      ELSIF ( EXISTS (SELECT ID_AGENDAMIENTO 
+																                                              				  FROM AGENDAMIENTO_CLASE 
+																                                              			  WHERE  (NEW.FECHA_AGENDAMIENTO = FECHA_AGENDAMIENTO) 
+																                                              		   			AND (NEW.HORARIO_INICIO, NEW.HORARIO_HASTA) OVERLAPS (HORARIO_INICIO, HORARIO_HASTA) 
+																                                              		  			AND (ID_MESA = NEW.ID_MESA) )) THEN 
+                                                                            IF ( NEW.MONTO_ABONADO IS NOT NULL ) THEN 
+                                                                              RETURN NEW;
+                                                                            ELSE
+																                                              RAISE EXCEPTION 'No se puede agendar esa Clase, hay otra clase que lo impide';
+    														                                          		RETURN NULL; -- Impide la operación		
+                                                                            END IF ;																								
 																                                      ELSE 
 																                                      	RETURN NEW;
 																                                      END IF;
@@ -622,7 +633,8 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                                             RETURNS TRIGGER AS $$
                                                                             BEGIN
 
-														  	                                              	IF ( EXISTS  (SELECT ID_EVENTO_CALENDARIO 
+
+														  	                                              IF ( EXISTS  (SELECT ID_EVENTO_CALENDARIO 
 																                                              			FROM CALENDARIO_EVENTOS 
 																                                              		WHERE NEW.FECHA_RESERVA BETWEEN FECHA_DESDE_EVENTO AND FECHA_HASTA_EVENTO)) THEN 
                                                                                 
@@ -630,12 +642,21 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
 																                                              	RETURN NULL; -- Impide la operación
                                                                                 
 																                                              ELSIF ( EXISTS (SELECT ID_AGENDAMIENTO 
-																                                              				FROM RESERVAS 
+																                                              				FROM AGENDAMIENTO_CLASE 
 																                                              			WHERE  (NEW.FECHA_RESERVA = FECHA_AGENDAMIENTO) 
-																                                              		   			AND (NEW.HORA_DESDE = HORARIO_INICIO AND NEW.HORA_HASTA = HORARIO_HASTA) 
+																                                              		   			AND (NEW.HORA_DESDE, NEW.HORA_HASTA) OVERLAPS (HORARIO_INICIO, HORARIO_HASTA) 
 																                                              		  			AND (ID_MESA = NEW.ID_MESA) )) THEN 
 																                                              	RAISE EXCEPTION 'No se puede agendar esa Reserva, hay una clase que lo impide';
     														                                              		RETURN NULL; -- Impide la operación
+																											                        ELSIF ( EXISTS (SELECT ID_SOCIO_RESERVA 
+																                                              					FROM RESERVAS A
+																                                              			WHERE  (NEW.FECHA_RESERVA = A.FECHA_RESERVA) 
+																                                              		   			AND (NEW.HORA_DESDE, NEW.HORA_HASTA) OVERLAPS (A.HORA_DESDE, A.HORA_HASTA) 
+																                                              		  			AND (A.ID_MESA = NEW.ID_MESA) )) THEN 
+																                                              	RAISE EXCEPTION 'No se puede agendar esa Reserva, hay una reserva en ese mismo horario';
+    														                                              		RETURN NULL; -- Impide la operación
+																												
+																												
 																                                              ELSE 
 																                                              	RETURN NEW;
 																                                              END IF;
@@ -653,15 +674,23 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                                           RETURNS TRIGGER AS $$
                                                                           BEGIN                                                
 
-															                                              DELETE FROM public.reservas
-															                                              	WHERE fecha_reserva BETWEEN NEW.FECHA_DESDE_EVENTO AND FECHA_HASTA_EVENTO;
+                                                                            IF ( EXISTS  (SELECT ID_EVENTO_CALENDARIO 
+                                                                              FROM CALENDARIO_EVENTOS 
+                                                                            WHERE (NEW.FECHA_DESDE_EVENTO, NEW.FECHA_HASTA_EVENTO) OVERLAPS (FECHA_DESDE_EVENTO, FECHA_HASTA_EVENTO))) THEN 
+                                                                            
+                                                                              RAISE EXCEPTION 'No se puede agendar ese evento, hay otro evento que lo impide';
+                                                                              RETURN NULL; -- Impide la operación
+                                                                            ELSE 
+                                                                              DELETE FROM reservas B
+                                                                                WHERE B.fecha_reserva BETWEEN NEW.FECHA_DESDE_EVENTO AND NEW.FECHA_HASTA_EVENTO;
 
-															                                              DELETE FROM public.agendamiento_clase
-															                                              	WHERE fecha_hasta_evento BETWEEN NEW.FECHA_DESDE_EVENTO AND FECHA_HASTA_EVENTO;
-															                                              RETURN NEW;
-
+                                                                                DELETE FROM agendamiento_clase A
+                                                                                WHERE A.fecha_agendamiento BETWEEN NEW.FECHA_DESDE_EVENTO AND NEW.FECHA_HASTA_EVENTO;
+                                                                              RETURN NEW;
+                                                                            END IF ;
                                                                           END;
-                                                                        $$ LANGUAGE plpgsql;`
+                                                                        $$ LANGUAGE plpgsql;`;
+                                                                        
   const trigger_func_verifica_reservas_o_clases = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_verifica_reservas_o_clases
                                                                               BEFORE INSERT OR UPDATE ON CALENDARIO_EVENTOS
                                                                               FOR EACH ROW

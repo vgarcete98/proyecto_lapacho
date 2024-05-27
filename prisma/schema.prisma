@@ -26,8 +26,8 @@ model agendamiento_clase {
   id_profesor        Int
   id_mesa            BigInt
   fecha_agendamiento DateTime   @db.Date
-  horario_inicio     String     @db.VarChar(10)
-  horario_hasta      String     @db.VarChar(10)
+  horario_inicio     DateTime   @db.Timestamp(6)
+  horario_hasta      DateTime   @db.Timestamp(6)
   creadoen           DateTime?  @db.Date
   editadoen          DateTime?  @db.Date
   clase_abonada      Boolean?
@@ -162,8 +162,8 @@ model reservas {
   fecha_reserva    DateTime? @db.Date
   reserva_editada  DateTime? @db.Date
   fecha_creacion   DateTime  @db.Date
-  hora_desde       String?   @db.VarChar(10)
-  hora_hasta       String?   @db.VarChar
+  hora_desde       DateTime  @db.Timestamp(6)
+  hora_hasta       DateTime  @db.Timestamp(6)
   mesas            mesas     @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reservas_fk")
   socio            socio     @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_socio_reservas_fk")
 }

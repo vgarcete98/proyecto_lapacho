@@ -1,8 +1,14 @@
 const generar_fecha = ( fecha = '' )=>{
 
-    const [ dia, mes, anio ] = fecha.split( '/' );
+    if ( fecha.indexOf( '/' ) !== -1) {
 
-    return new Date( anio, Number(mes) - 1, dia );
+        const [ dia, mes, anio ] = fecha.split( '/' );
+    
+        return new Date( anio, Number(mes) - 1, dia );
+    }else {
+        return new Date( fecha );
+    }
+
 
 };
 

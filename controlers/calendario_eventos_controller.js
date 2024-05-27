@@ -11,31 +11,28 @@ const estados_evento = [ 'ACTIVO', 'ELIMINADO', 'SUSPENDIDO' ]
 
 const asignar_evento_calendario = async ( req = request, res = response ) =>{
 
-    // CREA UN NUEVO EVENTO EN EL CALENDARIO
-    const { tipoEvento, 
-            nombreEvento,
-            fechaDesde, 
-            fechaHasta, 
-            costo,
-            todoEldia, 
-            descripcion } = req.body;
-
-    const [ fecha_desde_convertido, fecha_hasta_convertido ] = [ generar_fecha( fechaDesde ), generar_fecha( fechaHasta ) ];
-    const costo_evento = costo;
-    //const descripcion_evento = descripcion;
     try {
-        const fecha_creacion = new Date();
+        // CREA UN NUEVO EVENTO EN EL CALENDARIO
+        const { tipoEvento, 
+                nombreEvento,
+                fechaDesde, 
+                fechaHasta, 
+                costoEvento,
+                todoEldia, 
+                descripcion } = req.body;
+    
         const nuevo_evento = await prisma.calendario_eventos.create( { 
                                                                         data : {
                                                                             id_tipo_evento : tipoEvento,
-                                                                            fecha_desde_evento : fecha_desde_convertido,
-                                                                            fecha_hasta_evento : fecha_hasta_convertido,
-                                                                            costo : costo_evento,
+                                                                            fecha_desde_evento : generar_fecha( fechaDesde ),
+                                                                            fecha_hasta_evento : generar_fecha( fechaHasta ),
+                                                                            costo : Number( costoEvento ),
                                                                             decripcion_evento : descripcion,
-                                                                            eventocreadoen : fecha_creacion,
+                                                                            eventocreadoen : new Date(),
                                                                             estadoevento : 'ACTIVO',
                                                                             todo_el_dia : (todoEldia  === "S") ? true : false,
-                                                                            nombre_evento : nombreEvento
+                                                                            nombre_evento : nombreEvento,
+
                                                                         } 
                                                                     } );
         const { fecha_desde_evento, 
@@ -169,24 +166,33 @@ const borrar_evento_calendario = async ( req = request, res = response ) =>{
 
     // HABRIA QUE VER COMO PROCEDER PARA EL BORRADO PERO EN SINTESIS MEJOR POR UN QUERY PARAM
     
-    const { id_evento } = req.params;
-
-    const fecha_borrado = new Date();
     try {
+
+        const { tipoEvento, 
+                nombreEvento,
+                fechaDesde, 
+                fechaHasta, 
+                costoEvento,
+                todoEldia, 
+                descripcion,
+                idEvento } = req.body;
+    
+        const fecha_borrado = new Date();
         //---------------------------------------------------------------------------------------------------------------------------------
         /*const borrado_evento = await prisma.$executeRaw`UPDATE public.calendario_eventos
                                                             SET eventoeditadoen= ${ fecha_borrado }, estadoevento= ${ estados_evento [1] }
                                                         WHERE id_evento_calendario = ${ Number(id_evento) };`*/
-        const borrado_evento = await prisma.calendario_eventos.update( { 
-                                                                            where : { id_evento_calendario : Number(id_evento) },
-                                                                            data : {
-                                                                                estadoevento : estados_evento [1],
-                                                                                eventoeditadoen : fecha_borrado
-                                                                            } 
-                                                                    } );
+        const borrado_evento = await prisma.calendario_eventos.delete( { where : { id_evento_calendario : Number(idEvento) } } );
         //---------------------------------------------------------------------------------------------------------------------------------    
-        const { costo, decripcion_evento, estadoevento, 
-                fecha_desde_evento, fecha_hasta_evento, } = borrado_evento;
+        const { fecha_desde_evento, 
+            fecha_hasta_evento, 
+            costo, 
+            decripcion_evento,
+            id_tipo_evento,
+            todo_el_dia,
+            nombre_evento,
+            id_evento_calendario } = borrado_evento;
+            
         const costo_eliminado = costo;
         if ( borrado_evento === null || borrado_evento === undefined ){
             res.status( 200 ).json( {
@@ -194,11 +200,14 @@ const borrar_evento_calendario = async ( req = request, res = response ) =>{
                 msg : "Evento no BORRADO",
                 //cantidad_registros : borrado_evento
                 eventoBorrado : {
-                    costo_eliminado : costo, 
-                    descripcion: decripcion_evento, 
-                    estadoEvento : estadoevento, 
-                    fechaDesdeEvento : fecha_desde_evento, 
-                    fechaHastaEvento : fecha_hasta_evento
+                    fechaDesde : fecha_desde_evento,
+                    fechaHasta : fecha_hasta_evento,
+                    descripcion : decripcion_evento,
+                    costo,
+                    idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
+                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                    todoEldia : todo_el_dia,
+                    nombreEvento : nombre_evento
                 }
             } );
         } else {
@@ -208,19 +217,22 @@ const borrar_evento_calendario = async ( req = request, res = response ) =>{
                 msg : "Evento BORRADO",
                 //cantidad_registros : borrado_evento
                 eventoBorrado : {
-                    costo_eliminado : costo, 
-                    descripcion: decripcion_evento, 
-                    estadoEvento : estadoevento, 
-                    fechaDesdeEvento : fecha_desde_evento, 
-                    fechaHastaEvento : fecha_hasta_evento
+                    fechaDesde : fecha_desde_evento,
+                    fechaHasta : fecha_hasta_evento,
+                    descripcion : decripcion_evento,
+                    costo,
+                    idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
+                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                    todoEldia : todo_el_dia,
+                    nombreEvento : nombre_evento
                 }
             } );
         }    
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 200 ).json( {
             status : false,
-            msg : "No se pudo borrar el evento",
+            msg : `No se pudo borrar el evento  ${ error }`,
             error
         } );
     }
@@ -233,31 +245,74 @@ const borrar_evento_calendario = async ( req = request, res = response ) =>{
 const actualizar_evento_calendario = async ( req = request, res = response ) =>{
 
 
-    // HABRIA QUE VER COMO PROCEDER PARA EL BORRADO PERO EN SINTESIS MEJOR POR UN QUERY PARAM
-    const { id_evento } = req.params;
-    const { fechaNuevaDesde, fechaNuevaHasta, idTipoEvento,
-            estadoEvento, costoNuevo } = req.body;
-    console.log( fechaNuevaDesde, fechaNuevaHasta )
-    const fecha_actualizacion = new Date();
-
+    
     try {
-        const actualizacion_evento = await prisma.$executeRaw`UPDATE public.calendario_eventos
-                                                    SET eventoeditadoen= ${ fecha_actualizacion }, estadoevento= ${ estadoEvento },
-                                                        costo = ${ costoNuevo }, fecha_desde_evento = ${ fechaNuevaDesde },
-                                                        fecha_hasta_evento = ${ fechaNuevaHasta }
-                                                WHERE id_evento_calendario = ${ Number(id_evento) };`
+        // HABRIA QUE VER COMO PROCEDER PARA EL BORRADO PERO EN SINTESIS MEJOR POR UN QUERY PARAM
+
+        const { tipoEvento, 
+                nombreEvento,
+                fechaDesde, 
+                fechaHasta, 
+                costoEvento,
+                todoEldia, 
+                descripcion,
+                idEvento,
+                idSocio } = req.body;
+    
+        //console.log( fechaNuevaDesde, fechaNuevaHasta )
+        const fecha_actualizacion = new Date();
+        const actualizacion_evento = await prisma.calendario_eventos.update( { 
+                                                                                where : { id_evento_calendario : Number( idEvento ) },
+                                                                                data : {  
+                                                                                    costo : costoEvento,
+                                                                                    fecha_desde_evento : generar_fecha(fechaDesde),
+                                                                                    fecha_hasta_evento : generar_fecha( fechaHasta ),
+                                                                                    todo_el_dia : todoEldia,
+                                                                                    decripcion_evento : descripcion,
+                                                                                    id_tipo_evento : tipoEvento,
+                                                                                    nombre_evento : nombreEvento,
+                                                                                    eventoeditadoen : new Date(),
+                                                                                }
+                                                                            } );
+
+        const { fecha_desde_evento, 
+                fecha_hasta_evento, 
+                costo, 
+                decripcion_evento,
+                id_tipo_evento,
+                todo_el_dia,
+                nombre_evento,
+                id_evento_calendario } = actualizacion_evento;                                    
 
         if( actualizacion_evento > 0 ){
             res.status( 200 ).json( {
                 status : true,
                 msg : "Evento ACTUALIZADO",
-                cantidad_registros : borrado_evento
+                eventoBorrado : {
+                    fechaDesde : fecha_desde_evento,
+                    fechaHasta : fecha_hasta_evento,
+                    descripcion : decripcion_evento,
+                    costo,
+                    idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
+                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                    todoEldia : todo_el_dia,
+                    nombreEvento : nombre_evento
+                }
             } );
         }else {
             res.status( 200 ).json( {
                 status : false,
                 msg : "Evento no ACTUALIZADO",
-                cantidad_registros : borrado_evento
+                eventoBorrado : {
+                    fechaDesde : fecha_desde_evento,
+                    fechaHasta : fecha_hasta_evento,
+                    descripcion : decripcion_evento,
+                    costo,
+                    idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
+                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                    todoEldia : todo_el_dia,
+                    nombreEvento : nombre_evento
+                }
             } );
         }   
     } catch (error) {
@@ -266,7 +321,7 @@ const actualizar_evento_calendario = async ( req = request, res = response ) =>{
 
         res.status( 200 ).json( {
             status : false,
-            msg : "Evento no ACTUALIZADO",
+            msg : `Evento no ACTUALIZADO  ${ error }`,
             error
         } );    
     }

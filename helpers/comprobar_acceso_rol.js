@@ -5,46 +5,70 @@ const prisma = new PrismaClient();
 const { decode } = require('jsonwebtoken');
 
 const ADMINISTRADOR = [
-    '/usuario',
 
     '/socio',
-    
+    '/socio/obtener_tipo_socios',
+
+
     '/tipo_socio',
     
     '/eventos',
     
     '/inscripciones',
-    
-    '/gastos_club',
-    
-    '/roles',
-    
-    '/tipo_reserva',
-    
-    '/accesos',
-    '/accesos/obtener_modulos',
-    '/accesos/editar_modulos',
-    '/accesos/crear_modulos',
 
-    '/reserva_en_club',
-    
+    '/reserva_en_club/obtener_mesas_disponibles',
+    '/reserva_en_club/obtener_reservas_club',
+    '/reserva_en_club/crear_reserva_club',
+    '/reserva_en_club/borrar_reserva_club',
+    '/reserva_en_club/editar_reserva_club',
+
     '/pagos_socio',
-    
+    '/pagos_socio/socio/pagar_cuota',
+    '/pagos_socio/socio/anular_pago/',
+
     '/tipo_cuotas',
     
     '/calendario_eventos',
+    '/calendario_eventos/eventos_mes',
+    '/calendario_eventos/eventos_annio',
+    '/calendario_eventos/inscripciones_evento',
+    '/calendario_eventos/crear_nuevo_evento',
+    '/calendario_eventos/actualizar_evento',
+    '/calendario_eventos/eliminar_evento',
+    '/calendario_eventos/obtener_tipos_evento',
     
     '/pases_jugadores',
     
     '/profesores',
     
     '/agendamiento_clases',
+    '/agendamiento_clases/agendar_clase',
+    '/agendamiento_clases/editar_clase',
+    '/agendamiento_clases/cancelar_clase',
+    '/agendamiento_clases/pagar_x_clase',
     
     '/ingresos',
-    
+    '/ingresos/obtener_grafico_ingresos',
+    '/ingresos/reportes_ingresos_excel',
+    '/ingresos/tipos_ingreso',
+    '/ingresos/agregar_ingreso',
+    '/ingresos/borrar_ingreso',
+    '/ingresos/actualizar_ingreso',
+
     '/egresos',
-    
+    '/egresos/obtener_datos_grafico',    
+    '/egresos/reportes_egresos_excel',
+    '/egresos/tipos_egreso',
+    '/egresos/agregar_gasto',
+    '/egresos/eliminar_egreso',
+    '/egresos/actualizar_egreso',
+
+
     '/cuotas_club',
+    '/cuotas_club/cuota_socio',
+    '/cuotas_club/cuotas_reporte',
+    '/cuotas_club/cuotas_pendientes_mes',
+
 ]
 
 const SOCIO = []
@@ -60,6 +84,8 @@ const comprobar_acceso_rol = async ( req = request, res = response, next)=> {
         }else{
 
             const { x_token } = req.headers;
+
+            //console.log( decode( x_token, process.env.SECRET0RPR1VAT3K3Y ) );
             const { id_usuario, tipo_usuario, rol   } = decode( x_token, process.env.SECRET0RPR1VAT3K3Y );
 
             const { path } = req;

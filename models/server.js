@@ -47,7 +47,6 @@ const { middleware_request, } = require( '../middlewares/logs_middleware' );
 const validar_token = require('../middlewares///validar_token');
 const { desencriptar_body_login } = require('../middlewares/desencriptar_login');
 const { validar_existe_usuario_socio } = require( '../middlewares/validar_existe_usuario' );
-const { validar_acceso_a_ruta } = require( '../middlewares/validar_acceso_a_ruta' );
 const { obtener_data_socio } = require('../helpers/verficar_socio_carga');
 const router_agendamientos_clase = require('../routes/agendamiento_clases_routes');
 const { comprobar_acceso_rol } = require('../helpers/comprobar_acceso_rol');
@@ -61,7 +60,7 @@ const { cron_job_genera_cuotas_anio } = require( '../helpers/cron_job_genera_cuo
 
 // LA FUNCION QUE SE VA EJECUTAR PARA GENERARME LAS CUOTAS DEL AÑO
 //----------------------------------------------------------------------------
-//const job = schedule.scheduleJob('0 1 0 1 1 *', cron_job_genera_cuotas_anio);
+const job = schedule.scheduleJob('0 1 0 1 1 *', cron_job_genera_cuotas_anio);
 //PARA TEST DEL CRON JOB
 //const job = schedule.scheduleJob('40 * * * *', cron_job_genera_cuotas_anio);
 //----------------------------------------------------------------------------
@@ -107,9 +106,13 @@ class Server {
 
         //this.app.use(validar_acceso_a_ruta);//y ve si tiene la ruta habilitada
 
-        this.app.use( obtener_data_socio );
+        
+        //this.app.use( obtener_data_socio );
+        
+        this.app.use(comprobar_acceso_rol);
+        
         //this.app.use( multer )
-        this.app.use( comprobar_acceso_rol );
+        //this.app.use( comprobar_acceso_rol );
 
         this.app.use(function( err, req , res , next ) {
             
