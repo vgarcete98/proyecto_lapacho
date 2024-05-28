@@ -46,7 +46,10 @@ const ADMINISTRADOR = [
     '/agendamiento_clases/editar_clase',
     '/agendamiento_clases/cancelar_clase',
     '/agendamiento_clases/pagar_x_clase',
-    
+    '/agendamiento_clases/obtener_clases_x_fecha',
+    '/agendamiento_clases/obtener_clases_x_fecha_socio',
+    '/agendamiento_clases/obtener_clases_x_fecha_profesor',
+
     '/ingresos',
     '/ingresos/obtener_grafico_ingresos',
     '/ingresos/reportes_ingresos_excel',
@@ -71,9 +74,75 @@ const ADMINISTRADOR = [
 
 ]
 
-const SOCIO = []
+const SOCIO = [
 
-const PROFESOR = []
+    '/reserva_en_club/obtener_mesas_disponibles',
+    '/reserva_en_club/obtener_reservas_club',
+    '/reserva_en_club/crear_reserva_club',
+    '/reserva_en_club/borrar_reserva_club',
+    '/reserva_en_club/editar_reserva_club',
+
+
+    '/cuotas_club',
+    '/cuotas_club/cuota_socio',
+
+
+    '/agendamiento_clases',
+    '/agendamiento_clases/agendar_clase',
+    '/agendamiento_clases/editar_clase',
+    '/agendamiento_clases/cancelar_clase',
+    '/agendamiento_clases/pagar_x_clase',
+    '/agendamiento_clases/obtener_clases_x_fecha',
+    '/agendamiento_clases/obtener_clases_x_fecha_socio',
+    '/agendamiento_clases/obtener_clases_x_fecha_profesor',
+
+    
+    '/calendario_eventos',
+    '/calendario_eventos/eventos_mes',
+    '/calendario_eventos/eventos_annio',
+
+
+    '/reserva_en_club/obtener_mesas_disponibles',
+    '/reserva_en_club/obtener_reservas_club',
+    '/reserva_en_club/crear_reserva_club',
+    '/reserva_en_club/borrar_reserva_club',
+    '/reserva_en_club/editar_reserva_club',
+]
+
+const PROFESOR = [
+
+    '/reserva_en_club/obtener_mesas_disponibles',
+    '/reserva_en_club/obtener_reservas_club',
+    '/reserva_en_club/crear_reserva_club',
+    '/reserva_en_club/borrar_reserva_club',
+    '/reserva_en_club/editar_reserva_club',
+
+
+    '/cuotas_club',
+    '/cuotas_club/cuota_socio',
+
+
+    '/agendamiento_clases',
+    '/agendamiento_clases/agendar_clase',
+    '/agendamiento_clases/editar_clase',
+    '/agendamiento_clases/cancelar_clase',
+    '/agendamiento_clases/pagar_x_clase',
+    '/agendamiento_clases/obtener_clases_x_fecha',
+    '/agendamiento_clases/obtener_clases_x_fecha_socio',
+
+    '/calendario_eventos',
+    '/calendario_eventos/eventos_mes',
+    '/calendario_eventos/eventos_annio',
+
+
+    '/reserva_en_club/obtener_mesas_disponibles',
+    '/reserva_en_club/obtener_reservas_club',
+    '/reserva_en_club/crear_reserva_club',
+    '/reserva_en_club/borrar_reserva_club',
+    '/reserva_en_club/editar_reserva_club',
+
+
+]
 
 
 const comprobar_acceso_rol = async ( req = request, res = response, next)=> {

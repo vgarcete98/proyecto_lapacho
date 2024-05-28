@@ -30,6 +30,7 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
                         	JOIN socio D ON D.id_socio = A.id_socio
                         WHERE A.fecha_agendamiento BETWEEN  BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                        ${ ( idUsuario === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
                         ORDER BY A.fecha_agendamiento DESC
                         LIMIT 20 OFFSET ${Number(pagina)}`
         let clases_del_dia, clasesDelDia = [];
@@ -110,7 +111,7 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
                         	JOIN socio D ON D.id_socio = A.id_socio
                         WHERE A.fecha_agendamiento BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
-                                AND D.id_socio = ${Number( idSocio )}
+                        ${ ( idUsuario === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
                         ORDER BY A.fecha_agendamiento DESC
                         LIMIT 20 OFFSET ${Number(pagina)}`
         let clases_del_dia, clasesDelDia = [];
@@ -449,10 +450,10 @@ const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
         } );
 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : "Ocurrio un error al eliminar la clase",
+            msg : `Ocurrio un error al eliminar la clase ${ error }`,
             //error
         } );
     }

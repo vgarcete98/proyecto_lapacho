@@ -3,6 +3,7 @@ const { request, response } = require('express')
 
 const { PrismaClient } = require('@prisma/client')
 
+const { decode } = require('jsonwebtoken');
 const prisma = new PrismaClient();
 
 const { generar_token } = require('../helpers/generar_token');
@@ -26,6 +27,7 @@ const login = async ( req = request, res = response )=> {
                                                                     ]
                                                                 } 
                                                     } );
+
         //console.log( socio );
         if ( socio === undefined ) { 
             res.status( 400 ).json(
@@ -44,15 +46,14 @@ const login = async ( req = request, res = response )=> {
 
             const idUsuario = ( typeof( id_socio ) === 'bigint' )? Number( id_socio.toString() ) : id_socio;
             
-
+            //console.log( idRolUsuario, idUsuario )
             //console.log ( consulta_acceso );
             
             const { descripcion_rol } = await prisma.roles_usuario.findUnique( { where : { id_rol_usuario : idRolUsuario } } );
             
-            const { descripcion_acceso } = await prisma.accesos_usuario.findFirst( { where : { id_rol_usuario : idRolUsuario } } );
+            //const { descripcion_acceso } = await prisma.accesos_usuario.findFirst( { where : { id_rol_usuario : idRolUsuario } } );
             
             const token = await generar_token( idUsuario, idRolUsuario, descripcion_rol );
-
             res.status( 200 ).json(
                 {
                     status : true,
@@ -61,7 +62,7 @@ const login = async ( req = request, res = response )=> {
                     token,
                     acceso : { 
                         tipoUsuario : descripcion_rol, 
-                        descripcionAcceso : descripcion_acceso 
+                        descripcionAcceso : "" 
                     }
                 }
             );

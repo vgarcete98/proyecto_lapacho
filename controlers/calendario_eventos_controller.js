@@ -494,19 +494,22 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
         const { mes } = req.query;        
         const annio = new Date().getFullYear();
         const [ fecha_desde_mes, fecha_hasta_mes ] = [ new Date(annio, mes - 1, 1), new Date(annio, mes, 0) ]
-        //console.log( fecha_desde_mes, fecha_hasta_mes )
+        console.log( fecha_desde_mes, fecha_hasta_mes )
         const eventos = await prisma.calendario_eventos.findMany( { 
                                                                     where : {  
-                                                                        AND : [
-                                                                            { fecha_desde_evento : fecha_desde_mes },
-                                                                            //{ fecha_hasta_evento : fecha_hasta_mes }
-                                                                            { fecha_desde_evento : fecha_hasta_mes }
-                                                                        ]                  
+
+                                                                            fecha_desde_evento : { 
+                                                                                gte : fecha_desde_mes
+                                                                            },
+                                                                            fecha_hasta_evento : {
+                                                                                lte : fecha_hasta_mes
+                                                                            }
                                                                     } 
                                                                 } );
-
+        //const eventos = await prisma.calendario_eventos.findMany();
+        //console.log( eventos );
         const eventosMes =  eventos.map( ( element ) =>{
-            
+            console.log( element );
             const { fecha_desde_evento, 
                     fecha_hasta_evento, 
                     costo, 
@@ -514,7 +517,7 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
                     id_tipo_evento,
                     todo_el_dia,
                     nombre_evento,
-                    id_evento_calendario} = eventos;
+                    id_evento_calendario} = element;
 
             return {
                 fechaDesde : fecha_desde_evento,

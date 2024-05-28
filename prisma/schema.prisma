@@ -40,10 +40,10 @@ model agendamiento_clase {
 model calendario_eventos {
   id_evento_calendario    BigInt                    @id(map: "calendario_eventos_pk") @default(autoincrement())
   id_tipo_evento          BigInt
-  fecha_desde_evento      DateTime                  @db.Date
+  fecha_desde_evento      DateTime                  @db.Timestamp(6)
   eventocreadoen          DateTime?                 @db.Date
   eventoeditadoen         DateTime?                 @db.Date
-  fecha_hasta_evento      DateTime?                 @db.Date
+  fecha_hasta_evento      DateTime                  @db.Timestamp(6)
   costo                   Int
   estadoevento            String?                   @db.VarChar(20)
   decripcion_evento       String?                   @db.VarChar(255)
@@ -159,7 +159,7 @@ model reservas {
   id_socio_reserva BigInt    @id(map: "reservas_pk") @default(autoincrement())
   id_socio         BigInt
   id_mesa          BigInt
-  fecha_reserva    DateTime? @db.Date
+  fecha_reserva    DateTime  @db.Timestamp(6)
   reserva_editada  DateTime? @db.Date
   fecha_creacion   DateTime  @db.Date
   hora_desde       DateTime  @db.Timestamp(6)
@@ -320,7 +320,7 @@ model api_logs {
   request_body    String?  @db.VarChar(255)
   response_body   String?  @db.VarChar(255)
   type_request    String?  @db.VarChar(10)
-  fecha_solicitud DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+  fecha_solicitud DateTime @db.Timestamp(6)
   ruta_solicitud  String   @db.VarChar(255)
 }
 

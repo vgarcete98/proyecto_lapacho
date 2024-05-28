@@ -21,7 +21,7 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
     //DEVUELVO TODAS LAS RESERVAS EN EL CLUB
     try {
 
-        const { fecha_desde, fecha_hasta, pagina  } = req.query;
+        const { fecha_desde, fecha_hasta, pagina, idUsuario  } = req.query;
 
         const query = `SELECT CAST(A.id_socio_reserva AS INTEGER) AS "idSocioReserva", 
                         		C.nombre || ', ' || C.apellido AS "nombreCmp",
@@ -35,8 +35,10 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
                         	JOIN PERSONA C ON C.id_persona = B.id_persona
                         	JOIN MESAS D ON D.id_mesa = A.id_mesa
                         WHERE A.fecha_reserva BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}'
+                                ${ ( idUsuario === undefined ) ? `` : `AND A.id_socio = ${ idUsuario }` }
                         ORDER BY A.fecha_reserva DESC
                         LIMIT 20 OFFSET ${Number(pagina)};`;
+        //console.log( query );
         reservasClub = await prisma.$queryRawUnsafe( query );
         
         if ( reservasClub.length === 0 ) {
@@ -244,8 +246,9 @@ const obtener_mesas_reserva = async ( req = request, res = response ) =>{
         if ( mesas_disponibles.length > 0 ){
             mesas_disponibles.forEach( ( element )=> {
                 const { desc_mesa, id_mesa } = element;
+                //console.log( element );
                 mesasDisponibles.push ( {
-                    idMesa : id_mesa,
+                    idMesa : (typeof(id_mesa)==='bigint')? Number( id_mesa.toString() ) : id_mesa,
                     descMesa : desc_mesa
                 } )
 

@@ -10,14 +10,14 @@ const { abonar_una_clase,
         obtener_clases_x_profesor_dia, 
         obtener_clases_del_dia_x_socio} = require( '../controlers/agendamiento_clases_controller' );
 const { comprobar_horario_profesor } = require('../helpers/comprobar_disponibilidad_profesor');
-const { obtener_data_socio } = require('../helpers/verficar_socio_carga');
+const { obtener_data_socio, verificar_vista_usuario } = require('../helpers/verficar_socio_carga');
 
 const router_agendamientos_clase = Router();
 
 
-router_agendamientos_clase.get( '/obtener_clases_x_fecha', [], obtener_clases_del_dia );
+router_agendamientos_clase.get( '/obtener_clases_x_fecha', [ verificar_vista_usuario ], obtener_clases_del_dia );
 
-router_agendamientos_clase.get( '/obtener_clases_x_fecha_socio', [], obtener_clases_del_dia_x_socio );
+router_agendamientos_clase.get( '/obtener_clases_x_fecha_socio', [ verificar_vista_usuario ], obtener_clases_del_dia_x_socio );
 
 router_agendamientos_clase.get( '/obtener_clases_x_fecha_profesor', [], obtener_clases_x_profesor_dia );
 
