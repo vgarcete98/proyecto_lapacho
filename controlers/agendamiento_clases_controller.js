@@ -308,21 +308,19 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
 const editar_una_clase = async ( req = request, res = response ) =>{
 
     try {
-        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento, monto } = req.body;
-        
+        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento } = req.body;
+        //console.log ( req.body )
         const { id_agendamiento, id_socio, id_profesor, 
                 fecha_agendamiento, horario_inicio, horario_hasta, 
                 clase_abonada, monto_abonado } = await prisma.agendamiento_clase.update( { 
                                                                                             data : { 
-                                                                                                        id_socio : Number(idSocio),
-                                                                                                        id_profesor : idProfesor,
+                                                                                                        //id_profesor : idProfesor,
                                                                                                         fecha_agendamiento : generar_fecha( fechaAgendamiento ),
                                                                                                         horario_inicio : generar_fecha(inicio),
                                                                                                         horario_hasta : generar_fecha(fin),
-                                                                                                        clase_eliminada : false,
+                                                                                                        //clase_eliminada : false,
                                                                                                         id_mesa : Number( idMesa ),
                                                                                                         editadoen : new Date(),
-                                                                                                        monto_abonado : monto
                                                                                                     },
                                                                                             where : { id_agendamiento : Number( idAgendamiento ) }
                                                                                         } );
@@ -350,7 +348,7 @@ const editar_una_clase = async ( req = request, res = response ) =>{
         } );
 
     } catch (error) {
-        console.log ( error );
+        //console.log ( error );
         res.status( 500 ).json( {
             status : false,
             msg : `Ocurrio un error al editar el registro : ${error}`,

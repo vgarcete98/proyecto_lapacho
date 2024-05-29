@@ -8,10 +8,7 @@ const comprobar_horario_profesor = async ( req = request, res = response, next)=
 
     try {
         
-        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa } = req.body;
-
-        const [ dia_desde, mes_desde, annio_desde ] = fechaAgendamiento.split( '/' );
-        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
+        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento } = req.body;
         
         const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
                                                         		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
@@ -19,7 +16,9 @@ const comprobar_horario_profesor = async ( req = request, res = response, next)=
                                                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                                                         	JOIN mesas C ON C.id_mesa = A.id_mesa
                                                         	JOIN socio D ON D.id_socio = A.id_socio
-                                                        WHERE A.fecha_agendamiento BETWEEN  DATE '${fecha_desde_format}' AND DATE '${fecha_desde_format}'
+                                                        WHERE A.fecha_agendamiento = TIMESTAMP '${fechaAgendamiento}'  
+                                                                AND A.horario_inicio = TIMESTAMP '${inicio}' 
+                                                                AND A.horario_hasta = TIMESTAMP '${fin}'
                                                                 AND B.id_profesor = ${ Number( idProfesor ) }
                                                                 AND C.id_mesa = ${ Number( idMesa ) }
                                                         ORDER BY A.fecha_agendamiento DESC`

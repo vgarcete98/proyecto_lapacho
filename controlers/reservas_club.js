@@ -21,7 +21,13 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
     //DEVUELVO TODAS LAS RESERVAS EN EL CLUB
     try {
 
-        const { fecha_desde, fecha_hasta, pagina, idUsuario  } = req.query;
+        const { fecha_desde, 
+                fecha_hasta, 
+                pagina, 
+                idUsuario,
+                nombre_socio,
+                apellido_socio,
+                nro_cedula  } = req.query;
 
         const query = `SELECT CAST(A.id_socio_reserva AS INTEGER) AS "idSocioReserva", 
                         		C.nombre || ', ' || C.apellido AS "nombreCmp",
@@ -34,11 +40,15 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
                         	FROM RESERVAS A JOIN SOCIO B ON A.id_socio = B.id_socio
                         	JOIN PERSONA C ON C.id_persona = B.id_persona
                         	JOIN MESAS D ON D.id_mesa = A.id_mesa
-                        WHERE A.fecha_reserva BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}'
-                                ${ ( idUsuario === undefined ) ? `` : `AND A.id_socio = ${ idUsuario }` }
+                            JOIN PERSONA F ON F.id_persona = B.id_persona
+                        WHERE A.fecha_reserva BETWEEN TIMESTAMP '${fecha_desde}' AND TIMESTAMP '${fecha_hasta}'
+                                ${ ( idUsuario === undefined ) ? `` : `AND B.id_socio = ${ idUsuario }` }
+                                ${ ( nombre_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ nombre_socio }%'` }
+                                ${ ( apellido_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ apellido_socio }%'` }
+                                ${ ( nro_cedula === undefined ) ? `` : `AND F.cedula  = '${ nro_cedula }'` }
                         ORDER BY A.fecha_reserva DESC
-                        LIMIT 20 OFFSET ${Number(pagina)};`;
-        //console.log( query );
+                        LIMIT 10 OFFSET ${Number(pagina) -1 };`;
+        console.log( query );
         reservasClub = await prisma.$queryRawUnsafe( query );
         
         if ( reservasClub.length === 0 ) {
@@ -264,10 +274,10 @@ const obtener_mesas_reserva = async ( req = request, res = response ) =>{
         
         
     } catch (error) {
-        console.log ( error );
+        //console.log ( error );
         res.status( 500 ).json( {
             status : false,
-            msg : "Ha ocurrido un error al eliminar la reserva",
+            msg : `Ha ocurrido un error al eliminar la reserva : ${ error }`,
             //error
         } );
 

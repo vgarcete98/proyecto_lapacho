@@ -509,7 +509,7 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
         //const eventos = await prisma.calendario_eventos.findMany();
         //console.log( eventos );
         const eventosMes =  eventos.map( ( element ) =>{
-            console.log( element );
+            //console.log( element );
             const { fecha_desde_evento, 
                     fecha_hasta_evento, 
                     costo, 
@@ -538,7 +538,7 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
         } );
 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 400 ).json( {
             status : false,
             msg : `Ha ocurrido un error al obtener las inscripciones : ${error}`

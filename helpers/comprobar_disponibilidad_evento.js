@@ -10,53 +10,33 @@ const comprobar_disponibilidad_evento = async ( req = request, res = response, n
 
     try {
         const { fechaDesde, fechaHasta } = req.body;
-        const [ fecha_desde_convertido, fecha_hasta_convertido ] = [ generar_fecha( fechaDesde ), generar_fecha( fechaHasta ) ];
-        //console.log( fecha_desde_convertido, fecha_hasta_convertido );
         const evento = await prisma.calendario_eventos.findFirst( { 
                                                                     where : {  
-                                                                        AND : [
-                                                                            { fecha_desde_evento : fecha_desde_convertido },
-                                                                            { fecha_hasta_evento : fecha_hasta_convertido }
-                                                                        ]                  
+                                                                        fecha_desde_evento : {
+                                                                            gte : generar_fecha( fechaDesde )
+                                                                        },
+                                                                        fecha_hasta_evento : {
+                                                                            lte : generar_fecha( fechaHasta )
+                                                                        }
                                                                     } 
                                                                 } );
         if ( evento === null || evento === undefined ){
             next();
         }else {
 
-            const { fecha_desde_evento, 
-                    fecha_hasta_evento, 
-                    costo, 
-                    decripcion_evento,
-                    id_tipo_evento,
-                    todo_el_dia,
-                    nombre_evento,
-                    id_evento_calendario } = evento;
-
             //console.log( evento );
             res.status( 400 ).json( {
                 status : true,
                 msg : 'Esa fecha para ese evento no se encuentra libre',
-                evento : {
-                    fechaDesde : fecha_desde_evento,
-                    fechaHasta : fecha_hasta_evento,
-                    descripcion : decripcion_evento,
-                    costo,
-                    idTipoEvento : (typeof(id_tipo_evento) === 'bigint')? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                    idEventoCalendario : (typeof(id_evento_calendario) === 'bigint')? Number(id_evento_calendario.toString()) : id_evento_calendario,
-                    todoEldia : todo_el_dia,
-                    nombreEvento : nombre_evento
-                    //idTipoEvento : tipoEvento
-                }
             } );
         }
     } catch (error) {
 
-        console.log( error );
+        //console.log( error );
         
         res.status( 500 ).json( {
             status : false,
-            msg : 'Ha ocurrido un error al buscar fecha libre',
+            msg : `Ha ocurrido un error al buscar fecha libre  ${ error }`,
             //error
         } );
     }
@@ -110,11 +90,9 @@ const comprobar_evento_borrado = async ( req = request, res = response, next )=>
 const comprobar_existe_evento = async ( req = request, res = response, next )=> {
 
     try {
-        //const { fechaDesde, fechaHasta } = req.body;
-        //const [ fecha_desde_convertido, fecha_hasta_convertido ] = [ generar_fecha( fechaDesde ), generar_fecha( fechaHasta ) ];
-        const { id_evento } = req.params;
+        const { idEvento } = req.body;
         const evento = await prisma.calendario_eventos.findFirst( { 
-                                                                    where : { id_evento_calendario : id_evento } 
+                                                                    where : { id_evento_calendario : Number( idEvento ) } 
                                                                 } );
         //const { estadoevento } = evento;
         if ( evento === null || evento === undefined ){
@@ -122,25 +100,16 @@ const comprobar_existe_evento = async ( req = request, res = response, next )=> 
             //const { fecha_desde_evento, fecha_hasta_evento, costo, decripcion_evento  } = evento;
             res.status( 400 ).json( {
                 status : true,
-                msg : 'Ese evento no existe',
-                /*evento : {
-                    fechaDesde : fecha_desde_evento,
-                    fechaHasta : fecha_hasta_evento,
-                    descripcion : decripcion_evento,
-                    costo,
-                    //idTipoEvento : tipoEvento
-                }*/     
+                msg : 'Ese evento no existe, favor verificar',   
             } );       
         }else {
             next();
         }
     } catch (error) {
-
-        console.log( error );
         
         res.status( 500 ).json( {
             status : false,
-            msg : 'Ha ocurrido un error al buscar si el evento existe',
+            msg : `Ha ocurrido un error al buscar si el evento existe : ${ error } `,
             //error
         } );
     }
