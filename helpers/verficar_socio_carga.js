@@ -48,7 +48,7 @@ const verificar_vista_usuario = async ( req = request, res = response, next ) =>
         let idSocio = undefined;
         if ( rol === 'ADMINISTRADOR' ){
             
-            req.query.idUsuario = idSocio;
+            //req.query.idUsuario = idSocio;
             next();
         }else{
             req.query.idUsuario = id_usuario;
