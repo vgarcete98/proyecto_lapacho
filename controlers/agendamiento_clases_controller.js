@@ -13,7 +13,8 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
 
     try {
 
-        const { fechaDesde, fechaHasta, pagina } = req.query;
+        const { fechaDesde, fechaHasta, pagina, nombreProfesor, apellidoProfesor,
+                nombreSocio, apellidoSocio, cedulaSocio, cedulaProfesor, idUsuario } = req.query;
 
         const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
 
@@ -29,10 +30,17 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
                         	JOIN socio D ON D.id_socio = A.id_socio
-                        WHERE A.fecha_agendamiento BETWEEN  BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                        WHERE A.fecha_agendamiento BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
                         ${ ( idUsuario === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
+                        ${ ( nombreProfesor === undefined ) ? `` : `AND B.nombre_profesor LIKE '%${ nombreProfesor }%'` }                        
+                        ${ ( apellidoProfesor === undefined ) ? `` : `AND B.nombre_profesor = '%${ apellidoProfesor }%'` }
+                        ${ ( nombreSocio === undefined ) ? `` : `AND D.nombre_cmp LIKE '%${ nombreSocio }%'` }
+                        ${ ( apellidoSocio === undefined ) ? `` : `AND LIKE '%${ apellidoSocio }%'` }
+                        ${ ( cedulaProfesor === undefined ) ? `` : `AND B.cedula = ${ cedulaProfesor }` }
+                        ${ ( cedulaSocio === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
                         ORDER BY A.fecha_agendamiento DESC
-                        LIMIT 20 OFFSET ${Number(pagina)}`
+                        LIMIT 20 OFFSET ${Number(pagina)}`;
+        console.log( query );
         let clases_del_dia, clasesDelDia = [];
         clases_del_dia = await prisma.$queryRawUnsafe( query );  
 
@@ -40,7 +48,7 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
         if ( clases_del_dia.length === 0 ){
             res.status( 200 ).json( {
                 status : false,
-                msg : "No se encontraron clases para el dia de hoy",
+                msg : "No se encontraron clases en esas fechas",
                 clasesDelDia
             } );
         }else {
@@ -66,7 +74,7 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
             } );
             res.status( 200 ).json( {
                 status : true,
-                msg : "Clases para el dia de hoy",
+                msg : "Clases de esas fechas",
                 clasesDelDia
             } );
         }
@@ -92,7 +100,8 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
 
     try {
 
-        const { fechaDesde, fechaHasta, pagina } = req.query;
+        const { fechaDesde, fechaHasta, pagina, nombreProfesor, apellidoProfesor,
+                nombreSocio, apellidoSocio, cedulaSocio, cedulaProfesor, idUsuario } = req.query;
 
         const { idSocio } = req.body;
         //console.log( idSocio );
@@ -110,8 +119,14 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
                         	JOIN socio D ON D.id_socio = A.id_socio
-                        WHERE A.fecha_agendamiento BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                        WHERE A.fecha_agendamiento BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
                         ${ ( idUsuario === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
+                        ${ ( nombreProfesor === undefined ) ? `` : `AND B.nombre_profesor LIKE '%${ nombreProfesor }%'` }                        
+                        ${ ( apellidoProfesor === undefined ) ? `` : `AND B.nombre_profesor = '%${ apellidoProfesor }%'` }
+                        ${ ( nombreSocio === undefined ) ? `` : `AND D.nombre_cmp LIKE '%${ nombreSocio }%'` }
+                        ${ ( apellidoSocio === undefined ) ? `` : `AND LIKE '%${ apellidoSocio }%'` }
+                        ${ ( cedulaProfesor === undefined ) ? `` : `AND B.cedula = ${ cedulaProfesor }` }
+                        ${ ( cedulaSocio === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
                         ORDER BY A.fecha_agendamiento DESC
                         LIMIT 20 OFFSET ${Number(pagina)}`
         let clases_del_dia, clasesDelDia = [];
@@ -174,7 +189,9 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
 
     // voy a devolver las clases del dia para ese profesor
     try {
-        const { fechaDesde, fechaHasta, pagina, id_profesor } = req.query;
+
+        const { fechaDesde, fechaHasta, pagina, nombreProfesor, apellidoProfesor,
+                nombreSocio, apellidoSocio, cedulaSocio, cedulaProfesor, idUsuario } = req.query;
     
         const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
     
@@ -190,8 +207,11 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
                         	JOIN socio D ON D.id_socio = A.id_socio
-                        WHERE A.fecha_agendamiento BETWEEN  DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                        WHERE A.fecha_agendamiento BETWEEN  TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
                                 AND B.id_profesor = ${ Number( id_profesor ) }
+                                ${ ( nombreProfesor === undefined ) ? `` : `AND B.nombre_profesor LIKE '%${ nombreProfesor }%'` }                        
+                                ${ ( apellidoProfesor === undefined ) ? `` : `AND B.nombre_profesor = '%${ apellidoProfesor }%'` }
+                                ${ ( cedulaProfesor === undefined ) ? `` : `AND B.cedula = ${ cedulaProfesor }` }
                         ORDER BY A.fecha_agendamiento DESC
                         LIMIT 20 OFFSET ${Number(pagina)}`;
         //console.log( query )
@@ -459,6 +479,59 @@ const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
 }
 
 
+
+const obtener_mesas_disponibles_x_horario = async ( req = request, res = response ) => {
+
+    try {
+
+        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento } = req.body;  
+
+        const clases = await prisma.agendamiento_clase.findMany( { 
+                                                                    where : {  
+                                                                        horario_inicio : { gte : new Date( inicio ) },
+                                                                        horario_hasta : { lte : new Date( fin ) }
+                                                                    }
+                                                            } );
+        
+        let mesasDisponibles = [];
+        
+        const mesas = await prisma.mesas.findMany( );
+
+        clases.forEach( ( element ) =>{
+
+            const { id_mesa } = element;
+
+            mesas.forEach( ( element, index ) => { 
+                if ( element.id_mesa !== id_mesa ){
+                    mesasDisponibles.push( {
+                                                idMesa : (typeof(mesas[ index ].id_mesa) === 'bigint') ? Number( mesas[ index ].id_mesa.toString() ) : mesas[ index ].id_mesa,
+                                                descMesa : mesas[ index ].desc_mesa
+                                            } );
+
+                }
+            } );
+        } );
+
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Mesas disponibles en horario seleccionado",
+            mesasDisponibles
+        } );
+
+        
+    } catch (error) {
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ocurrio un error al obtener las mesas para ese horario ${ error }`,
+            //error
+        } );
+    }
+
+
+
+}
+
+
 module.exports = {
 
     agendar_una_clase,
@@ -467,6 +540,7 @@ module.exports = {
     obtener_clases_del_dia,
     obtener_clases_x_profesor_dia,
     eliminar_clase_con_profesor,
-    obtener_clases_del_dia_x_socio
+    obtener_clases_del_dia_x_socio,
+    obtener_mesas_disponibles_x_horario
 
 }

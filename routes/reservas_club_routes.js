@@ -6,7 +6,8 @@ const { borrar_reserva_en_club,
         crear_reserva_en_club,
         editar_reserva_en_club,
         obtener_reservas_en_club,
-        obtener_mesas_reserva } = require( '../controlers/reservas_club' );
+        obtener_mesas_reserva, 
+        obtener_mesas_disponibles_x_horario} = require( '../controlers/reservas_club' );
 const { verificar_existe_reserva } = require('../helpers/verificar_existe_reserva');
 
 const router_reservas_club = Router();
@@ -22,6 +23,6 @@ router_reservas_club.delete( '/borrar_reserva_club', [ obtener_data_socio, verif
 
 router_reservas_club.put( '/editar_reserva_club', [ obtener_data_socio, verificar_existe_reserva ], editar_reserva_en_club );
 
-
+router_reservas_club.get( '/obtener_mesas_disponibles_x_horario',[ ], obtener_mesas_disponibles_x_horario );
 
 module.exports = router_reservas_club;

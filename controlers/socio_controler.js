@@ -197,10 +197,10 @@ const actualizar_socio = async ( req = request, res = response ) => {
 
         });        
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : 'No se pudo actualizar al Socio',
+            msg : `No se pudo actualizar al Socio  ${ error }`,
             //error
         } );
     }
@@ -271,13 +271,13 @@ const borrar_socio = async ( req = request, res = response ) => {
 
         );        
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json(
 
             {
 
                 status : false,
-                msj : 'No se logro borrar al socio',
+                msj : `No se logro borrar al socio  ${ error }`,
                 //error
 
             }
@@ -318,7 +318,7 @@ const obtener_socios = async ( req = request, res = response ) => {
                         ${ ( nombre !== undefined ) && (apellido !== undefined )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre} ${apellido}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
-        console.log( query );
+        //console.log( query );
         socios = await prisma.$queryRawUnsafe( query );
 
         if ( socios.length === 0 ){
@@ -365,10 +365,10 @@ const obtener_socios = async ( req = request, res = response ) => {
  
 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json({
             status: false,
-            msg: 'No se pudo obtener la informacion de los socios del club',
+            msg: `No se pudo obtener la informacion de los socios del club ${ error }`,
             //data : socios
         });    
     }
@@ -422,10 +422,10 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
             });
         }        
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {
            status : false,
-           msg : 'No se pudo obtener el detalle de los socios',
+           msg : `No se pudo obtener el detalle de los socios ${ error } `,
            //error 
         });
         
@@ -500,10 +500,10 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
 
 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {
             status : true,
-            msg : `Ha ocurrido un error al buscar al socio`,
+            msg : `Ha ocurrido un error al buscar al socio ${ error } `,
             //error
         } );
     }

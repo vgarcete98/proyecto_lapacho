@@ -45,7 +45,6 @@ const verificar_vista_usuario = async ( req = request, res = response, next ) =>
     try {
         const { x_token } = req.headers;
         const { id_usuario, rol } = decode( x_token, process.env.SECRET0RPR1VAT3K3Y );
-        let idSocio = undefined;
         if ( rol === 'ADMINISTRADOR' ){
             
             //req.query.idUsuario = idSocio;

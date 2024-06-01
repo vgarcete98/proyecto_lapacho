@@ -117,7 +117,7 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
 
     try {
         
-        const { numero_cedula, annio } = req.query;
+        const { numero_cedula, annio, nombre, apellido } = req.query;
 
         const query = `SELECT CAST ( C.ID_CUOTA_SOCIO AS INTEGER ) AS idCuotaSocio ,
                                 CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocio, 
@@ -132,7 +132,10 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
                             JOIN CUOTAS_SOCIO C ON C.ID_SOCIO = B.ID_SOCIO
                             JOIN TIPO_CUOTA D ON D.ID_TIPO_CUOTA = C.ID_TIPO_CUOTA
                         WHERE EXTRACT(YEAR FROM C.FECHA_VENCIMIENTO) = ${annio}
-                                AND A.CEDULA = '${numero_cedula}';`
+                                AND A.CEDULA = '${numero_cedula}'
+                                ${ ( nombre === undefined || nombre === '' ) ? `` : `AND A.NOMBRE LIKE '%${nombre}%'` }
+                                ${ ( apellido === undefined || apellido === '' ) ? `` : `AND A.APELLIDO LIKE '%${nombre}%'` }
+                                ${ ( (nombre === undefined && apellido === undefined) && ( (nombre + apellido) === '') ) ? `` : `AND A.NOMBRE, ' ', A.APELLIDO LIKE '%${nombre} ${apellido}%'` };`
         const cuotas_socio = await prisma.$queryRawUnsafe( query );
 
         let cuotasPagadas = [];

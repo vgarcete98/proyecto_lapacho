@@ -119,45 +119,60 @@ const obtener_eventos_x_fecha_calendario = async ( req = request, res = response
 
 const obtener_eventos_calendario = async ( req = request, res = response ) =>{
 
-    // OBTIENE TODOS LOS EVENTOS DEL AÑO
-    const eventos_del_mes = await prisma.$queryRaw`SELECT CAST( A.ID_EVENTO_CALENDARIO AS INTEGER) AS ID_EVENTO_CALENDARIO, 
-                                                            B.DESC_TIPO_EVENTO AS DESC_EVENTO, A.COSTO AS COSTO_INSCRIPCION,
-                                                            A.FECHA_DESDE_EVENTO AS FECHA_INICIO, A.FECHA_HASTA_EVENTO AS FECHA_FIN
-                                                        FROM CALENDARIO_EVENTOS A JOIN EVENTOS B ON A.ID_TIPO_EVENTO = B.ID_TIPO_EVENTO
-                                                    WHERE EXTRACT ( YEAR FROM A.FECHA_DESDE_EVENTO ) = EXTRACT ( YEAR FROM CURRENT_DATE )
-                                                        AND A.ESTADOEVENTO = 'ACTIVO';`
+    try {
+        const { annio } = req.query;        
+        const [ fecha_desde_mes, fecha_hasta_mes ] = [ new Date(annio, 0, 1), new Date(annio, 12, 0) ]
+        console.log( fecha_desde_mes, fecha_hasta_mes )
+        const eventos = await prisma.calendario_eventos.findMany( { 
+                                                                    where : {  
 
-    if ( eventos_del_mes.length === 0 ) {
-        // NO HAY EVENTOS EN ESTE MES
-        res.status( 200 ).json( {
-            status : false,
-            msg : "No hay eventos registrados hasta el momento",
-            cantidadRegistros : eventos_del_mes.length,
-            eventosDelMes : []
+                                                                            fecha_desde_evento : { 
+                                                                                gte : fecha_desde_mes
+                                                                            },
+                                                                            fecha_hasta_evento : {
+                                                                                lte : fecha_hasta_mes
+                                                                            }
+                                                                    } 
+                                                                } );
+        //const eventos = await prisma.calendario_eventos.findMany();
+        //console.log( eventos );
+        const eventosMes =  eventos.map( ( element ) =>{
+            //console.log( element );
+            const { fecha_desde_evento, 
+                    fecha_hasta_evento, 
+                    costo, 
+                    decripcion_evento,
+                    id_tipo_evento,
+                    todo_el_dia,
+                    nombre_evento,
+                    id_evento_calendario} = element;
 
-        } );
-
-    }else {
-        const eventosDelMes = eventos_del_mes.map( ( element )=>{
-            const { id_evento_calendario, desc_evento, costo_inscripcion, fecha_inicio, fecha_fin } = element;
-            
             return {
-                idEventoCalendario : id_evento_calendario,
-                descEvento : desc_evento,
-                costoInscripcion : costo_inscripcion,
-                fechainicio : fecha_inicio,
-                fechaFin : fecha_fin
-            };
+                fechaDesde : fecha_desde_evento,
+                fechaHasta : fecha_hasta_evento,
+                descripcion : decripcion_evento,
+                costo,
+                idTipoEvento : (typeof(id_tipo_evento) === 'bigint')? Number(id_tipo_evento.toString()) : id_tipo_evento,
+                idEventoCalendario : (typeof(id_evento_calendario) === 'bigint')? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                todoEldia : todo_el_dia,
+                nombreEvento : nombre_evento
+            }
         } );
+
         res.status( 200 ).json( {
             status : true,
-            msg : "Eventos registrados hasta el momento",
-            cantidadRegistros : eventos_del_mes.length,
-            eventosDelMes
-
+            msg : `Eventos del año`,
+            eventosMes
         } );
 
+    } catch (error) {
+        //console.log( error );
+        res.status( 400 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al obtener los eventos del año : ${error}`
+        } );
     }
+
 
 }
 
@@ -541,7 +556,7 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
         //console.log( error );
         res.status( 400 ).json( {
             status : false,
-            msg : `Ha ocurrido un error al obtener las inscripciones : ${error}`
+            msg : `Ha ocurrido un error al obtener los eventos del mes : ${error}`
         } );
     }
 

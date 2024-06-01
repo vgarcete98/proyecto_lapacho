@@ -29,6 +29,16 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
                 apellido_socio,
                 nro_cedula  } = req.query;
 
+
+        const [ dia_desde, mes_desde, annio_desde ] = fecha_desde.split( '/' );
+    
+        const [ dia_hasta, mes_hasta, annio_hasta ] = fecha_hasta.split( '/' );
+    
+        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
+    
+        const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
+
+
         const query = `SELECT CAST(A.id_socio_reserva AS INTEGER) AS "idSocioReserva", 
                         		C.nombre || ', ' || C.apellido AS "nombreCmp",
                         		A.fecha_reserva AS "fechaReserva",
@@ -41,14 +51,14 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
                         	JOIN PERSONA C ON C.id_persona = B.id_persona
                         	JOIN MESAS D ON D.id_mesa = A.id_mesa
                             JOIN PERSONA F ON F.id_persona = B.id_persona
-                        WHERE A.fecha_reserva BETWEEN TIMESTAMP '${fecha_desde}' AND TIMESTAMP '${fecha_hasta}'
+                        WHERE A.fecha_reserva BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
                                 ${ ( idUsuario === undefined ) ? `` : `AND B.id_socio = ${ idUsuario }` }
                                 ${ ( nombre_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ nombre_socio }%'` }
                                 ${ ( apellido_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ apellido_socio }%'` }
                                 ${ ( nro_cedula === undefined ) ? `` : `AND F.cedula  = '${ nro_cedula }'` }
                         ORDER BY A.fecha_reserva DESC
                         LIMIT 10 OFFSET ${Number(pagina) -1 };`;
-        console.log( query );
+        //console.log( query );
         reservasClub = await prisma.$queryRawUnsafe( query );
         
         if ( reservasClub.length === 0 ) {
@@ -136,7 +146,55 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
 }
 
 
+const obtener_mesas_disponibles_x_horario = async ( req = request, res = response ) => {
 
+    try {
+        const {  idSocio, fechaReserva, horaDesde, horaHasta, idMesa } = req.body;
+
+        const reservas = await prisma.reservas.findMany( { 
+                                                                    where : {  
+                                                                        hora_desde : { gte : new Date( horaDesde ) },
+                                                                        hora_hasta : { lte : new Date( horaHasta ) }
+                                                                    }
+                                                                } );
+        
+        let mesasDisponibles = [];
+        
+        const mesas = await prisma.mesas.findMany( );
+
+        reservas.forEach( ( element ) =>{
+
+            const { id_mesa } = element;
+
+            mesas.forEach( ( element, index ) => { 
+                if ( element.id_mesa !== id_mesa ){
+                    mesasDisponibles.push( {
+                                                idMesa : (typeof(mesas[ index ].id_mesa) === 'bigint') ? Number( mesas[ index ].id_mesa.toString() ) : mesas[ index ].id_mesa,
+                                                descMesa : mesas[ index ].desc_mesa
+                                            } );
+
+                }
+            } );
+        } );
+
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Mesas disponibles en horario seleccionado",
+            mesasDisponibles
+        } );
+
+        
+    } catch (error) {
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ocurrio un error al obtener las mesas para ese horario ${ error }`,
+            //error
+        } );
+    }
+
+
+
+}
 
 
 
@@ -293,5 +351,6 @@ module.exports = {
     crear_reserva_en_club,
     borrar_reserva_en_club, 
     editar_reserva_en_club,
-    obtener_mesas_reserva
+    obtener_mesas_reserva,
+    obtener_mesas_disponibles_x_horario
 };
