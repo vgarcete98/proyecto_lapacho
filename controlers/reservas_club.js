@@ -41,7 +41,7 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
 
         const query = `SELECT CAST(A.id_socio_reserva AS INTEGER) AS "idSocioReserva", 
                         		C.nombre || ', ' || C.apellido AS "nombreCmp",
-                        		A.fecha_reserva AS "fechaReserva",
+                        		A.fecha_reserva AS "fechaAgendamiento",
                         		A.fecha_creacion AS "fechaCreacion",
                         		A.hora_desde AS "horaDesde",
                         		A.hora_hasta AS "horaHasta",
@@ -94,13 +94,13 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
 
     try {
 
-        const {  idSocio, fechaReserva, horaDesde, horaHasta, idMesa } = req.body;
+        const {  idSocio, fechaAgendamiento, horaDesde, horaHasta, idMesa } = req.body;
 
 
         const nueva_reserva = await prisma.reservas.create( { data : {
                                                                         id_socio : Number(idSocio),
                                                                         fecha_creacion : new Date(),
-                                                                        fecha_reserva : generar_fecha( fechaReserva ),
+                                                                        fecha_reserva : generar_fecha( fechaAgendamiento ),
                                                                         hora_desde : generar_fecha(horaDesde),
                                                                         hora_hasta : generar_fecha(horaHasta),
                                                                         id_mesa : idMesa,
@@ -122,7 +122,7 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
             reserva : {
                 idSocioReserva : idSocio,
                 nombreCmp : nombre_cmp,
-                fechaReserva : fecha_reserva,
+                fechaAgendamiento : fecha_reserva,
                 fechaCreacion : fecha_creacion,
                 horaDesde : hora_desde,
                 horaHasta : hora_hasta,
@@ -149,7 +149,7 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
 const obtener_mesas_disponibles_x_horario = async ( req = request, res = response ) => {
 
     try {
-        const {  idSocio, fechaReserva, horaDesde, horaHasta, idMesa } = req.body;
+        const { horaDesde, horaHasta } = req.body;
 
         const reservas = await prisma.reservas.findMany( { 
                                                                     where : {  
@@ -203,14 +203,14 @@ const editar_reserva_en_club = async ( req = request, res = response ) => {
 
     
     try {
-        const { idReserva, idSocio, fechaReserva, horaDesde, horaHasta, idMesa } = req.body;
+        const { idReserva, idSocio, fechaAgendamiento, horaDesde, horaHasta, idMesa } = req.body;
     
         const fecha_reserva_editada = new Date();
         const reserva_editada = await prisma.reservas.update( {   where : { id_socio_reserva : Number(idReserva) },
                                                                         data : {
                                                                                     id_socio : idSocio,
                                                                                     //fecha_creacion : fechaDeReserva,
-                                                                                    fecha_reserva : generar_fecha( fechaReserva ),
+                                                                                    fecha_reserva : generar_fecha( fechaAgendamiento ),
                                                                                     hora_desde : generar_fecha(horaDesde),
                                                                                     hora_hasta : generar_fecha(horaHasta),
                                                                                     id_mesa : idMesa,
@@ -232,7 +232,7 @@ const editar_reserva_en_club = async ( req = request, res = response ) => {
             reserva : {
                 idSocioReserva : idSocio,
                 nombreCmp : nombre_cmp,
-                fechaReserva : fecha_reserva,
+                fechaAgendamiento : fecha_reserva,
                 fechaCreacion : fecha_creacion,
                 horaDesde : hora_desde,
                 horaHasta : hora_hasta,
@@ -277,7 +277,7 @@ const borrar_reserva_en_club = async ( req = request, res = response ) => {
             reserva : {
                 idSocioReserva : Number(typeof( id_socio_reserva ) === 'bigint' ? Number(id_socio_reserva.toString()) : id_socio_reserva),
                 nombreCmp : nombre_cmp,
-                fechaReserva : fecha_reserva,
+                fechaAgendamiento : fecha_reserva,
                 fechaCreacion : fecha_creacion,
                 horaDesde : hora_desde,
                 horaHasta : hora_hasta,

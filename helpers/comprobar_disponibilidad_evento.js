@@ -9,14 +9,14 @@ const prisma = new PrismaClient();
 const comprobar_disponibilidad_evento = async ( req = request, res = response, next )=> {
 
     try {
-        const { fechaDesde, fechaHasta } = req.body;
+        const { horaDesde, horaHasta } = req.body;
         const evento = await prisma.calendario_eventos.findFirst( { 
                                                                     where : {  
                                                                         fecha_desde_evento : {
-                                                                            gte : generar_fecha( fechaDesde )
+                                                                            gte : new Date( horaDesde )
                                                                         },
                                                                         fecha_hasta_evento : {
-                                                                            lte : generar_fecha( fechaHasta )
+                                                                            lte : new Date( horaHasta )
                                                                         }
                                                                     } 
                                                                 } );

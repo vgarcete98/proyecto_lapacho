@@ -15,23 +15,25 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
         // CREA UN NUEVO EVENTO EN EL CALENDARIO
         const { tipoEvento, 
                 nombreEvento,
-                fechaDesde, 
-                fechaHasta, 
+                horaDesde, 
+                horaHasta, 
                 costoEvento,
                 todoEldia, 
-                descripcion } = req.body;
+                descripcion,
+                fechaAgendamiento } = req.body;
     
         const nuevo_evento = await prisma.calendario_eventos.create( { 
                                                                         data : {
                                                                             id_tipo_evento : tipoEvento,
-                                                                            fecha_desde_evento : generar_fecha( fechaDesde ),
-                                                                            fecha_hasta_evento : generar_fecha( fechaHasta ),
+                                                                            fecha_desde_evento : new Date( horaDesde ),
+                                                                            fecha_hasta_evento : new Date( horaHasta ),
                                                                             costo : Number( costoEvento ),
                                                                             decripcion_evento : descripcion,
                                                                             eventocreadoen : new Date(),
                                                                             estadoevento : 'ACTIVO',
                                                                             todo_el_dia : (todoEldia  === "S") ? true : false,
                                                                             nombre_evento : nombreEvento,
+                                                                            fechaagendamiento : generar_fecha( fechaAgendamiento )
 
                                                                         } 
                                                                     } );
@@ -42,19 +44,25 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                 id_tipo_evento,
                 todo_el_dia,
                 nombre_evento,
-                id_evento_calendario } = nuevo_evento;
+                id_evento_calendario,
+                eventocreadoen,
+                fechaagendamiento } = nuevo_evento;
         res.status( 200 ).json( {
             status : true, 
             msg : 'Evento insertado en calendario',
             nuevoEvento : {
-                fechaDesde : fecha_desde_evento,
-                fechaHasta : fecha_hasta_evento,
+                //------------------------------------------------------------------------------------------------------------------------
+                idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                nombreCmp : nombre_evento,
+                fechaAgendamiento : fechaagendamiento,
+                fechaCreacion : eventocreadoen,
+                horaDesde : fecha_desde_evento,
+                horaHasta : fecha_hasta_evento,
+                //------------------------------------------------------------------------------------------------------------------------
                 descripcion : decripcion_evento,
                 costo,
                 idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
                 todoEldia : todo_el_dia,
-                nombreEvento : nombre_evento
             }
         } );
     } catch (error) {
@@ -103,10 +111,10 @@ const obtener_eventos_x_fecha_calendario = async ( req = request, res = response
 
     }      
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {  
             status : false,
-            msg : 'Ha ocurrido un error al procesar la consulta',
+            msg : `Ha ocurrido un error al procesar la consulta ${ error }`,
             //error
         } );
     }
@@ -122,7 +130,6 @@ const obtener_eventos_calendario = async ( req = request, res = response ) =>{
     try {
         const { annio } = req.query;        
         const [ fecha_desde_mes, fecha_hasta_mes ] = [ new Date(annio, 0, 1), new Date(annio, 12, 0) ]
-        console.log( fecha_desde_mes, fecha_hasta_mes )
         const eventos = await prisma.calendario_eventos.findMany( { 
                                                                     where : {  
 
@@ -134,10 +141,7 @@ const obtener_eventos_calendario = async ( req = request, res = response ) =>{
                                                                             }
                                                                     } 
                                                                 } );
-        //const eventos = await prisma.calendario_eventos.findMany();
-        //console.log( eventos );
         const eventosMes =  eventos.map( ( element ) =>{
-            //console.log( element );
             const { fecha_desde_evento, 
                     fecha_hasta_evento, 
                     costo, 
@@ -145,17 +149,23 @@ const obtener_eventos_calendario = async ( req = request, res = response ) =>{
                     id_tipo_evento,
                     todo_el_dia,
                     nombre_evento,
-                    id_evento_calendario} = element;
+                    id_evento_calendario,
+                    eventocreadoen,
+                    fechaagendamiento } = element;
 
             return {
-                fechaDesde : fecha_desde_evento,
-                fechaHasta : fecha_hasta_evento,
+                //------------------------------------------------------------------------------------------------------------------------
+                idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                nombreCmp : nombre_evento,
+                fechaAgendamiento : fechaagendamiento,
+                fechaCreacion : eventocreadoen,
+                horaDesde : fecha_desde_evento,
+                horaHasta : fecha_hasta_evento,
+                //------------------------------------------------------------------------------------------------------------------------
                 descripcion : decripcion_evento,
                 costo,
-                idTipoEvento : (typeof(id_tipo_evento) === 'bigint')? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                idEventoCalendario : (typeof(id_evento_calendario) === 'bigint')? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
                 todoEldia : todo_el_dia,
-                nombreEvento : nombre_evento
             }
         } );
 
@@ -183,13 +193,14 @@ const borrar_evento_calendario = async ( req = request, res = response ) =>{
     
     try {
 
-        const { tipoEvento, 
+        const { tipoEvento,  
                 nombreEvento,
-                fechaDesde, 
-                fechaHasta, 
+                horaDesde, 
+                horaHasta, 
                 costoEvento,
                 todoEldia, 
                 descripcion,
+                fechaAgendamiento,
                 idEvento } = req.body;
     
         const fecha_borrado = new Date();
@@ -206,7 +217,9 @@ const borrar_evento_calendario = async ( req = request, res = response ) =>{
             id_tipo_evento,
             todo_el_dia,
             nombre_evento,
-            id_evento_calendario } = borrado_evento;
+            id_evento_calendario,
+            eventocreadoen,
+            fechaagendamiento } = borrado_evento;
             
         const costo_eliminado = costo;
         if ( borrado_evento === null || borrado_evento === undefined ){
@@ -215,14 +228,18 @@ const borrar_evento_calendario = async ( req = request, res = response ) =>{
                 msg : "Evento no BORRADO",
                 //cantidad_registros : borrado_evento
                 eventoBorrado : {
-                    fechaDesde : fecha_desde_evento,
-                    fechaHasta : fecha_hasta_evento,
+                    //------------------------------------------------------------------------------------------------------------------------
+                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                    nombreCmp : nombre_evento,
+                    fechaAgendamiento : fechaagendamiento,
+                    fechaCreacion : eventocreadoen,
+                    horaDesde : fecha_desde_evento,
+                    horaHasta : fecha_hasta_evento,
+                    //------------------------------------------------------------------------------------------------------------------------
                     descripcion : decripcion_evento,
                     costo,
                     idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
                     todoEldia : todo_el_dia,
-                    nombreEvento : nombre_evento
                 }
             } );
         } else {
@@ -232,14 +249,18 @@ const borrar_evento_calendario = async ( req = request, res = response ) =>{
                 msg : "Evento BORRADO",
                 //cantidad_registros : borrado_evento
                 eventoBorrado : {
-                    fechaDesde : fecha_desde_evento,
-                    fechaHasta : fecha_hasta_evento,
+                    //------------------------------------------------------------------------------------------------------------------------
+                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                    nombreCmp : nombre_evento,
+                    fechaAgendamiento : fechaagendamiento,
+                    fechaCreacion : eventocreadoen,
+                    horaDesde : fecha_desde_evento,
+                    horaHasta : fecha_hasta_evento,
+                    //------------------------------------------------------------------------------------------------------------------------
                     descripcion : decripcion_evento,
                     costo,
                     idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
                     todoEldia : todo_el_dia,
-                    nombreEvento : nombre_evento
                 }
             } );
         }    
@@ -266,11 +287,12 @@ const actualizar_evento_calendario = async ( req = request, res = response ) =>{
 
         const { tipoEvento, 
                 nombreEvento,
-                fechaDesde, 
-                fechaHasta, 
+                horaDesde, 
+                horaHasta, 
                 costoEvento,
                 todoEldia, 
                 descripcion,
+                fechaAgendamiento,
                 idEvento,
                 idSocio } = req.body;
     
@@ -287,6 +309,7 @@ const actualizar_evento_calendario = async ( req = request, res = response ) =>{
                                                                                     id_tipo_evento : tipoEvento,
                                                                                     nombre_evento : nombreEvento,
                                                                                     eventoeditadoen : new Date(),
+                                                                                    
                                                                                 }
                                                                             } );
 
@@ -297,21 +320,27 @@ const actualizar_evento_calendario = async ( req = request, res = response ) =>{
                 id_tipo_evento,
                 todo_el_dia,
                 nombre_evento,
-                id_evento_calendario } = actualizacion_evento;                                    
+                id_evento_calendario,
+                eventocreadoen,
+                fechaagendamiento } = actualizacion_evento;                                    
 
         if( actualizacion_evento > 0 ){
             res.status( 200 ).json( {
                 status : true,
                 msg : "Evento ACTUALIZADO",
                 eventoBorrado : {
-                    fechaDesde : fecha_desde_evento,
-                    fechaHasta : fecha_hasta_evento,
+                    //------------------------------------------------------------------------------------------------------------------------
+                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                    nombreCmp : nombre_evento,
+                    fechaAgendamiento : fechaagendamiento,
+                    fechaCreacion : eventocreadoen,
+                    horaDesde : fecha_desde_evento,
+                    horaHasta : fecha_hasta_evento,
+                    //------------------------------------------------------------------------------------------------------------------------
                     descripcion : decripcion_evento,
                     costo,
                     idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
                     todoEldia : todo_el_dia,
-                    nombreEvento : nombre_evento
                 }
             } );
         }else {
@@ -319,20 +348,24 @@ const actualizar_evento_calendario = async ( req = request, res = response ) =>{
                 status : false,
                 msg : "Evento no ACTUALIZADO",
                 eventoBorrado : {
-                    fechaDesde : fecha_desde_evento,
-                    fechaHasta : fecha_hasta_evento,
+                    //------------------------------------------------------------------------------------------------------------------------
+                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                    nombreCmp : nombre_evento,
+                    fechaAgendamiento : fechaagendamiento,
+                    fechaCreacion : eventocreadoen,
+                    horaDesde : fecha_desde_evento,
+                    horaHasta : fecha_hasta_evento,
+                    //------------------------------------------------------------------------------------------------------------------------
                     descripcion : decripcion_evento,
                     costo,
                     idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
                     todoEldia : todo_el_dia,
-                    nombreEvento : nombre_evento
                 }
             } );
         }   
     } catch (error) {
 
-        console.log ( error );
+        //console.log ( error );
 
         res.status( 200 ).json( {
             status : false,
@@ -390,13 +423,10 @@ const obtener_inscripciones_x_evento = async ( req = request, res = response ) =
         } );
 
     } catch (error) {
-        console.log( error );
-
-
         res.status( 500 ).json( {
 
             status : true,
-            msg : "Ha ocurrido un error al obtener las inscripciones "
+            msg : `Ha ocurrido un error al obtener las inscripciones ${ error }`
         } );
         
     }
@@ -441,12 +471,11 @@ const obtener_inscripciones_x_evento_no_socios = async ( req = request, res = re
 
 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
 
         res.status( 500 ).json( {
-
             status : true,
-            msg : "Ha ocurrido un error al obtener las inscripciones "
+            msg : `Ha ocurrido un error al obtener las inscripciones ${ error }`
         } );
         
     }
@@ -508,8 +537,7 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
 
         const { mes } = req.query;        
         const annio = new Date().getFullYear();
-        const [ fecha_desde_mes, fecha_hasta_mes ] = [ new Date(annio, mes - 1, 1), new Date(annio, mes, 0) ]
-        console.log( fecha_desde_mes, fecha_hasta_mes )
+        const [ fecha_desde_mes, fecha_hasta_mes ] = [ new Date(annio, mes - 1, 1), new Date(annio, mes, 0) ];
         const eventos = await prisma.calendario_eventos.findMany( { 
                                                                     where : {  
 
@@ -521,10 +549,7 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
                                                                             }
                                                                     } 
                                                                 } );
-        //const eventos = await prisma.calendario_eventos.findMany();
-        //console.log( eventos );
         const eventosMes =  eventos.map( ( element ) =>{
-            //console.log( element );
             const { fecha_desde_evento, 
                     fecha_hasta_evento, 
                     costo, 
@@ -532,17 +557,23 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
                     id_tipo_evento,
                     todo_el_dia,
                     nombre_evento,
-                    id_evento_calendario} = element;
+                    id_evento_calendario,
+                    fechaagendamiento,
+                    eventocreadoen } = element;
 
             return {
-                fechaDesde : fecha_desde_evento,
-                fechaHasta : fecha_hasta_evento,
-                descripcion : decripcion_evento,
-                costo,
-                idTipoEvento : (typeof(id_tipo_evento) === 'bigint')? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                idEventoCalendario : (typeof(id_evento_calendario) === 'bigint')? Number(id_evento_calendario.toString()) : id_evento_calendario,
-                todoEldia : todo_el_dia,
-                nombreEvento : nombre_evento
+                    //------------------------------------------------------------------------------------------------------------------------
+                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                    nombreCmp : nombre_evento,
+                    fechaAgendamiento : fechaagendamiento,
+                    fechaCreacion : eventocreadoen,
+                    horaDesde : fecha_desde_evento,
+                    horaHasta : fecha_hasta_evento,
+                    //------------------------------------------------------------------------------------------------------------------------
+                    descripcion : decripcion_evento,
+                    costo,
+                    idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
+                    todoEldia : todo_el_dia,
             }
         } );
 

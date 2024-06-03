@@ -21,6 +21,7 @@ const ADMINISTRADOR = [
     '/reserva_en_club/crear_reserva_club',
     '/reserva_en_club/borrar_reserva_club',
     '/reserva_en_club/editar_reserva_club',
+    '/reserva_en_club/obtener_mesas_disponibles_x_horario',
 
     '/pagos_socio',
     '/pagos_socio/socio/pagar_cuota',
@@ -49,6 +50,7 @@ const ADMINISTRADOR = [
     '/agendamiento_clases/obtener_clases_x_fecha',
     '/agendamiento_clases/obtener_clases_x_fecha_socio',
     '/agendamiento_clases/obtener_clases_x_fecha_profesor',
+    '/agendamiento_clases/obtener_mesas_disponibles_x_horario',
 
     '/ingresos',
     '/ingresos/obtener_grafico_ingresos',

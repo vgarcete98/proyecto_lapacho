@@ -23,6 +23,6 @@ router_reservas_club.delete( '/borrar_reserva_club', [ obtener_data_socio, verif
 
 router_reservas_club.put( '/editar_reserva_club', [ obtener_data_socio, verificar_existe_reserva ], editar_reserva_en_club );
 
-router_reservas_club.get( '/obtener_mesas_disponibles_x_horario',[ ], obtener_mesas_disponibles_x_horario );
+router_reservas_club.post( '/obtener_mesas_disponibles_x_horario',[ ], obtener_mesas_disponibles_x_horario );
 
 module.exports = router_reservas_club;

@@ -26,7 +26,8 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
 
         const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
                         		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
-                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado
+                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado,
+                                A.creadoen AS "fechaCreacion"
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
                         	JOIN socio D ON D.id_socio = A.id_socio
@@ -40,7 +41,7 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
                         ${ ( cedulaSocio === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
                         ORDER BY A.fecha_agendamiento DESC
                         LIMIT 20 OFFSET ${Number(pagina)}`;
-        console.log( query );
+        //console.log( query );
         let clases_del_dia, clasesDelDia = [];
         clases_del_dia = await prisma.$queryRawUnsafe( query );  
 
@@ -56,20 +57,23 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
             const clasesDelDia = clases_del_dia.map( ( element )=>{
                 const { id_agendamiento, id_profesor, nombre_profesor, id_socio, nombre_cmp,
                         id_mesa, desc_mesa, clase_abonada, monto_abonado,
-                        fecha_agendamiento, horario_inicio, horario_hasta } = element;
+                        fecha_agendamiento, horario_inicio, horario_hasta, fechaCreacion } = element;
                 return {
                     idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
+                    nombreCmp : nombre_cmp,
+                    fechaAgendamiento : fecha_agendamiento, 
+                    fechaCreacion,
+                    horaDesde : horario_inicio, 
+                    horaHasta : horario_hasta,
+                    descMesa : desc_mesa,
+                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
+                    //----------------------------------------------------------------------------------------
                     idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                    nombreSocio : nombre_cmp,
                     nombreProfesor : nombre_profesor,
                     idProfesor : id_profesor,
-                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
-                    mesa : desc_mesa,
-                    fechaAgendamiento : fecha_agendamiento, 
-                    horarioInicio : horario_inicio, 
-                    horarioHasta : horario_hasta,
                     claseAgendada : clase_abonada,
                     montoAbonado : monto_abonado
+                    //----------------------------------------------------------------------------------------
                 }
             } );
             res.status( 200 ).json( {
@@ -115,7 +119,8 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
 
         const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
                         		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
-                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado
+                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado,
+                                A.creadoen AS "fechaCreacion"
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
                         	JOIN socio D ON D.id_socio = A.id_socio
@@ -144,20 +149,23 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
             const clasesDelDia = clases_del_dia.map( ( element )=>{
                 const { id_agendamiento, id_profesor, nombre_profesor, id_socio, nombre_cmp,
                         id_mesa, desc_mesa, clase_abonada, monto_abonado,
-                        fecha_agendamiento, horario_inicio, horario_hasta } = element;
+                        fecha_agendamiento, horario_inicio, horario_hasta, fechaCreacion } = element;
                 return {
                     idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
+                    nombreCmp : nombre_cmp,
+                    fechaAgendamiento : fecha_agendamiento, 
+                    fechaCreacion,
+                    horaDesde : horario_inicio, 
+                    horaHasta : horario_hasta,
+                    descMesa : desc_mesa,
+                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
+                    //----------------------------------------------------------------------------------------
                     idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                    nombreSocio : nombre_cmp,
                     nombreProfesor : nombre_profesor,
                     idProfesor : id_profesor,
-                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
-                    mesa : desc_mesa,
-                    fechaAgendamiento : fecha_agendamiento, 
-                    horarioInicio : horario_inicio, 
-                    horarioHasta : horario_hasta,
                     claseAgendada : clase_abonada,
                     montoAbonado : monto_abonado
+                    //----------------------------------------------------------------------------------------
                 }
             } );
             res.status( 200 ).json( {
@@ -203,7 +211,8 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
 
         const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
                         		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
-                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado
+                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado,
+                                A.creadoen AS "fechaCreacion"
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
                         	JOIN socio D ON D.id_socio = A.id_socio
@@ -232,17 +241,20 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
                         fecha_agendamiento, horario_inicio, horario_hasta } = element;
                 return {
                     idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
+                    nombreCmp : nombre_cmp,
+                    fechaAgendamiento : fecha_agendamiento, 
+                    fechaCreacion,
+                    horaDesde : horario_inicio, 
+                    horaHasta : horario_hasta,
+                    descMesa : desc_mesa,
+                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
+                    //----------------------------------------------------------------------------------------
                     idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                    nombreSocio : nombre_cmp,
                     nombreProfesor : nombre_profesor,
                     idProfesor : id_profesor,
-                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
-                    mesa : desc_mesa,
-                    fechaAgendamiento : fecha_agendamiento, 
-                    horarioInicio : horario_inicio, 
-                    horarioHasta : horario_hasta,
                     claseAgendada : clase_abonada,
                     montoAbonado : monto_abonado
+                    //----------------------------------------------------------------------------------------
                 }
             } );
             res.status( 200 ).json( {
@@ -276,7 +288,7 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
         
         const { id_agendamiento, id_socio, id_profesor, 
                 fecha_agendamiento, horario_inicio, horario_hasta, 
-                clase_abonada, monto_abonado } = await prisma.agendamiento_clase.create( { 
+                clase_abonada, monto_abonado, creadoen } = await prisma.agendamiento_clase.create( { 
                                                                                             data : { 
                                                                                                         id_socio : idSocio,
                                                                                                         id_profesor : idProfesor,
@@ -296,18 +308,21 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
             status : true,
             msg : "Clase Creada",
             claseAgendada : {
-                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento) , 
+                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
+                nombreCmp : nombre_cmp,
+                fechaAgendamiento : fecha_agendamiento, 
+                fechaCreacion : creadoen,
+                horaDesde : horario_inicio, 
+                horaHasta : horario_hasta,
+                descMesa : desc_mesa,
+                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
+                //----------------------------------------------------------------------------------------
                 idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                nombreSocio : nombre_cmp,
                 nombreProfesor : nombre_profesor,
                 idProfesor : id_profesor,
-                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa) ,
-                mesa : desc_mesa,
-                fechaAgendamiento : fecha_agendamiento, 
-                horarioInicio : horario_inicio, 
-                horarioHasta : horario_hasta,
                 claseAgendada : clase_abonada,
                 montoAbonado : monto_abonado
+                //----------------------------------------------------------------------------------------
             }
         } );
 
@@ -332,7 +347,7 @@ const editar_una_clase = async ( req = request, res = response ) =>{
         //console.log ( req.body )
         const { id_agendamiento, id_socio, id_profesor, 
                 fecha_agendamiento, horario_inicio, horario_hasta, 
-                clase_abonada, monto_abonado } = await prisma.agendamiento_clase.update( { 
+                clase_abonada, monto_abonado, creadoen } = await prisma.agendamiento_clase.update( { 
                                                                                             data : { 
                                                                                                         //id_profesor : idProfesor,
                                                                                                         fecha_agendamiento : generar_fecha( fechaAgendamiento ),
@@ -352,18 +367,21 @@ const editar_una_clase = async ( req = request, res = response ) =>{
             status : true,
             msg : "Clase Editada",
             claseAgendada : {
-                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento) , 
+                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
+                nombreCmp : nombre_cmp,
+                fechaAgendamiento : fecha_agendamiento, 
+                fechaCreacion : creadoen,
+                horaDesde : horario_inicio, 
+                horaHasta : horario_hasta,
+                descMesa : desc_mesa,
+                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
+                //----------------------------------------------------------------------------------------
                 idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                nombreSocio : nombre_cmp,
                 nombreProfesor : nombre_profesor,
                 idProfesor : id_profesor,
-                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa) ,
-                mesa : desc_mesa,
-                fechaAgendamiento : fecha_agendamiento, 
-                horarioInicio : horario_inicio, 
-                horarioHasta : horario_hasta,
                 claseAgendada : clase_abonada,
                 montoAbonado : monto_abonado
+                //----------------------------------------------------------------------------------------
             }
         } );
 
@@ -390,7 +408,7 @@ const abonar_una_clase = async ( req = request, res = response ) =>{
         
         const { id_agendamiento, id_socio, id_profesor, 
                 fecha_agendamiento, horario_inicio, horario_hasta, 
-                clase_abonada, monto_abonado } = await prisma.agendamiento_clase.update( { 
+                clase_abonada, monto_abonado, creadoen } = await prisma.agendamiento_clase.update( { 
                                                                                             data : { 
                                                                                                         monto_abonado : monto,
                                                                                                         clase_abonada : true
@@ -405,18 +423,21 @@ const abonar_una_clase = async ( req = request, res = response ) =>{
             status : true,
             msg : "Clase Abonada",
             claseAgendada : {
-                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento) , 
+                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
+                nombreCmp : nombre_cmp,
+                fechaAgendamiento : fecha_agendamiento, 
+                fechaCreacion : creadoen,
+                horaDesde : horario_inicio, 
+                horaHasta : horario_hasta,
+                descMesa : desc_mesa,
+                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
+                //----------------------------------------------------------------------------------------
                 idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                nombreSocio : nombre_cmp,
                 nombreProfesor : nombre_profesor,
                 idProfesor : id_profesor,
-                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa) ,
-                mesa : desc_mesa,
-                fechaAgendamiento : fecha_agendamiento, 
-                horarioInicio : horario_inicio, 
-                horarioHasta : horario_hasta,
                 claseAgendada : clase_abonada,
                 montoAbonado : monto_abonado
+                //----------------------------------------------------------------------------------------
             }
         } );
 
@@ -443,7 +464,7 @@ const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
         
         const { id_agendamiento, id_socio, id_profesor, 
                 fecha_agendamiento, horario_inicio, horario_hasta, 
-                clase_abonada, monto_abonado } = await prisma.agendamiento_clase.delete( { where : { id_agendamiento : Number( idAgendamiento ) } } );
+                clase_abonada, monto_abonado, creadoen } = await prisma.agendamiento_clase.delete( { where : { id_agendamiento : Number( idAgendamiento ) } } );
 
         const { nombre_profesor } = await prisma.profesores.findUnique( { where : { id_profesor :  Number( idProfesor )} } );
         const { nombre_cmp } = await prisma.socio.findUnique( { where : { id_socio :  Number( idSocio )} } );
@@ -452,18 +473,21 @@ const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
             status : true,
             msg : "Clase Borrada",
             claseAgendada : {
-                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento) , 
+                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
+                nombreCmp : nombre_cmp,
+                fechaAgendamiento : fecha_agendamiento, 
+                fechaCreacion : creadoen,
+                horaDesde : horario_inicio, 
+                horaHasta : horario_hasta,
+                descMesa : desc_mesa,
+                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
+                //----------------------------------------------------------------------------------------
                 idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                nombreSocio : nombre_cmp,
                 nombreProfesor : nombre_profesor,
                 idProfesor : id_profesor,
-                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa) ,
-                mesa : desc_mesa,
-                fechaAgendamiento : fecha_agendamiento, 
-                horarioInicio : horario_inicio, 
-                horarioHasta : horario_hasta,
                 claseAgendada : clase_abonada,
                 montoAbonado : monto_abonado
+                //----------------------------------------------------------------------------------------
             }
         } );
 
@@ -484,12 +508,13 @@ const obtener_mesas_disponibles_x_horario = async ( req = request, res = respons
 
     try {
 
-        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento } = req.body;  
+        const { horaDesde, horaHasta } = req.body;  
 
+        //console.log ( new Date( horaDesde ), new Date( horaHasta ) )
         const clases = await prisma.agendamiento_clase.findMany( { 
                                                                     where : {  
-                                                                        horario_inicio : { gte : new Date( inicio ) },
-                                                                        horario_hasta : { lte : new Date( fin ) }
+                                                                        horario_inicio : { gte : new Date( horaDesde ) },
+                                                                        horario_hasta : { lte : new Date( horaHasta ) }
                                                                     }
                                                             } );
         

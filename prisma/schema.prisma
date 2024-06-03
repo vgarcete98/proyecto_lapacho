@@ -49,6 +49,7 @@ model calendario_eventos {
   decripcion_evento       String?                   @db.VarChar(255)
   nombre_evento           String?                   @db.VarChar(255)
   todo_el_dia             Boolean
+  fechaagendamiento       DateTime                  @db.Date
   eventos                 eventos                   @relation(fields: [id_tipo_evento], references: [id_tipo_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_calendario_eventos_fk")
   inscripciones           inscripciones[]
   inscripciones_no_socios inscripciones_no_socios[]

@@ -9,8 +9,8 @@ const prisma = new PrismaClient();
 const comprobar_disponibilidad_reserva = async ( req = request, res = response, next )=> {
 
     try {
-        const { idMesa, fechaReserva } = req.body;
-        const [ dia, mes, annio ] = fechaReserva.split( "/" );
+        const { idMesa, fechaAgendamiento } = req.body;
+        const [ dia, mes, annio ] = fechaAgendamiento.split( "/" );
         //console.log( "" )
         let existe_reserva = [];
         existe_reserva = await prisma.reservas.findMany( { 
