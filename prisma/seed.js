@@ -694,7 +694,33 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
   const trigger_func_verifica_reservas_o_clases = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_verifica_reservas_o_clases
                                                                               BEFORE INSERT OR UPDATE ON CALENDARIO_EVENTOS
                                                                               FOR EACH ROW
-                                                                              EXECUTE FUNCTION verifica_reservas_o_clases();`;                                                                                        
+                                                                              EXECUTE FUNCTION verifica_reservas_o_clases();`; 
+                                                                              
+                                                                              
+  const func_inserta_pagos_cuotas_socio = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION inserta_pagos_cuotas_socio()
+                                                                                              RETURNS TRIGGER AS $$
+                                                                                              BEGIN                                                
+																				                                                        insert into pagos_socio 
+																				                                                        						( ID_CUOTA_SOCIO, 
+																				                                                        							NRO_FACTURA, 
+																				                                                        							MONTO_ABONADO, 
+																				                                                        							FECHA_PAGO, 
+																				                                                        							COMPROBANTE_PAGO )
+																				                                                        						--values
+																				                                                        						select new.ID_CUOTA_SOCIO, 
+																				                                                        								'', 
+																				                                                        								0, 
+																				                                                        								NULL, 
+																				                                                        								'' 
+																				                                                        							from cuotas_socio;
+                                                                                              END;
+                                                                                            $$ LANGUAGE plpgsql;	`
+
+  const trigger_func_inserta_pagos_cuotas_socio = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_inserta_pagos_cuotas_socio
+                                                                              AFTER INSERT ON CUOTAS_SOCIO
+                                                                              FOR EACH ROW
+                                                                              EXECUTE FUNCTION inserta_pagos_cuotas_socio();`; 
+
 }
 
 

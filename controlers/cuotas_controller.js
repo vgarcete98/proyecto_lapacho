@@ -11,8 +11,8 @@ const prisma = new PrismaClient();
 
 const columnas_pagos = [
     { key : 'nombre_cmp', header : 'Nombre Socio',  width: 20  },
-    { key : 'nombre_usuario', header : 'usuario',  width: 20 },            
-    { key : 'fecha_vencimiento', header : 'Fecha de Vencimiento',  width: 20 },                
+    { key : 'cedula', header : 'Numero de Cedula',  width: 20  },
+    { key : 'nombre_usuario', header : 'usuario',  width: 20 },                         
     { key : 'enero', header : 'Enero',  width: 20  },
     { key : 'febrero', header : 'Febrero',  width: 20 },            
     { key : 'marzo', header : 'Marzo',  width: 20 },            
@@ -351,7 +351,7 @@ const obtener_cuotas_pagadas_del_mes = async ( req = request, res = response )=>
         }
 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo obtener las cuotas pagadas del mes',
@@ -444,23 +444,27 @@ const obtener_grilla_de_cuotas = async ( req = request, res = response )=>{
 
     try {
         
-        let query = `SELECT concat( A.apellido,' ', A.nombre) as nombre_cmp, A.cedula, B.nombre_usuario, B.id_socio,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 1  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS enero,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 2  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS febrero,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 3  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS marzo,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 4  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS abril,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 5  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS mayo,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 6  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS junio,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 7  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS julio,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 8  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS agosto,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 9  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS septiembre,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 10 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS octubre,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 11 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS noviembre,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 12 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS diciembre
-                        FROM PERSONA A
-                        JOIN SOCIO B ON A.id_persona = B.id_persona 
-                        JOIN CUOTAS_SOCIO C ON B.id_socio = C.id_socio
-                        JOIN PAGOS_SOCIO D ON D.id_cuota_socio = C.id_cuota_socio`
+        let query = `SELECT CONCAT(A.apellido, ' ', A.nombre) AS nombre_cmp, 
+                                A.cedula, 
+                                B.nombre_usuario,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 1  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS enero,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 2  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS febrero,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 3  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS marzo,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 4  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS abril,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 5  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS mayo,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 6  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS junio,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 7  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS julio,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 8  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS agosto,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 9  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS septiembre,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 10 AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS octubre,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 11 AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS noviembre,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 12 AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS diciembre
+                            FROM 
+                                PERSONA A
+                                JOIN SOCIO B ON A.id_persona = B.id_persona 
+                                JOIN CUOTAS_SOCIO C ON B.id_socio = C.id_socio
+                                LEFT JOIN PAGOS_SOCIO D ON D.id_cuota_socio = C.id_cuota_socio
+                            GROUP BY A.apellido, A.nombre, A.cedula, B.nombre_usuario;`
         let grillaCuotas = [];
         let grilla_cuotas = [];
         grilla_cuotas = await prisma.$queryRawUnsafe( query );
@@ -503,7 +507,7 @@ const obtener_grilla_de_cuotas = async ( req = request, res = response )=>{
 
 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo obtener la grilla de cuotas del mes',
@@ -523,24 +527,27 @@ const obtener_excel_cuotas_pagadas = async ( req = request, res = response ) => 
 
     try {
 
-        const query = `SELECT concat( A.apellido,' ', A.nombre) as nombre_cmp, A.cedula, B.nombre_usuario,
-                            C.fecha_vencimiento,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 1  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS enero,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 2  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS febrero,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 3  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS marzo,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 4  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS abril,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 5  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS mayo,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 6  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS junio,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 7  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS julio,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 8  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS agosto,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 9  AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS septiembre,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 10 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS octubre,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 11 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS noviembre,
-                            CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 12 AND (D.fecha_pago IS NOT NULL) THEN 'P' ELSE '' END AS diciembre
-                        FROM PERSONA A
-                        JOIN SOCIO B ON A.id_persona = B.id_persona 
-                        JOIN CUOTAS_SOCIO C ON B.id_socio = C.id_socio
-                        JOIN PAGOS_SOCIO D ON D.id_cuota_socio = C.id_cuota_socio`;
+        const query = `SELECT CONCAT(A.apellido, ' ', A.nombre) AS nombre_cmp, 
+                                A.cedula, 
+                                B.nombre_usuario,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 1  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS enero,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 2  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS febrero,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 3  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS marzo,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 4  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS abril,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 5  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS mayo,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 6  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS junio,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 7  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS julio,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 8  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS agosto,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 9  AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS septiembre,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 10 AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS octubre,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 11 AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS noviembre,
+                                MAX(CASE WHEN EXTRACT(MONTH FROM C.fecha_vencimiento) = 12 AND D.fecha_pago IS NOT NULL THEN 'P' ELSE '' END) AS diciembre
+                            FROM 
+                                PERSONA A
+                                JOIN SOCIO B ON A.id_persona = B.id_persona 
+                                JOIN CUOTAS_SOCIO C ON B.id_socio = C.id_socio
+                                LEFT JOIN PAGOS_SOCIO D ON D.id_cuota_socio = C.id_cuota_socio
+                            GROUP BY A.apellido, A.nombre, A.cedula, B.nombre_usuario;`;
         let pago_cuotas = [];
         pago_cuotas = await prisma.$queryRawUnsafe( query );
 
@@ -589,10 +596,201 @@ const obtener_excel_cuotas_pagadas = async ( req = request, res = response ) => 
 
 
 
+
+const obtener_cantidad_socios_al_dia = async ( req = request, res = response ) => {
+
+    try {
+
+        const query = `SELECT COUNT(*) AS total_socios_al_dia
+                            FROM (
+                                SELECT CONCAT(A.apellido, ' ', A.nombre) AS nombreCmp,
+                                       A.cedula,
+                                       B.nombre_usuario AS nombreUsuario,
+                                       B.creadoen AS creadoEn,
+                                       CASE
+                                           WHEN COUNT(CASE WHEN C.fecha_pago_realizado IS NOT NULL THEN 1 END) >= EXTRACT(MONTH FROM AGE(current_date, B.creadoen)) THEN 'AL DIA'
+                                           ELSE 'ATRASADO'
+                                       END AS estado_pago
+                                FROM PERSONA A
+                                JOIN SOCIO B ON A.id_persona = B.id_persona
+                                JOIN CUOTAS_SOCIO C ON B.id_socio = C.id_socio
+                                LEFT JOIN PAGOS_SOCIO D ON D.id_cuota_socio = C.id_cuota_socio
+                                GROUP BY A.apellido, A.nombre, A.cedula, B.nombre_usuario, B.creadoen
+                            ) AS socios_al_dia
+                        WHERE socios_al_dia.estado_pago = 'AL DIA';`;
+
+        const [ sociosAlDia, ...resto ] = await prisma.$queryRawUnsafe( query );
+        res.status( 200 ).json(
+
+            {
+                status : true,
+                msj : 'Cantidad de socios al dia',
+                sociosAlDia
+            }
+        );
+
+    } catch (error) {
+
+        res.status( 400 ).json( {
+            status : false,
+            msg : "No se pudo obtener la cantidad de socios al dia, error : " + error,
+            //nuevoIngreso
+        } );
+
+    }
+
+
+}
+
+
+
+const obtener_cantidad_socios_atrasados = async ( req = request, res = response ) => {
+
+    try {
+
+        const query = `SELECT COUNT(*) AS total_socios_al_dia
+                            FROM (
+                                SELECT CONCAT(A.apellido, ' ', A.nombre) AS nombreCmp,
+                                       A.cedula,
+                                       B.nombre_usuario AS nombreUsuario,
+                                       B.creadoen AS creadoEn,
+                                       CASE
+                                           WHEN COUNT(CASE WHEN C.fecha_pago_realizado IS NOT NULL THEN 1 END) >= EXTRACT(MONTH FROM AGE(current_date, B.creadoen)) THEN 'AL DIA'
+                                           ELSE 'ATRASADO'
+                                       END AS estado_pago
+                                FROM PERSONA A
+                                JOIN SOCIO B ON A.id_persona = B.id_persona
+                                JOIN CUOTAS_SOCIO C ON B.id_socio = C.id_socio
+                                LEFT JOIN PAGOS_SOCIO D ON D.id_cuota_socio = C.id_cuota_socio
+                                GROUP BY A.apellido, A.nombre, A.cedula, B.nombre_usuario, B.creadoen
+                            ) AS socios_al_dia
+                        WHERE socios_al_dia.estado_pago = 'ATRASADO';`;
+
+        const [ sociosAtrasados, ...resto ] = await prisma.$queryRawUnsafe( query );
+        res.status( 200 ).json(
+
+            {
+                status : true,
+                msj : 'Cantidad de socios atrasados',
+                sociosAtrasados
+            }
+        );
+
+    } catch (error) {
+
+        res.status( 400 ).json( {
+            status : false,
+            msg : "No se pudo obtener la cantidad de socios al dia, error : " + error,
+            //nuevoIngreso
+        } );
+
+    }
+
+
+}
+
+
+
+const obtener_socios_atrasados = async ( req = request, res = response ) => {
+
+    try {
+
+        const query = `SELECT *
+                            FROM (
+                                SELECT CONCAT(A.apellido, ' ', A.nombre) AS nombreCmp,
+                                       A.cedula,
+                                       B.nombre_usuario AS nombreUsuario,
+                                       B.creadoen AS creadoEn,
+                                       CASE
+                                           WHEN COUNT(CASE WHEN C.fecha_pago_realizado IS NOT NULL THEN 1 END) >= EXTRACT(MONTH FROM AGE(current_date, B.creadoen)) THEN 'AL DIA'
+                                           ELSE 'ATRASADO'
+                                       END AS estado_pago
+                                FROM PERSONA A
+                                JOIN SOCIO B ON A.id_persona = B.id_persona
+                                JOIN CUOTAS_SOCIO C ON B.id_socio = C.id_socio
+                                LEFT JOIN PAGOS_SOCIO D ON D.id_cuota_socio = C.id_cuota_socio
+                                GROUP BY A.apellido, A.nombre, A.cedula, B.nombre_usuario, B.creadoen
+                            ) AS socios_al_dia
+                        WHERE socios_al_dia.estado_pago = 'ATRASADO';`;
+
+        const [ sociosAtrasados, ...resto ] = await prisma.$queryRawUnsafe( query );
+        res.status( 200 ).json(
+
+            {
+                status : true,
+                msj : 'socios Atrasados',
+                sociosAtrasados
+            }
+        );
+
+    } catch (error) {
+
+        res.status( 400 ).json( {
+            status : false,
+            msg : "No se pudo obtener a los socios Atrasados, error : " + error,
+            //nuevoIngreso
+        } );
+
+    }
+
+
+}
+
+
+
+const obtener_socios_al_dia = async ( req = request, res = response ) => {
+
+    try {
+
+        const query = `SELECT *
+                            FROM (
+                                SELECT CONCAT(A.apellido, ' ', A.nombre) AS nombreCmp,
+                                       A.cedula,
+                                       B.nombre_usuario AS nombreUsuario,
+                                       B.creadoen AS creadoEn,
+                                       CASE
+                                           WHEN COUNT(CASE WHEN C.fecha_pago_realizado IS NOT NULL THEN 1 END) >= EXTRACT(MONTH FROM AGE(current_date, B.creadoen)) THEN 'AL DIA'
+                                           ELSE 'ATRASADO'
+                                       END AS estado_pago
+                                FROM PERSONA A
+                                JOIN SOCIO B ON A.id_persona = B.id_persona
+                                JOIN CUOTAS_SOCIO C ON B.id_socio = C.id_socio
+                                LEFT JOIN PAGOS_SOCIO D ON D.id_cuota_socio = C.id_cuota_socio
+                                GROUP BY A.apellido, A.nombre, A.cedula, B.nombre_usuario, B.creadoen
+                            ) AS socios_al_dia
+                        WHERE socios_al_dia.estado_pago = 'AL DIA';`;
+
+        const [ sociosAlDia, ...resto ] = await prisma.$queryRawUnsafe( query );
+        res.status( 200 ).json(
+
+            {
+                status : true,
+                msj : 'socios Atrasados',
+                sociosAlDia
+            }
+        );
+
+    } catch (error) {
+
+        res.status( 400 ).json( {
+            status : false,
+            msg : "No se pudo obtener a los socios Atrasados, error : " + error,
+            //nuevoIngreso
+        } );
+
+    }
+
+
+}
+
 module.exports = {
     obtener_cuotas_pendientes_x_socio,
     obtener_cuotas_x_socio,
     obtener_cuotas_pendientes_del_mes,
     obtener_grilla_de_cuotas,
-    obtener_excel_cuotas_pagadas
+    obtener_excel_cuotas_pagadas,
+    obtener_cantidad_socios_al_dia,
+    obtener_cantidad_socios_atrasados,
+    obtener_socios_atrasados,
+    obtener_socios_al_dia
 }

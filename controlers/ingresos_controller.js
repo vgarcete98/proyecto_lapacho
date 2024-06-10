@@ -383,7 +383,45 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
     }
 }
 
+const obtener_ingresos_monto_x_fecha = async ( req = request, res = response ) => {
 
+    try {
+
+        const { fechaDesde, fechaHasta } = req.query;
+
+        const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
+
+        const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
+
+        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
+
+        const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;
+
+        const query = `SELECT A.id_tipo AS "idTipo", A.descripcion, SUM(B.monto) AS "monto"
+                            FROM INGRESOS B JOIN tipos_ingreso A ON A.id_tipo = B.id_tipo 
+                        WHERE B.fecha_ingreso BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+
+                        GROUP BY A.id_tipo, A.descripcion`;
+        
+        let montos = [];
+        montos = await prisma.$queryRawUnsafe( query );
+        res.status( 200 ).json( {
+            status : true,
+            msg : " Montos acumulados de las fechas por ege ",
+            //nuevoIngreso
+        } );
+        
+    } catch (error) {
+        //console.log( error );
+        res.status( 400 ).json( {
+            status : false,
+            msg : "No se pudo obtener el monto del ingreso en esas fechas : " + error,
+            //nuevoIngreso
+        } );
+    }
+
+
+}
 
 const obtener_tipos_ingreso = async ( req = request, res = response )=>{
 
@@ -405,7 +443,7 @@ const obtener_tipos_ingreso = async ( req = request, res = response )=>{
 
 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 400 ).json( {
             status : false,
             msg : "No se pudo obtener los tipos de ingresos, error : " + error,
@@ -483,6 +521,7 @@ module.exports = {
     obtener_ingresos_x_fecha,
     obtener_ingresos_x_fecha_excel,
     obtener_tipos_ingreso,
-    generar_grafico_x_fecha_ingresos
+    generar_grafico_x_fecha_ingresos,
+    obtener_ingresos_monto_x_fecha
 
 }
