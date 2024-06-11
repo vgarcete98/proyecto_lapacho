@@ -54,6 +54,7 @@ const ADMINISTRADOR = [
 
     '/ingresos',
     '/ingresos/obtener_grafico_ingresos',
+    '/ingresos/obtener_grafico_ingresos_torta',
     '/ingresos/reportes_ingresos_excel',
     '/ingresos/tipos_ingreso',
     '/ingresos/agregar_ingreso',
@@ -61,7 +62,8 @@ const ADMINISTRADOR = [
     '/ingresos/actualizar_ingreso',
 
     '/egresos',
-    '/egresos/obtener_datos_grafico',    
+    '/egresos/obtener_datos_grafico',
+    '/egresos/obtener_datos_grafico_torta',    
     '/egresos/reportes_egresos_excel',
     '/egresos/tipos_egreso',
     '/egresos/agregar_gasto',

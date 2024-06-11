@@ -170,11 +170,11 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
   const tipos_egresos = await prisma.tipos_egreso.createMany( {
                                                               data : [
                                                                 { descripcion : "LIMPIEZA"  },
-                                                                { descripcion : "SERVICIO_DE_AGUA"  },
-                                                                { descripcion : "SERVICIO_DE_LUZ"  },
-                                                                { descripcion : "ALQUILER_LOCAL"  },
+                                                                { descripcion : "SERVICIO_DE_AGUA", gasto_fijo : true },
+                                                                { descripcion : "SERVICIO_DE_LUZ", gasto_fijo : true  },
+                                                                { descripcion : "ALQUILER_LOCAL", gasto_fijo : true  },
                                                                 { descripcion : "MANTENIMIENTO_DEL_CLUB"  },
-                                                                { descripcion : "SERVICIO_DE_INTERNET"  },
+                                                                { descripcion : "SERVICIO_DE_INTERNET", gasto_fijo : true  },
                                                               ]
                                                             });
 
@@ -720,6 +720,91 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                                               AFTER INSERT ON CUOTAS_SOCIO
                                                                               FOR EACH ROW
                                                                               EXECUTE FUNCTION inserta_pagos_cuotas_socio();`; 
+
+
+  const func_trigger_inserta_ingreso_pago_cuota = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION inserta_ingreso_pago_cuota()
+                                                                          RETURNS TRIGGER AS $$
+                                                                          BEGIN                                                
+																				
+	                                                                          INSERT INTO ingresos (id_socio, 
+	                                                                          						id_tipo, 
+	                                                                          						nro_factura, 
+	                                                                          						cargado_en, 
+	                                                                          						descripcion, 
+	                                                                          						monto, 
+	                                                                          						borrado, 
+	                                                                          						fecha_ingreso)
+																									                                VALUES(new.ID_SOCIO, 
+																									                                		( select TI.id_tipo  from tipos_ingreso ti where ti.id_tipo = 1 ), 
+																									                                		( select ps.nro_factura  from pagos_socio ps where id_cuota_socio = new.ID_CUOTA_SOCIO ), 
+																									                                		new.FECHA_PAGO_REALIZADO,  
+																									                                		new.DESCRIPCION, 
+																									                                		( select ps.monto_abonado  from pagos_socio ps where id_cuota_socio = new.ID_CUOTA_SOCIO ), 
+																									                                		false, 
+																									                                		current_date);
+                                                                        END;
+                                                                        $$ LANGUAGE plpgsql;`
+
+  const trigger_func_trigger_inserta_ingreso_pago_cuota = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_inserta_ingreso_pago_cuota
+                                                                                      AFTER UPDATE ON CUOTAS_SOCIO
+                                                                                      FOR EACH ROW
+                                                                                      EXECUTE FUNCTION inserta_ingreso_pago_cuota();`; 
+
+  const procedimiento_crea_egresos_fijos = await prisma.$executeRaw`CREATE OR REPLACE PROCEDURE genera_gastos_fijos()
+                                                                      AS $$
+																                                      DECLARE 
+																                                      	MES VARCHAR( 50 );
+																                                      	tipo_egreso RECORD;
+                                                                      BEGIN
+
+																                                      	MES := CASE 
+																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 1 THEN 'ENERO'
+																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 2 THEN 'FEBRERO'
+																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 3 THEN 'MARZO'
+																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 4 THEN 'ABRIL'
+																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 5 THEN 'MAYO'
+																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 6 THEN 'JUNIO'
+																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 7 THEN 'JULIO'
+																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 8 THEN 'AGOSTO'
+																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 9 THEN 'SETIEMBRE'
+																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 10 THEN 'OCTUBRE'
+																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 11 THEN  'NOVIEMBRE'
+																                                      						ELSE 
+																                                      							'DICIEMBRE'
+																                                      						END ;
+
+																                                      	FOR tipo_egreso IN (select id_tipo, descripcion,
+																                                      					   			CASE 
+																                                      					   				WHEN descripcion = 'SERVICIO_DE_AGUA' THEN 'PAGO DEL SERVICIO DE AGUA'
+																                                      					   				WHEN descripcion = 'SERVICIO_DE_LUZ' THEN 'PAGO DEL SERVICIO DE LUZ'
+																                                      					   				WHEN descripcion = 'ALQUILER_LOCAL' THEN 'PAGO DEL ALQUILER'
+																                                      					   			ELSE 
+																                                      					   				'PAGO DEL SERVICIO DE INTERNET'
+																                                      					   			END AS descripcion_egreso
+																                                      					   		from tipos_egreso where gasto_fijo = true) LOOP
+                                                                                                          	INSERT INTO egresos
+																                                      				(id_socio, 
+																                                      				 id_tipo, 
+																                                      				 nro_factura, 
+																                                      				 cargado_en, 
+																                                      				 descripcion, 
+																                                      				 monto, 
+																                                      				 borrado, 
+																                                      				 comprobante,
+																                                      				 fecha_pago, 
+																                                      				 fecha_egreso)
+																                                      			VALUES(1,  
+																                                      				   tipo_egreso.id_tipo, 
+																                                      				   '', 
+																                                      				   CURRENT_DATE, 
+																                                      				   CONCAT ( tipo_egreso.descripcion_egreso, ' ', MES ) , 
+																                                      				   0, 
+																                                      				   false,
+																                                      				   '',
+																                                      				   CURRENT_DATE, 
+																                                      				   CURRENT_DATE);
+																                                      	END LOOP;
+                                                                      END $$ LANGUAGE plpgsql;`;                                                                                  
 
 }
 

@@ -502,6 +502,54 @@ const generar_grafico_x_fecha = async ( req = request, res = response) =>{
 }
 
 
+const obtener_grafico_torta_egresos = async ( req = request, res = response )=>{
+
+    try {
+        const { fecha_desde, fecha_hasta } = req.query;
+        const query = `SELECT ID_TIPO AS "idTipo",
+                                CASE 
+									WHEN descripcion = 'SERVICIO_DE_AGUA' THEN 'PAGO DEL SERVICIO DE AGUA'
+									WHEN descripcion = 'SERVICIO_DE_LUZ' THEN 'PAGO DEL SERVICIO DE LUZ'
+									WHEN descripcion = 'ALQUILER_LOCAL' THEN 'PAGO DEL ALQUILER'
+								ELSE 
+									'PAGO DEL SERVICIO DE INTERNET'
+								END AS "descripcion",
+                            	CAST( SUM(MONTO) AS INTEGER) AS "monto",
+                            	ROUND(SUM(MONTO) * 100.0 / total_monto, 2) AS "porcentaje"
+                            FROM EGRESOS, (SELECT COALESCE(SUM(MONTO), 0) AS total_monto 
+                                                FROM EGRESOS 
+                                             FECHA_EGRESO BETWEEN  DATE '${fecha_desde}' AND DATE '${fecha_hasta}') AS total
+                        WHERE 
+                            FECHA_EGRESO BETWEEN  DATE '${fecha_desde}' AND DATE '${fecha_hasta}' 
+                        GROUP BY 
+                            ID_TIPO, total_monto, descripcion;`
+        let porcentajeEgresos = [];       
+              
+        porcentajeEgresos = await prisma.$queryRawUnsafe( query );
+        
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Datos para grafico de Egresos",
+            data : porcentajeEgresos
+        } );
+
+
+
+    } catch (error) {
+        //console.log( error );
+        res.status( 400 ).json( {
+            status : true,
+            msg : `No se pudo obtener los datos para el grafico : ${error}`,
+            //data
+        } );
+    }
+
+
+
+
+}
+
+
 
 module.exports = {
 
@@ -512,6 +560,6 @@ module.exports = {
     obtener_egresos_x_fecha_excel,
     obtener_tipos_egreso,
     generar_grafico_x_fecha,
-    obtener_egresos_monto_x_fecha
-
+    obtener_egresos_monto_x_fecha,
+    obtener_grafico_torta_egresos
 }

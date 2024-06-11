@@ -54,15 +54,18 @@ const { comprobar_acceso_rol } = require('../helpers/comprobar_acceso_rol');
 
 //CRON JOBS QUE VOY A NECESITAR
 //----------------------------------------------------------------------------
-const { cron_job_genera_cuotas_anio } = require( '../helpers/cron_job_genera_cuotas_anio' )
+const { cron_job_genera_cuotas_anio } = require( '../helpers/cron_job_genera_cuotas_anio' );
+const { cron_job_genera_gastos_fijos } = require( '../helpers/cron_job_genera_cuotas_anio' );
 //----------------------------------------------------------------------------
 
 
 // LA FUNCION QUE SE VA EJECUTAR PARA GENERARME LAS CUOTAS DEL AÑO
 //----------------------------------------------------------------------------
 const job = schedule.scheduleJob('0 1 0 1 1 *', cron_job_genera_cuotas_anio);
+const job_gastos_fijos = schedule.scheduleJob('0 0 1 * * *', cron_job_genera_gastos_fijos);
 //PARA TEST DEL CRON JOB
 //const job = schedule.scheduleJob('40 * * * *', cron_job_genera_cuotas_anio);
+//const job_gastos_fijos = schedule.scheduleJob('5 * * * * *', cron_job_genera_gastos_fijos);
 //----------------------------------------------------------------------------
 
 class Server {
