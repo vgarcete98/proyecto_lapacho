@@ -7,8 +7,13 @@ const { decode } = require('jsonwebtoken');
 const ADMINISTRADOR = [
 
     '/socio',
+    '/socio/socios_detalle',
+    '/socio/borrar_socio',
+    '/socio/editar_socio',
+    '/socio/crear_socio',
+    '/socio/obtener_socios',
+    '/socio/obtener_socio',
     '/socio/obtener_tipo_socios',
-
 
     '/tipo_socio',
     

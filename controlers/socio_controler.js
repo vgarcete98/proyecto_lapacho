@@ -139,15 +139,11 @@ const crear_socio = async ( req = request, res = response ) => {
 
 const actualizar_socio = async ( req = request, res = response ) => {
 
-    //const { correo, numeroTel, estadoSocio, direccion } = req.body;
-    //console.log( correoNuevo, telefonoNuevo, rucNuevo, estadoSocio, direccionNuevo );
-    const { id_socio } = req.params;
-    //console.log( id );
-    //const direccionNuevo = direccion;
+
     try {
         const { nombre, apellido, fechaNacimiento, cedula, estadoSocio,
             correo, numeroTel, direccion, ruc, tipoSocio,
-            contraseña, nombreUsuario, idAcceso } = req.body;
+            contraseña, nombreUsuario, idAcceso, idSocio } = req.body;
         const rucNuevo = ruc ;
         //------------------------------------------------------------------------------------------
         /*const socio_actualizado = prisma.$executeRaw`UPDATE public.socio
@@ -158,7 +154,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
         //------------------------------------------------------------------------------------------
         const fecha_socio_actualizado = new Date();
         const socio_actualizado = await prisma.socio.update( { 
-                                                                where : {  id_socio : Number ( id_socio )  },
+                                                                where : {  id_socio : Number ( idSocio )  },
                                                                 data : {
 
                                                                     editadoen : fecha_socio_actualizado,
@@ -213,10 +209,10 @@ const actualizar_socio = async ( req = request, res = response ) => {
 const borrar_socio = async ( req = request, res = response ) => {
 
     // SE IMPLEMENTA EL BORRADO DEL SOCIO ACTUALIZANDO NADA MAS CIERTOS CAMPOS DE LA TABLA
-    const { id_socio } = req.params;
-    const socio_eliminado = id_socio;
-
+    
     try {
+        const { idSocio } = req.body;
+        const socio_eliminado = id_socio;
         //----------------------------------------------------------------------------
         /*
         const socio_actualizado = prisma.$executeRaw`UPDATE public.socio
@@ -518,15 +514,27 @@ const obtener_socio = async ( req = request, res = response ) => {
 
     //OBTENER EL SOCIO PASANDOLE UN ID
 
-    const { id_socio } = req.params;
     try {
-        const socio = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS NOMBRE_SOCIO, A.CEDULA,
-                                                    CAST ( B.ID_SOCIO AS INTEGER ) AS ID_SOCIO,
-                                                    B.NUMERO_TELEFONO, B.ESTADO_SOCIO, C.DESC_TIPO_SOCIO
-                                                FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
-                                                JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
-                                            WHERE B.ID_SOCIO = ${ Number(id_socio) }`;
+        const { cantidad, omitir, nombre, apellido, cedula } = req.query;
 
+        let socios;
+        //console.log( cantidad, omitir, nombre, apellido )
+        const socio = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocio, 
+                            A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO, A.cedula,
+                            B.CORREO_ELECTRONICO AS CORREO, B.DIRECCION AS DIRECCION,
+                            CAST ( B.ID_SOCIO AS INTEGER ) AS idSocio, B.RUC AS RUC,
+                            B.CREADOEN, B.CONTRASEA, B.NOMBRE_USUARIO AS USUARIO,
+                            A.FECHA_NACIMIENTO AS FECHA_NACIMIENTO,CAST ( C.ID_TIPO_SOCIO AS INTEGER ) as id_tipo_socio,
+                            C.DESC_TIPO_SOCIO AS descTipoSocio, B.NUMERO_TELEFONO AS "numeroTel" 
+                            /*B.ESTADO_SOCIO AS estadoSocio*/
+                        FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
+                        JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
+                        ${ ( nombre !== undefined ) && (apellido === undefined )? `AND A.NOMBRE LIKE '%${nombre}%'` : `` }
+                        ${ ( nombre === undefined ) && (apellido !== undefined )? `AND A.APELLIDO LIKE '%${apellido}%'` : `` }
+                        ${ ( nombre !== undefined ) && (apellido !== undefined )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre} ${apellido}%'` : `` }
+                        ${ ( cedula !== undefined ) && ( cedula !== '' )?  `AND A.cedula = ${ cedula }` : ``}
+                        ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
+                        ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
 
         //console.log ( socios );
         if ( socio.length === 0 ){

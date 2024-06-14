@@ -16,7 +16,7 @@ const { validar_existe_socio, comprobar_existe_socio }= require('../middlewares/
 const router_socio = Router();
 
 
-router_socio.get( '/',[  ], obtener_socios );
+router_socio.get( '/obtener_socios',[  ], obtener_socios );
 
 router_socio.get( '/socios_detalle',[ ], obtener_socios_detallados );
 
@@ -26,13 +26,13 @@ router_socio.get( '/crear_tipo_socio', [], crear_tipo_socio );
 
 router_socio.post( '/obtener_tipo_socios', [ ], obtener_tipos_socios );
 
-router_socio.get( '/:id_socio',[  comprobar_existe_socio ], obtener_socio );
+router_socio.get( '/obtener_socio',[  comprobar_existe_socio ], obtener_socio );
 
-router_socio.post( '/',[  validar_existe_socio ], crear_socio );
+router_socio.post( '/crear_socio',[  validar_existe_socio ], crear_socio );
 
-router_socio.delete( '/:id_socio',[  comprobar_existe_socio ], borrar_socio );
+router_socio.delete( '/borrar_socio',[  comprobar_existe_socio ], borrar_socio );
 
-router_socio.put( '/:id_socio',[ comprobar_existe_socio ], actualizar_socio );
+router_socio.put( '/editar_socio',[ comprobar_existe_socio ], actualizar_socio );
 
 
 
