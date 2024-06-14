@@ -12,8 +12,7 @@ const MESES_ESPAÑOL = [ 'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 
 const realizar_pago_socio = async ( req = request, res = response ) => {
 
     try {
-        const { 
-                idSocio, 
+        const { idSocio, 
                 idCuotaSocio, 
                 nroFactura, 
                 numeroCedula, 
@@ -148,6 +147,82 @@ const anular_pago_socio = async ( req = request, res = response ) =>{
 }
 
 
+const realizar_pago_socio_varios= async ( req = request, res = response ) => {
+
+    try {
+        
+        const { cuotas } = req.body;
+        let pagoCuotas = [];
+        
+        for (let element in cuotas) {
+            //----------------------------------------------------------------------------------------------------------------------------
+            const { idSocio, 
+                    idCuotaSocio, 
+                    nroFactura, 
+                    numeroCedula, 
+                    descripcionPago } = cuotas[element];
+
+            
+            const { nombre_cmp } = await prisma.socio.findUnique( { where : { id_socio : Number( idSocio ) } } );
+    
+            const { monto_cuota, id_tipo_cuota } = await prisma.cuotas_socio.findUnique( { where : { id_cuota_socio : Number( idCuotaSocio ) } } )
+    
+            const { desc_tipo_cuota } = await prisma.tipo_cuota.findUnique( { where : { id_tipo_cuota  } } )
+            const pago_socio  = await prisma.pagos_socio.create( {   
+                                                                    data : {  
+                                                                        id_cuota_socio : Number( idCuotaSocio ),
+                                                                        monto_abonado : Number( monto_cuota ),
+                                                                        nro_factura : nroFactura,
+                                                                        fecha_pago : new Date(),
+                                                                    } 
+                                                                } );
+            //----------------------------------------------------------------------------------------------------------------------------
+            const { id_cuota_socio, fecha_pago, monto_abonado, nro_factura } = pago_socio;
+            const idCuotaPagada = id_cuota_socio;
+            const { fecha_vencimiento } = await prisma.cuotas_socio.update( { 
+                                                                                where : { id_cuota_socio : idCuotaPagada },
+                                                                                data : { 
+                                                                                            pago_realizado : true,
+                                                                                            fecha_pago_realizado : new Date(),
+                                                                                            descripcion : descripcionPago 
+                                                                                        }
+                                                                        } );
+            pagoCuotas.push( {
+                idCuotaSocio,
+                nombreSocio : nombre_cmp,
+                idSocio,
+                fechaVencimiento : fecha_vencimiento,
+                cuotaMes : MESES_ESPAÑOL[ fecha_vencimiento.getMonth() ],
+                numeroMes : (fecha_vencimiento.getMonth() + 1).toString(),
+                cedula : numeroCedula,
+                fechaPago : fecha_pago,
+                monto : monto_abonado,
+                //nroFactura : nro_factura
+            });
+
+        }
+
+        res.status( 200 ).json(
+            {
+                status : true,
+                msj : 'Pagos Realizados con exito',
+                pagoCuotas
+            }
+        );
+
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se finalizo el pago de cuotas ${ error }`,
+            //error
+        } );
+    }
+
+}
+
+
+
 
 
 
@@ -155,7 +230,8 @@ const anular_pago_socio = async ( req = request, res = response ) =>{
 
 module.exports = {
     realizar_pago_socio,
-    anular_pago_socio
+    anular_pago_socio,
+    realizar_pago_socio_varios
     
 }
 

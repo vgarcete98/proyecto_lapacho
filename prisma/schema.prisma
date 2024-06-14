@@ -12,8 +12,8 @@ model accesos_usuario {
   id_rol_usuario     BigInt
   id_ruta_app        Int
   descripcion_acceso String?       @db.VarChar(255)
-  rol_editado_en     DateTime?     @default(dbgenerated("CURRENT_DATE")) @db.Date
-  rol_creado_en      DateTime?     @default(dbgenerated("CURRENT_DATE")) @db.Date
+  rol_editado_en     DateTime?     @db.Date
+  rol_creado_en      DateTime?     @db.Date
   id_usuario_edita   Int?
   id_usuario_crea    Int?
   roles_usuario      roles_usuario @relation(fields: [id_rol_usuario], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_accesos_usuario_fk")
@@ -28,8 +28,8 @@ model agendamiento_clase {
   fecha_agendamiento DateTime   @db.Date
   horario_inicio     DateTime   @db.Timestamp(6)
   horario_hasta      DateTime   @db.Timestamp(6)
-  creadoen           DateTime?  @default(dbgenerated("CURRENT_DATE")) @db.Date
-  editadoen          DateTime?  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  creadoen           DateTime?  @db.Date
+  editadoen          DateTime?  @db.Date
   clase_abonada      Boolean?
   monto_abonado      Int?
   mesas              mesas      @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_agendamiento_clase_fk")
@@ -41,8 +41,8 @@ model calendario_eventos {
   id_evento_calendario    BigInt                    @id(map: "calendario_eventos_pk") @default(autoincrement())
   id_tipo_evento          BigInt
   fecha_desde_evento      DateTime                  @db.Timestamp(6)
-  eventocreadoen          DateTime?                 @default(dbgenerated("CURRENT_DATE")) @db.Date
-  eventoeditadoen         DateTime?                 @default(dbgenerated("CURRENT_DATE")) @db.Date
+  eventocreadoen          DateTime?                 @db.Date
+  eventoeditadoen         DateTime?                 @db.Date
   fecha_hasta_evento      DateTime                  @db.Timestamp(6)
   costo                   Int
   estadoevento            String?                   @db.VarChar(20)
@@ -59,8 +59,8 @@ model clubes_habilitados {
   id_club_habilitado     Int           @id(map: "clubes_habilitados_pk") @default(autoincrement())
   nombre_club_habilitado String        @db.VarChar(255)
   esta_habilitado        Boolean       @default(false)
-  editadoen              DateTime?     @default(dbgenerated("CURRENT_DATE")) @db.Date
-  creadoen               DateTime?     @default(dbgenerated("CURRENT_DATE")) @db.Date
+  editadoen              DateTime?     @db.Date
+  creadoen               DateTime?     @db.Date
   pases_socio            pases_socio[]
 }
 
@@ -161,8 +161,8 @@ model reservas {
   id_socio         BigInt
   id_mesa          BigInt
   fecha_reserva    DateTime  @db.Timestamp(6)
-  reserva_editada  DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
-  fecha_creacion   DateTime  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  reserva_editada  DateTime? @db.Date
+  fecha_creacion   DateTime  @db.Date
   hora_desde       DateTime  @db.Timestamp(6)
   hora_hasta       DateTime  @db.Timestamp(6)
   mesas            mesas     @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reservas_fk")
@@ -173,8 +173,8 @@ model roles_usuario {
   id_rol_usuario       BigInt            @id(map: "roles_usuario_pk") @default(autoincrement())
   descripcion_rol      String            @db.VarChar(255)
   estado_rol_usuario   Int?              @db.SmallInt
-  rol__creado_en       DateTime?         @default(dbgenerated("CURRENT_DATE")) @db.Date
-  rol_editado_en       DateTime?         @default(dbgenerated("CURRENT_DATE")) @db.Date
+  rol__creado_en       DateTime?         @db.Date
+  rol_editado_en       DateTime?         @db.Date
   id_usuario_crea_rol  Int?
   id_usuario_edita_rol Int?
   accesos_usuario      accesos_usuario[]
@@ -196,8 +196,8 @@ model socio {
   direccion            String?                @default("") @db.VarChar(255)
   ruc                  String?                @default("") @db.VarChar(255)
   estado_socio         Int?                   @default(1) @db.SmallInt
-  creadoen             DateTime?              @default(dbgenerated("CURRENT_DATE")) @db.Date
-  editadoen            DateTime?              @default(dbgenerated("CURRENT_DATE")) @db.Date
+  creadoen             DateTime?              @db.Date
+  editadoen            DateTime?              @db.Date
   agendamiento_clase   agendamiento_clase[]
   cuotas_socio         cuotas_socio[]
   egresos              egresos[]
@@ -223,8 +223,8 @@ model socio_reservas {
 model tipo_cuota {
   id_tipo_cuota   Int            @id(map: "tipo_cuota_pk") @default(autoincrement())
   monto_cuota     Int
-  creadoen        DateTime       @default(dbgenerated("CURRENT_DATE")) @db.Date
-  editadoen       DateTime?      @default(dbgenerated("CURRENT_DATE")) @db.Date
+  creadoen        DateTime       @db.Date
+  editadoen       DateTime?      @db.Date
   desc_tipo_cuota String         @db.VarChar(255)
   borrado         Boolean?
   cuotas_socio    cuotas_socio[]
@@ -251,8 +251,8 @@ model tipo_socio {
   id_tipo_socio         BigInt    @id(map: "tipo_socio_pk") @default(autoincrement())
   desc_tipo_socio       String    @db.VarChar
   estado_tipo_socio     Int?      @db.SmallInt
-  tipo_socio_creado_en  DateTime  @default(dbgenerated("CURRENT_DATE")) @db.Date
-  tipo_socio_editado_en DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+  tipo_socio_creado_en  DateTime  @db.Date
+  tipo_socio_editado_en DateTime? @db.Date
   socio                 socio[]
 }
 
@@ -270,8 +270,8 @@ model usuario {
 
 model profesores {
   id_profesor        Int                  @id(map: "profesores_pk") @default(autoincrement())
-  creadoen           DateTime             @default(dbgenerated("CURRENT_DATE")) @db.Date
-  editadoen          DateTime?            @default(dbgenerated("CURRENT_DATE")) @db.Date
+  creadoen           DateTime             @db.Date
+  editadoen          DateTime?            @db.Date
   estado_profesor    String?              @db.VarChar
   nombre_profesor    String               @db.VarChar(50)
   costo_x_hora       Int?
@@ -359,8 +359,8 @@ model egresos {
   id_socio            BigInt
   id_tipo             Int
   nro_factura         String       @db.VarChar(255)
-  cargado_en          DateTime     @default(dbgenerated("CURRENT_DATE")) @db.Date
-  editado_en          DateTime?    @default(dbgenerated("CURRENT_DATE")) @db.Date
+  cargado_en          DateTime     @db.Date
+  editado_en          DateTime?    @db.Date
   descripcion         String       @db.VarChar
   monto               Int
   borrado             Boolean?
@@ -376,8 +376,8 @@ model ingresos {
   id_socio                   BigInt
   id_tipo                    Int
   nro_factura                String?       @db.VarChar(255)
-  cargado_en                 DateTime      @default(dbgenerated("CURRENT_DATE")) @db.Date
-  editado_en                 DateTime?     @default(dbgenerated("CURRENT_DATE")) @db.Date
+  cargado_en                 DateTime      @db.Date
+  editado_en                 DateTime?     @db.Date
   descripcion                String?       @db.VarChar
   monto                      Int
   borrado                    Boolean       @default(false)
@@ -408,8 +408,8 @@ model refinanciacion_socio {
 
 model tipos_egreso {
   id_tipo     Int       @id(map: "tipos_egreso_pk") @default(autoincrement())
-  gasto_fijo  Boolean   @default(false)
   descripcion String    @db.VarChar
+  gasto_fijo  Boolean?
   egresos     egresos[]
 }
 

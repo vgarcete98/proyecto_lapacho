@@ -713,6 +713,7 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
 																				                                                        								NULL, 
 																				                                                        								'' 
 																				                                                        							from cuotas_socio;
+                                                                                                RETURN NEW;
                                                                                               END;
                                                                                             $$ LANGUAGE plpgsql;	`
 
@@ -742,6 +743,7 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
 																									                                		( select ps.monto_abonado  from pagos_socio ps where id_cuota_socio = new.ID_CUOTA_SOCIO ), 
 																									                                		false, 
 																									                                		current_date);
+                                                                          RETURN NEW;
                                                                         END;
                                                                         $$ LANGUAGE plpgsql;`
 

@@ -295,7 +295,7 @@ const obtener_socios = async ( req = request, res = response ) => {
     //SE OBTIENEN TODOS LOS SOCIOS DEL CLUB YA SEA ACTIVOS, ELIMINADOS, SUSPENDIDOS
     try {
 
-        const { cantidad, omitir, nombre, apellido } = req.query;
+        const { cantidad, omitir, nombre } = req.query;
 
         let socios;
         //console.log( cantidad, omitir, nombre, apellido )
@@ -309,9 +309,7 @@ const obtener_socios = async ( req = request, res = response ) => {
                             /*B.ESTADO_SOCIO AS estadoSocio*/
                         FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
                         JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
-                        ${ ( nombre !== undefined ) && (apellido === undefined )? `AND A.NOMBRE LIKE '%${nombre}%'` : `` }
-                        ${ ( nombre === undefined ) && (apellido !== undefined )? `AND A.APELLIDO LIKE '%${apellido}%'` : `` }
-                        ${ ( nombre !== undefined ) && (apellido !== undefined )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre} ${apellido}%'` : `` }
+                        ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
         //console.log( query );

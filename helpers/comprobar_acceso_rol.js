@@ -31,7 +31,7 @@ const ADMINISTRADOR = [
     '/pagos_socio',
     '/pagos_socio/socio/pagar_cuota',
     '/pagos_socio/socio/anular_pago/',
-
+    '/pagos_socio/socio/pagar_cuota_varias',
     '/tipo_cuotas',
     
     '/calendario_eventos',
