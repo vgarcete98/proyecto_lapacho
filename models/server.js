@@ -93,7 +93,7 @@ class Server {
         
         this.app.use( express.static( 'public' ) );
 
-        this.app.use( middleware_request );
+        //this.app.use( middleware_request );
 
         //this.app.use( middleware_response );
 
