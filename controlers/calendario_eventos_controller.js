@@ -8,6 +8,139 @@ const prisma = new PrismaClient();
 const estados_evento = [ 'ACTIVO', 'ELIMINADO', 'SUSPENDIDO' ]
 
 
+const obtener_todos_los_eventos_calendario = async ( req = request, res = response ) =>{
+
+    try {
+
+        //ENDPOINT QUE DEVUELVE TODO, EVENTOSS, RESERVAS Y CLASES DEL MES
+        const { fechaDesde, fechaHasta, pagina, nombreProfesor, apellidoProfesor,
+            nombreSocio, apellidoSocio, cedulaSocio, cedulaProfesor, idUsuario } = req.body;
+
+
+
+        const eventos = await prisma.calendario_eventos.findMany( { 
+                                                                    where : {  
+
+                                                                            fecha_desde_evento : { 
+                                                                                gte : new Date(fechaDesde)
+                                                                            },
+                                                                            fecha_hasta_evento : {
+                                                                                lte : new Date (fechaHasta)
+                                                                            }
+                                                                    } 
+                                                                } );
+        const eventosMes =  eventos.map( ( element ) =>{
+            const { fecha_desde_evento, 
+                    fecha_hasta_evento, 
+                    costo, 
+                    decripcion_evento,
+                    id_tipo_evento,
+                    todo_el_dia,
+                    nombre_evento,
+                    id_evento_calendario,
+                    fechaagendamiento,
+                    eventocreadoen } = element;
+
+            return {
+                    //------------------------------------------------------------------------------------------------------------------------
+                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
+                    nombreCmp : nombre_evento,
+                    fechaAgendamiento : fechaagendamiento,
+                    fechaCreacion : eventocreadoen,
+                    horaDesde : fecha_desde_evento,
+                    horaHasta : fecha_hasta_evento,
+                    //------------------------------------------------------------------------------------------------------------------------
+                    descripcion : decripcion_evento,
+                    costo,
+                    idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
+                    todoEldia : todo_el_dia,
+            }
+        } );
+
+
+
+        const query = `SELECT A.id_agendamiento AS "idAgendamiento", 
+                                B.id_profesor AS "idProfesor", 
+                                B.nombre_profesor AS "nombreProfesor", 
+                                D.id_socio AS "idSocio", 
+                        		D.nombre_cmp AS "nombreCmp", 
+                                A.fecha_agendamiento AS "fechaAgendamiento", 
+                                C.id_mesa AS "idMesa", 
+                                C.desc_mesa AS "descMesa", 
+                        		A.horario_inicio AS "horarioInicio", 
+                                A.horario_hasta AS "horarioHasta", 
+                                A.clase_abonada AS "claseAgendada", 
+                                A.monto_abonado AS "montoAbonado",
+                                A.creadoen AS "fechaCreacion"
+                        	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
+                        	JOIN mesas C ON C.id_mesa = A.id_mesa
+                        	JOIN socio D ON D.id_socio = A.id_socio
+                        WHERE A.fecha_agendamiento BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
+                        ${ ( idUsuario === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
+                        ${ ( nombreProfesor === undefined ) ? `` : `AND B.nombre_profesor LIKE '%${ nombreProfesor }%'` }                        
+                        ${ ( apellidoProfesor === undefined ) ? `` : `AND B.nombre_profesor = '%${ apellidoProfesor }%'` }
+                        ${ ( nombreSocio === undefined ) ? `` : `AND D.nombre_cmp LIKE '%${ nombreSocio }%'` }
+                        ${ ( apellidoSocio === undefined ) ? `` : `AND LIKE '%${ apellidoSocio }%'` }
+                        ${ ( cedulaProfesor === undefined ) ? `` : `AND B.cedula = ${ cedulaProfesor }` }
+                        ${ ( cedulaSocio === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
+                        ORDER BY A.fecha_agendamiento DESC
+                        LIMIT 20 OFFSET ${Number(pagina)}`;
+        //console.log( query );
+        let clasesDelDia = [];
+        clasesDelDia = await prisma.$queryRawUnsafe( query );  
+
+
+        const query2 = `SELECT CAST(A.id_socio_reserva AS INTEGER) AS "idSocioReserva", 
+                        		C.nombre || ', ' || C.apellido AS "nombreCmp",
+                        		A.fecha_reserva AS "fechaAgendamiento",
+                        		A.fecha_creacion AS "fechaCreacion",
+                        		A.hora_desde AS "horaDesde",
+                        		A.hora_hasta AS "horaHasta",
+                        		D.desc_mesa AS "descMesa",
+                        		CAST(D.id_mesa AS INTEGER) AS "idMesa"
+                        	FROM RESERVAS A JOIN SOCIO B ON A.id_socio = B.id_socio
+                        	JOIN PERSONA C ON C.id_persona = B.id_persona
+                        	JOIN MESAS D ON D.id_mesa = A.id_mesa
+                            JOIN PERSONA F ON F.id_persona = B.id_persona
+                        WHERE A.fecha_reserva BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
+                                ${ ( idUsuario === undefined ) ? `` : `AND B.id_socio = ${ idUsuario }` }
+                                ${ ( nombre_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ nombre_socio }%'` }
+                                ${ ( apellido_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ apellido_socio }%'` }
+                                ${ ( nro_cedula === undefined ) ? `` : `AND F.cedula  = '${ nro_cedula }'` }
+                        ORDER BY A.fecha_reserva DESC
+                        LIMIT 10 OFFSET ${Number(pagina) -1 };`;
+        //console.log( query );
+        const reservasClub = await prisma.$queryRawUnsafe( query2 );
+
+        res.status( 200 ).json( {
+            status : true, 
+            msg : 'Todos los eventos en las fechas',
+            eventosFecha : {
+                eventos : eventosMes,
+                clases : clasesDelDia,
+                reservas : reservasClub
+            }
+        } );
+
+
+
+        
+    } catch (error) {
+                //console.log( error );
+                res.status( 500 ).json( {
+                    status : false,
+                    msg : `Ha ocurrido un error al obtener todo lo del mes ${error} `,
+                    //error
+                } );        
+    }
+
+
+
+}
+
+
+
+
 
 const asignar_evento_calendario = async ( req = request, res = response ) =>{
 
@@ -606,6 +739,7 @@ module.exports = {
     actualizar_evento_calendario,
     obtener_eventos_x_fecha_calendario,
     obtener_inscripciones_x_evento,
-    obtener_inscripciones_x_evento_no_socios
+    obtener_inscripciones_x_evento_no_socios,
+    obtener_todos_los_eventos_calendario
 
 }

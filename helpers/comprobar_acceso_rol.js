@@ -42,6 +42,7 @@ const ADMINISTRADOR = [
     '/calendario_eventos/actualizar_evento',
     '/calendario_eventos/eliminar_evento',
     '/calendario_eventos/obtener_tipos_evento',
+    '/calendario_eventos/eventos_mes_todos',
     
     '/pases_jugadores',
     

@@ -59,7 +59,7 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
                         ORDER BY A.fecha_reserva DESC
                         LIMIT 10 OFFSET ${Number(pagina) -1 };`;
         //console.log( query );
-        reservasClub = await prisma.$queryRawUnsafe( query );
+        const reservasClub = await prisma.$queryRawUnsafe( query );
         
         if ( reservasClub.length === 0 ) {
             res.status( 200 ).json( {
