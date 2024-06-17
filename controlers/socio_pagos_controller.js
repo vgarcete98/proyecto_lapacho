@@ -121,7 +121,18 @@ const anular_pago_socio = async ( req = request, res = response ) =>{
                                                                                 id_pago_socio : Number( ( typeof( id_pago_socio ) === 'bigint' )? String( id_pago_socio ): id_pago_socio ) 
                                                                             } 
                                                                 } );
-         
+        
+        const revocar_pago = await prisma.cuotas_socio.update( 
+                                                                {
+                                                                    where : {
+                                                                        id_cuota_socio : cuota_anulada.id_cuota_socio
+                                                                    },
+                                                                    data : {
+                                                                        fecha_pago_realizado : null,
+                                                                        pago_realizado : false
+                                                                    }
+                                                                }
+                                                                );
         
         //console.log( cuota_anulada );
 

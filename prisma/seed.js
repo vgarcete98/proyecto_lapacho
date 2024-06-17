@@ -725,24 +725,45 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
 
   const func_trigger_inserta_ingreso_pago_cuota = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION inserta_ingreso_pago_cuota()
                                                                           RETURNS TRIGGER AS $$
-                                                                          BEGIN                                                
-																				
-	                                                                          INSERT INTO ingresos (id_socio, 
-	                                                                          						id_tipo, 
-	                                                                          						nro_factura, 
-	                                                                          						cargado_en, 
-	                                                                          						descripcion, 
-	                                                                          						monto, 
-	                                                                          						borrado, 
-	                                                                          						fecha_ingreso)
-																									                                VALUES(new.ID_SOCIO, 
-																									                                		( select TI.id_tipo  from tipos_ingreso ti where ti.id_tipo = 1 ), 
-																									                                		( select ps.nro_factura  from pagos_socio ps where id_cuota_socio = new.ID_CUOTA_SOCIO ), 
-																									                                		new.FECHA_PAGO_REALIZADO,  
-																									                                		new.DESCRIPCION, 
-																									                                		( select ps.monto_abonado  from pagos_socio ps where id_cuota_socio = new.ID_CUOTA_SOCIO ), 
-																									                                		false, 
-																									                                		current_date);
+                                                                          BEGIN  
+																		  
+                                                                            
+                                                                            IF (NEW.PAGO_REALIZADO = false OR NEW.FECHA_PAGO_REALIZADO IS NULL) THEN 
+                                                                            
+                                                                              UPDATE INGRESOS 
+                                                                                SET BORRADO = true
+                                                                              WHERE Column_d_operacion_ingreso = ( SELECT A.Column_d_operacion_ingreso FROM TRANSACCIONES_INGRESOS A 
+                                                                                                WHERE NEW.ID_CUOTA_SOCIO = A.ID_CUOTA_SOCIO );
+                                                                            ELSE 
+                                                                              INSERT INTO ingresos (id_socio, 
+                                                                                                                            id_tipo, 
+                                                                                                                            nro_factura, 
+                                                                                                                            cargado_en, 
+                                                                                                                            descripcion, 
+                                                                                                                            monto, 
+                                                                                                                            borrado, 
+                                                                                                                            fecha_ingreso)
+                                                                                  VALUES(new.ID_SOCIO, 
+                                                                                    ( select TI.id_tipo  from tipos_ingreso ti where ti.id_tipo = 1 ), 
+                                                                                    ( select ps.nro_factura  from pagos_socio ps where id_cuota_socio = new.ID_CUOTA_SOCIO ), 
+                                                                                    new.FECHA_PAGO_REALIZADO,  
+                                                                                    new.DESCRIPCION, 
+                                                                                    ( select ps.monto_abonado  from pagos_socio ps where id_cuota_socio = new.ID_CUOTA_SOCIO ), 
+                                                                                    false, 
+                                                                                    current_date);
+                                                                                                          
+                                                                              INSERT INTO TRANSACCIONES_INGRESOS ( 
+                                                                                                  Column_d_operacion_ingreso,
+                                                                                                  id_cuota_socio,
+                                                                                                  descripcion
+                                                                                                )
+
+                                                                                            VALUES (
+                                                                                                  (SELECT MAX( Column_d_operacion_ingreso ) FROM INGRESOS),
+                                                                                                  new.id_cuota,
+                                                                                                  new.descripcion
+                                                                                                );
+                                                                            END IF ;
                                                                           RETURN NEW;
                                                                         END;
                                                                         $$ LANGUAGE plpgsql;`
