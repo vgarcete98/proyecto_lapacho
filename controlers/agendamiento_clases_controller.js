@@ -40,7 +40,7 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
                         ${ ( cedulaProfesor === undefined ) ? `` : `AND B.cedula = ${ cedulaProfesor }` }
                         ${ ( cedulaSocio === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
                         ORDER BY A.fecha_agendamiento DESC
-                        LIMIT 20 OFFSET ${Number(pagina)}`;
+                        LIMIT 20 OFFSET ${Number(pagina) - 1 }`;
         //console.log( query );
         let clases_del_dia, clasesDelDia = [];
         clases_del_dia = await prisma.$queryRawUnsafe( query );  
@@ -133,7 +133,7 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
                         ${ ( cedulaProfesor === undefined ) ? `` : `AND B.cedula = ${ cedulaProfesor }` }
                         ${ ( cedulaSocio === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
                         ORDER BY A.fecha_agendamiento DESC
-                        LIMIT 20 OFFSET ${Number(pagina)}`
+                        LIMIT 20 OFFSET ${Number(pagina) -1 }`
         let clases_del_dia, clasesDelDia = [];
         clases_del_dia = await prisma.$queryRawUnsafe( query );  
 
@@ -222,7 +222,7 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
                                 ${ ( apellidoProfesor === undefined ) ? `` : `AND B.nombre_profesor = '%${ apellidoProfesor }%'` }
                                 ${ ( cedulaProfesor === undefined ) ? `` : `AND B.cedula = ${ cedulaProfesor }` }
                         ORDER BY A.fecha_agendamiento DESC
-                        LIMIT 20 OFFSET ${Number(pagina)}`;
+                        LIMIT 20 OFFSET ${Number(pagina) - 1}`;
         //console.log( query )
         let clases_del_dia, clasesDelDia = [];
         clases_del_dia = await prisma.$queryRawUnsafe( query ); 

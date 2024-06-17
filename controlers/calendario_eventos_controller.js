@@ -1,5 +1,7 @@
 const { request, response } = require('express')
 
+var { format  } = require("date-fns");
+
 const { PrismaClient } = require('@prisma/client');
 const { generar_fecha } = require('../helpers/generar_fecha');
 
@@ -13,59 +15,38 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
     try {
 
         //ENDPOINT QUE DEVUELVE TODO, EVENTOSS, RESERVAS Y CLASES DEL MES
-        const { fechaDesde, fechaHasta, pagina, nombreProfesor, apellidoProfesor,
-            nombreSocio, apellidoSocio, cedulaSocio, cedulaProfesor, idUsuario } = req.body;
+        const { fechaDesde, fechaHasta, pagina, idUsuario } = req.body;
+
+        const fecha_desde_format = new Date ( fechaDesde );
+
+        const fecha_hasta_format = new Date ( fechaHasta );   
+
+        //console.log( format( fecha_desde_format, 'yyyy-MM-dd' ), format( fecha_hasta_format, 'yyyy-MM-dd' ) )
+        const query_eventos = `SELECT CAST(A.id_evento_calendario AS INTEGER) AS "idEventoCalendario", 
+                                        CAST(B.id_tipo_evento AS INTEGER) AS "idTipoEvento", 
+                                        A.fecha_desde_evento AS "horaDesde", 
+                                        A.eventocreadoen AS "fechaCreacion", 
+                                        A.fecha_hasta_evento AS "horaHasta", 
+                                        A.costo AS "costo", 
+                                        A.decripcion_evento AS "descripcion", 
+                                        A.nombre_evento AS "nombreCmp", 
+                                        A.todo_el_dia AS "todoEldia", 
+                                        A.fechaagendamiento AS "fechaAgendamiento",
+                                        B.desc_tipo_evento AS "descTipoEvento"
+                                    FROM calendario_eventos A JOIN EVENTOS B ON A.id_tipo_evento = B.id_tipo_evento
+                                    WHERE A.fecha_desde_evento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
+                                                                        AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }';`
+        const eventosMes =  await prisma.$queryRawUnsafe( query_eventos );  
 
 
 
-        const eventos = await prisma.calendario_eventos.findMany( { 
-                                                                    where : {  
-
-                                                                            fecha_desde_evento : { 
-                                                                                gte : new Date(fechaDesde)
-                                                                            },
-                                                                            fecha_hasta_evento : {
-                                                                                lte : new Date (fechaHasta)
-                                                                            }
-                                                                    } 
-                                                                } );
-        const eventosMes =  eventos.map( ( element ) =>{
-            const { fecha_desde_evento, 
-                    fecha_hasta_evento, 
-                    costo, 
-                    decripcion_evento,
-                    id_tipo_evento,
-                    todo_el_dia,
-                    nombre_evento,
-                    id_evento_calendario,
-                    fechaagendamiento,
-                    eventocreadoen } = element;
-
-            return {
-                    //------------------------------------------------------------------------------------------------------------------------
-                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
-                    nombreCmp : nombre_evento,
-                    fechaAgendamiento : fechaagendamiento,
-                    fechaCreacion : eventocreadoen,
-                    horaDesde : fecha_desde_evento,
-                    horaHasta : fecha_hasta_evento,
-                    //------------------------------------------------------------------------------------------------------------------------
-                    descripcion : decripcion_evento,
-                    costo,
-                    idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                    todoEldia : todo_el_dia,
-            }
-        } );
-
-
-
-        const query = `SELECT A.id_agendamiento AS "idAgendamiento", 
+        const query = `SELECT  CAST(A.id_agendamiento AS INTEGER) AS "idAgendamiento", 
                                 B.id_profesor AS "idProfesor", 
                                 B.nombre_profesor AS "nombreProfesor", 
-                                D.id_socio AS "idSocio", 
+                                CAST(A.id_socio AS INTEGER) AS "idSocio", 
                         		D.nombre_cmp AS "nombreCmp", 
                                 A.fecha_agendamiento AS "fechaAgendamiento", 
-                                C.id_mesa AS "idMesa", 
+                                CAST(C.id_mesa AS INTEGER) AS "idMesa", 
                                 C.desc_mesa AS "descMesa", 
                         		A.horario_inicio AS "horarioInicio", 
                                 A.horario_hasta AS "horarioHasta", 
@@ -75,16 +56,9 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
                         	JOIN socio D ON D.id_socio = A.id_socio
-                        WHERE A.fecha_agendamiento BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
-                        ${ ( idUsuario === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
-                        ${ ( nombreProfesor === undefined ) ? `` : `AND B.nombre_profesor LIKE '%${ nombreProfesor }%'` }                        
-                        ${ ( apellidoProfesor === undefined ) ? `` : `AND B.nombre_profesor = '%${ apellidoProfesor }%'` }
-                        ${ ( nombreSocio === undefined ) ? `` : `AND D.nombre_cmp LIKE '%${ nombreSocio }%'` }
-                        ${ ( apellidoSocio === undefined ) ? `` : `AND LIKE '%${ apellidoSocio }%'` }
-                        ${ ( cedulaProfesor === undefined ) ? `` : `AND B.cedula = ${ cedulaProfesor }` }
-                        ${ ( cedulaSocio === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
-                        ORDER BY A.fecha_agendamiento DESC
-                        LIMIT 20 OFFSET ${Number(pagina)}`;
+                        WHERE A.fecha_agendamiento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
+                                                        AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }'
+                        ORDER BY A.fecha_agendamiento DESC`;
         //console.log( query );
         let clasesDelDia = [];
         clasesDelDia = await prisma.$queryRawUnsafe( query );  
@@ -102,15 +76,13 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
                         	JOIN PERSONA C ON C.id_persona = B.id_persona
                         	JOIN MESAS D ON D.id_mesa = A.id_mesa
                             JOIN PERSONA F ON F.id_persona = B.id_persona
-                        WHERE A.fecha_reserva BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
-                                ${ ( idUsuario === undefined ) ? `` : `AND B.id_socio = ${ idUsuario }` }
-                                ${ ( nombre_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ nombre_socio }%'` }
-                                ${ ( apellido_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ apellido_socio }%'` }
-                                ${ ( nro_cedula === undefined ) ? `` : `AND F.cedula  = '${ nro_cedula }'` }
-                        ORDER BY A.fecha_reserva DESC
-                        LIMIT 10 OFFSET ${Number(pagina) -1 };`;
+                        WHERE A.fecha_reserva BETWEEN TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}' 
+                                                    AND TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}'
+                        ORDER BY A.fecha_reserva DESC`;
         //console.log( query );
         const reservasClub = await prisma.$queryRawUnsafe( query2 );
+
+        //console.log(  eventosMes, clasesDelDia, reservasClub )
 
         res.status( 200 ).json( {
             status : true, 
