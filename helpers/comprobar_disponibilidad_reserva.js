@@ -9,22 +9,23 @@ const prisma = new PrismaClient();
 const comprobar_disponibilidad_reserva = async ( req = request, res = response, next )=> {
 
     try {
-        const { idMesa, fechaAgendamiento } = req.body;
-        const [ dia, mes, annio ] = fechaAgendamiento.split( "/" );
+        const { idMesa, horaDesde, horaHasta } = req.body;
+        //const [ dia, mes, annio ] = fechaAgendamiento.split( "/" );
         //console.log( "" )
         let existe_reserva = [];
         existe_reserva = await prisma.reservas.findMany( { 
                                                             where : { 
+                                                                hora_desde : { gte : new Date( horaDesde ) },
+                                                                hora_hasta : { lte : new Date( horaHasta ) },
                                                                 
                                                                 AND : [ 
                                                                     { id_mesa : idMesa }, 
                                                     
-                                                                    { fecha_reserva : new Date( annio, mes, dia ) }
                                                                 ]
                                                             } 
                                                         } );
 
-        console.log ( existe_reserva )
+        //console.log ( existe_reserva )
         if ( existe_reserva.length === 0 ){
             next();
         }else{

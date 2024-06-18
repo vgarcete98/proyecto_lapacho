@@ -94,13 +94,13 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
 
     try {
 
-        const {  idSocio, fechaAgendamiento, horaDesde, horaHasta, idMesa } = req.body;
+        const {  idSocio, horaDesde, horaHasta, idMesa } = req.body;
 
 
         const nueva_reserva = await prisma.reservas.create( { data : {
                                                                         id_socio : Number(idSocio),
                                                                         fecha_creacion : new Date(),
-                                                                        fecha_reserva : generar_fecha( fechaAgendamiento ),
+                                                                        //fecha_reserva : generar_fecha( fechaAgendamiento ),
                                                                         hora_desde : generar_fecha(horaDesde),
                                                                         hora_hasta : generar_fecha(horaHasta),
                                                                         id_mesa : idMesa,
@@ -122,7 +122,7 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
             reserva : {
                 idSocioReserva : idSocio,
                 nombreCmp : nombre_cmp,
-                fechaAgendamiento : fecha_reserva,
+                //fechaAgendamiento : fecha_reserva,
                 fechaCreacion : fecha_creacion,
                 horaDesde : hora_desde,
                 horaHasta : hora_hasta,
@@ -232,7 +232,7 @@ const editar_reserva_en_club = async ( req = request, res = response ) => {
             reserva : {
                 idSocioReserva : idSocio,
                 nombreCmp : nombre_cmp,
-                fechaAgendamiento : fecha_reserva,
+                //fechaAgendamiento : fecha_reserva,
                 fechaCreacion : fecha_creacion,
                 horaDesde : hora_desde,
                 horaHasta : hora_hasta,
@@ -277,7 +277,7 @@ const borrar_reserva_en_club = async ( req = request, res = response ) => {
             reserva : {
                 idSocioReserva : Number(typeof( id_socio_reserva ) === 'bigint' ? Number(id_socio_reserva.toString()) : id_socio_reserva),
                 nombreCmp : nombre_cmp,
-                fechaAgendamiento : fecha_reserva,
+                //fechaAgendamiento : fecha_reserva,
                 fechaCreacion : fecha_creacion,
                 horaDesde : hora_desde,
                 horaHasta : hora_hasta,

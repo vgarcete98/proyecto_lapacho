@@ -7,6 +7,8 @@ const prisma = new PrismaClient();
 const { generar_fecha } = require( '../helpers/generar_fecha' );
 
 
+var { format  } = require("date-fns");
+
 const obtener_clases_del_dia = async ( req = request, res = response ) =>{
 
     // OBTENGO LAS CLASES POR LAS FECHAS INDICADAS 
@@ -25,7 +27,9 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
         const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
 
         const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
-                        		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
+                        		D.nombre_cmp, 
+                                --A.fecha_agendamiento,
+                                C.id_mesa, C.desc_mesa, 
                         		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado,
                                 A.creadoen AS "fechaCreacion"
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
@@ -57,11 +61,11 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
             const clasesDelDia = clases_del_dia.map( ( element )=>{
                 const { id_agendamiento, id_profesor, nombre_profesor, id_socio, nombre_cmp,
                         id_mesa, desc_mesa, clase_abonada, monto_abonado,
-                        fecha_agendamiento, horario_inicio, horario_hasta, fechaCreacion } = element;
+                        /*fechaAgendamiento,*/ horario_inicio, horario_hasta, fechaCreacion } = element;
                 return {
                     idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
                     nombreCmp : nombre_cmp,
-                    fechaAgendamiento : fecha_agendamiento, 
+                    //fechaAgendamiento : fecha_agendamiento, 
                     fechaCreacion,
                     horaDesde : horario_inicio, 
                     horaHasta : horario_hasta,
@@ -118,7 +122,9 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
         const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
 
         const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
-                        		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
+                        		D.nombre_cmp, 
+                                --A.fecha_agendamiento, 
+                                C.id_mesa, C.desc_mesa, 
                         		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado,
                                 A.creadoen AS "fechaCreacion"
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
@@ -149,11 +155,11 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
             const clasesDelDia = clases_del_dia.map( ( element )=>{
                 const { id_agendamiento, id_profesor, nombre_profesor, id_socio, nombre_cmp,
                         id_mesa, desc_mesa, clase_abonada, monto_abonado,
-                        fecha_agendamiento, horario_inicio, horario_hasta, fechaCreacion } = element;
+                        /*fechaAgendamiento,*/ horario_inicio, horario_hasta, fechaCreacion } = element;
                 return {
                     idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
                     nombreCmp : nombre_cmp,
-                    fechaAgendamiento : fecha_agendamiento, 
+                    //fechaAgendamiento : fecha_agendamiento, 
                     fechaCreacion,
                     horaDesde : horario_inicio, 
                     horaHasta : horario_hasta,
@@ -210,7 +216,9 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
         const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
 
         const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
-                        		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
+                        		D.nombre_cmp, 
+                                --A.fecha_agendamiento, 
+                                C.id_mesa, C.desc_mesa, 
                         		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado,
                                 A.creadoen AS "fechaCreacion"
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
@@ -242,7 +250,7 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
                 return {
                     idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
                     nombreCmp : nombre_cmp,
-                    fechaAgendamiento : fecha_agendamiento, 
+                    //fechaAgendamiento : fecha_agendamiento, 
                     fechaCreacion,
                     horaDesde : horario_inicio, 
                     horaHasta : horario_hasta,
@@ -284,18 +292,19 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
 
     // VOY A COMPROBAR LAS CLASES QUE HAY EN EL DIA PRIMERO PARA PODER VER SI SE PUEDE RESERVAR O NO
     try {
-        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa } = req.body;
+        const { idSocio, idProfesor, /*fechaAgendamiento,*/ inicio, fin, idMesa } = req.body;
         
         const { id_agendamiento, id_socio, id_profesor, 
-                fecha_agendamiento, horario_inicio, horario_hasta, 
+                //fecha_agendamiento, 
+                horario_inicio, horario_hasta, 
                 clase_abonada, monto_abonado, creadoen } = await prisma.agendamiento_clase.create( { 
                                                                                             data : { 
                                                                                                         id_socio : idSocio,
                                                                                                         id_profesor : idProfesor,
                                                                                                         id_mesa : Number( idMesa ),
-                                                                                                        fecha_agendamiento : generar_fecha( fechaAgendamiento ),
-                                                                                                        horario_inicio : inicio,
-                                                                                                        horario_hasta : fin,
+                                                                                                        //fecha_agendamiento : generar_fecha( fechaAgendamiento ),
+                                                                                                        horario_inicio : new Date(inicio),
+                                                                                                        horario_hasta : new Date( fin ),
                                                                                                         creadoen : new Date(),
                                                                                                         //clase_eliminada : false,
                                                                                                     } 
@@ -310,7 +319,7 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
             claseAgendada : {
                 idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
                 nombreCmp : nombre_cmp,
-                fechaAgendamiento : fecha_agendamiento, 
+                //fechaAgendamiento : fecha_agendamiento, 
                 fechaCreacion : creadoen,
                 horaDesde : horario_inicio, 
                 horaHasta : horario_hasta,
@@ -346,7 +355,8 @@ const editar_una_clase = async ( req = request, res = response ) =>{
         const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento } = req.body;
         //console.log ( req.body )
         const { id_agendamiento, id_socio, id_profesor, 
-                fecha_agendamiento, horario_inicio, horario_hasta, 
+                //fecha_agendamiento, 
+                horario_inicio, horario_hasta, 
                 clase_abonada, monto_abonado, creadoen } = await prisma.agendamiento_clase.update( { 
                                                                                             data : { 
                                                                                                         //id_profesor : idProfesor,
@@ -369,7 +379,7 @@ const editar_una_clase = async ( req = request, res = response ) =>{
             claseAgendada : {
                 idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
                 nombreCmp : nombre_cmp,
-                fechaAgendamiento : fecha_agendamiento, 
+                //fechaAgendamiento : fecha_agendamiento, 
                 fechaCreacion : creadoen,
                 horaDesde : horario_inicio, 
                 horaHasta : horario_hasta,
@@ -404,7 +414,7 @@ const abonar_una_clase = async ( req = request, res = response ) =>{
 
 
     try {
-        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento, monto } = req.body;
+        const { idSocio, idProfesor, /*fechaAgendamiento,*/ inicio, fin, idMesa, idAgendamiento, monto } = req.body;
         
         const { id_agendamiento, id_socio, id_profesor, 
                 fecha_agendamiento, horario_inicio, horario_hasta, 
@@ -460,7 +470,7 @@ const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
 
     try {
 
-        const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento } = req.body;
+        const { idSocio, idProfesor, /*fechaAgendamiento,*/ inicio, fin, idMesa, idAgendamiento } = req.body;
         
         const { id_agendamiento, id_socio, id_profesor, 
                 fecha_agendamiento, horario_inicio, horario_hasta, 
@@ -475,7 +485,7 @@ const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
             claseAgendada : {
                 idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
                 nombreCmp : nombre_cmp,
-                fechaAgendamiento : fecha_agendamiento, 
+                //fechaAgendamiento : fecha_agendamiento, 
                 fechaCreacion : creadoen,
                 horaDesde : horario_inicio, 
                 horaHasta : horario_hasta,

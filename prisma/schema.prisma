@@ -25,7 +25,7 @@ model agendamiento_clase {
   id_socio           BigInt
   id_profesor        Int
   id_mesa            BigInt
-  fecha_agendamiento DateTime   @db.Date
+  fecha_agendamiento DateTime?  @db.Date
   horario_inicio     DateTime   @db.Timestamp(6)
   horario_hasta      DateTime   @db.Timestamp(6)
   creadoen           DateTime?  @db.Date
@@ -162,7 +162,7 @@ model reservas {
   id_socio_reserva BigInt    @id(map: "reservas_pk") @default(autoincrement())
   id_socio         BigInt
   id_mesa          BigInt
-  fecha_reserva    DateTime  @db.Timestamp(6)
+  fecha_reserva    DateTime? @db.Timestamp(6)
   reserva_editada  DateTime? @db.Date
   fecha_creacion   DateTime  @db.Date
   hora_desde       DateTime  @db.Timestamp(6)

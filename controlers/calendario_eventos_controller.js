@@ -31,7 +31,7 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
                                         A.decripcion_evento AS "descripcion", 
                                         A.nombre_evento AS "nombreCmp", 
                                         A.todo_el_dia AS "todoEldia", 
-                                        A.fechaagendamiento AS "fechaAgendamiento",
+                                        --A.fechaagendamiento AS "fechaAgendamiento",
                                         B.desc_tipo_evento AS "descTipoEvento"
                                     FROM calendario_eventos A JOIN EVENTOS B ON A.id_tipo_evento = B.id_tipo_evento
                                     WHERE A.fecha_desde_evento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
@@ -45,7 +45,7 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
                                 B.nombre_profesor AS "nombreProfesor", 
                                 CAST(A.id_socio AS INTEGER) AS "idSocio", 
                         		D.nombre_cmp AS "nombreCmp", 
-                                A.fecha_agendamiento AS "fechaAgendamiento", 
+                                --A.fecha_agendamiento AS "fechaAgendamiento", 
                                 CAST(C.id_mesa AS INTEGER) AS "idMesa", 
                                 C.desc_mesa AS "descMesa", 
                         		A.horario_inicio AS "horarioInicio", 
@@ -66,7 +66,7 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
 
         const query2 = `SELECT CAST(A.id_socio_reserva AS INTEGER) AS "idSocioReserva", 
                         		C.nombre || ', ' || C.apellido AS "nombreCmp",
-                        		A.fecha_reserva AS "fechaAgendamiento",
+                        		--A.fecha_reserva AS "fechaAgendamiento",
                         		A.fecha_creacion AS "fechaCreacion",
                         		A.hora_desde AS "horaDesde",
                         		A.hora_hasta AS "horaHasta",
@@ -125,7 +125,7 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                 costoEvento,
                 todoEldia, 
                 descripcion,
-                fechaAgendamiento } = req.body;
+                /*fechaAgendamiento*/ } = req.body;
     
         const nuevo_evento = await prisma.calendario_eventos.create( { 
                                                                         data : {
@@ -138,7 +138,7 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                                                                             estadoevento : 'ACTIVO',
                                                                             todo_el_dia : (todoEldia  === "S") ? true : false,
                                                                             nombre_evento : nombreEvento,
-                                                                            fechaagendamiento : generar_fecha( fechaAgendamiento )
+                                                                            //fechaagendamiento : generar_fecha( fechaAgendamiento )
 
                                                                         } 
                                                                     } );
@@ -159,7 +159,7 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                 //------------------------------------------------------------------------------------------------------------------------
                 idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
                 nombreCmp : nombre_evento,
-                fechaAgendamiento : fechaagendamiento,
+                //fechaAgendamiento : fechaagendamiento,
                 fechaCreacion : eventocreadoen,
                 horaDesde : fecha_desde_evento,
                 horaHasta : fecha_hasta_evento,
@@ -262,7 +262,7 @@ const obtener_eventos_calendario = async ( req = request, res = response ) =>{
                 //------------------------------------------------------------------------------------------------------------------------
                 idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
                 nombreCmp : nombre_evento,
-                fechaAgendamiento : fechaagendamiento,
+                //fechaAgendamiento : fechaagendamiento,
                 fechaCreacion : eventocreadoen,
                 horaDesde : fecha_desde_evento,
                 horaHasta : fecha_hasta_evento,
