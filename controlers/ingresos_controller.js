@@ -7,6 +7,8 @@ const prisma = new PrismaClient();
 const path = require( 'path' );
 const ExcelJS = require('exceljs');
 
+var { format  } = require("date-fns");
+
 const { generar_fecha } = require( '../helpers/generar_fecha' )
 
 const columnas_ingresos = [
@@ -459,16 +461,17 @@ const generar_grafico_x_fecha_ingresos = async ( req = request, res = response) 
 
     try {
         const { fecha_desde, fecha_hasta } = req.query;
-        const query = `SELECT A.monto,
-                                A.fecha_ingreso AS fecha_ingreso,
-                                A.cargado_en AS fecha_carga,
-                                A.editado_en as fecha_actualizacion
+        const query = `SELECT CAST( SUM( A.monto) AS INTEGER ) AS monto,
+                                A.fecha_ingreso AS fecha_ingreso
+                                --A.cargado_en AS fecha_carga,
+                                --A.editado_en as fecha_actualizacion
                             FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
                             JOIN PERSONA F ON B.id_persona = F.id_persona
                             JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
                         WHERE A.cargado_en BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}' 
                             AND A.borrado = false
-                        ORDER BY A.cargado_en DESC;`;
+                        GROUP BY A.fecha_ingreso
+                        ORDER BY A.fecha_ingreso DESC;`;
         //console.log( query );
         let ingresos_x_fecha = [];               
         ingresos_x_fecha = await prisma.$queryRawUnsafe( query );
@@ -511,20 +514,14 @@ const obtener_grafico_torta_ingresos = async ( req = request, res = response )=>
     try {
         const { fecha_desde, fecha_hasta } = req.query;
         const query = `SELECT ID_TIPO AS "idTipo",
-                                CASE 
-									WHEN descripcion = 'SERVICIO_DE_AGUA' THEN 'PAGO DEL SERVICIO DE AGUA'
-									WHEN descripcion = 'SERVICIO_DE_LUZ' THEN 'PAGO DEL SERVICIO DE LUZ'
-									WHEN descripcion = 'ALQUILER_LOCAL' THEN 'PAGO DEL ALQUILER'
-								ELSE 
-									'PAGO DEL SERVICIO DE INTERNET'
-								END AS "descripcion",
+                                descripcion AS "descripcion",
                             	CAST( SUM(MONTO) AS INTEGER) AS "monto",
                             	ROUND(SUM(MONTO) * 100.0 / total_monto, 2) AS "porcentaje"
                             FROM INGRESOS, (SELECT COALESCE(SUM(MONTO), 0) AS total_monto 
                                                 FROM INGRESOS 
-                                            WHERE FECHA_INGRESO BETWEEN  DATE '${fecha_desde}' AND DATE '${fecha_hasta}') AS total
+                                            WHERE FECHA_INGRESO BETWEEN  DATE '${format( generar_fecha( fecha_desde ), 'yyyy-MM-dd' )}' AND DATE '${format( generar_fecha( fecha_hasta ), 'yyyy-MM-dd' )}') AS total
                         WHERE 
-                            FECHA_INGRESO BETWEEN  DATE '${fecha_desde}' AND DATE '${fecha_hasta}' 
+                            FECHA_INGRESO BETWEEN  DATE '${format( generar_fecha( fecha_desde ), 'yyyy-MM-dd' )}' AND DATE '${format( generar_fecha( fecha_hasta ), 'yyyy-MM-dd' )}' 
                         GROUP BY 
                             ID_TIPO, total_monto, descripcion;`
         let porcentajeIngresos = [];       

@@ -13,6 +13,7 @@ const comprobar_disponibilidad_reserva = async ( req = request, res = response, 
         //const [ dia, mes, annio ] = fechaAgendamiento.split( "/" );
         //console.log( "" )
         let existe_reserva = [];
+
         existe_reserva = await prisma.reservas.findMany( { 
                                                             where : { 
                                                                 hora_desde : { gte : new Date( horaDesde ) },

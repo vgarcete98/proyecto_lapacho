@@ -1,5 +1,5 @@
 
-const { request, response } = require('express')
+const { request, response, query } = require('express')
 
 const { PrismaClient } = require('@prisma/client')
 
@@ -223,19 +223,28 @@ const abonar_x_inscripcion_no_socio = async ( req = request, res = response ) =>
 
 const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
 
-    const { id_evento } = req.params;
-
+    
     try {
+        const { id_evento } = req.params;
         
-        const inscripciones = await prisma.inscripciones.findMany( {
-                                                                    where : { id_evento_calendario : id_evento }
-                                                                } );
-        const cant_inscripciones = inscripciones.length;
+        const query = `SELECT id_inscripcion AS "idInscripcion", 
+                                id_socio AS "idSocio", 
+                                id_evento_calendario AS "idEventoCalendario", 
+                                desc_inscripcion AS "descInscripcion", 
+                                fecha_inscripcion AS "fechaInscripcion", 
+                                abonado AS "abonado", 
+                                inscripcioncreadoen AS "inscripcionCreadoEn", 
+                                estadoinscripcion AS "estadoInscripcion", 
+                                inscripcioneditadoen AS "inscripcionEditadoEn"
+                            FROM inscripciones
+                        WHERE id_evento_calendario = ${ id_evento };`
+        const inscripciones = await prisma.$queryRawUnsafe( query )
+        const cantInscripciones = inscripciones.length;
 
         res.status( 200 ).json( { 
                                     status : true,
                                     msg : "Inscripciones de ese evento",
-                                    cant_inscripciones,
+                                    cantInscripciones,
                                     inscripciones
                                 } );
 
@@ -254,9 +263,9 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
 
 const ver_inscripciones_x_evento_no_socio = async ( req = request, res = response ) =>{
 
-    const { id_evento } = req.params;
-
+    
     try {
+        const { id_evento } = req.params;
         
         const inscripciones = await prisma.inscripciones_no_socios.findMany( {
                                                                     where : { id_evento_calendario_no_socio : id_evento }

@@ -7,6 +7,10 @@ const ExcelJS = require('exceljs');
 const path = require( 'path' );
 const prisma = new PrismaClient();
 
+
+var { format  } = require("date-fns");
+
+
 const { generar_fecha } = require( '../helpers/generar_fecha' )
 
 const columnas_egresos = [
@@ -451,18 +455,19 @@ const generar_grafico_x_fecha = async ( req = request, res = response) =>{
     try {
         const { fecha_desde, fecha_hasta } = req.query;
     
-        const query = `SELECT A.monto, 
-                                A.fecha_pago,
-                                A.cargado_en AS fecha_carga,
-                                A.editado_en as fecha_actualizacion		
+        const query = `SELECT CAST ( SUM (A.monto) AS INTEGER ) AS monto, 
+                                A.fecha_pago
+                                --A.cargado_en AS fecha_carga,
+                                --A.editado_en as fecha_actualizacion		
                             FROM EGRESOS A 
                             JOIN SOCIO B ON A.id_socio = B.id_socio
                             JOIN PERSONA F ON B.id_persona = F.id_persona
                             JOIN TIPOS_EGRESO C ON A.id_tipo = C.id_tipo
                         WHERE A.fecha_pago BETWEEN DATE '${fecha_desde}' AND DATE '${fecha_hasta}'
                             AND A.borrado = false OR A.borrado IS NULL
-                        ORDER BY A.cargado_en DESC`;
-        console.log( query );
+                        GROUP BY A.fecha_pago
+                        ORDER BY A.fecha_pago DESC`;
+        //console.log( query );
         let egresos_x_fecha = [];               
         egresos_x_fecha = await prisma.$queryRawUnsafe( query );
     
@@ -518,11 +523,10 @@ const obtener_grafico_torta_egresos = async ( req = request, res = response )=>{
                             	ROUND(SUM(MONTO) * 100.0 / total_monto, 2) AS "porcentaje"
                             FROM EGRESOS, (SELECT COALESCE(SUM(MONTO), 0) AS total_monto 
                                                 FROM EGRESOS 
-                                             FECHA_EGRESO BETWEEN  DATE '${fecha_desde}' AND DATE '${fecha_hasta}') AS total
-                        WHERE 
-                            FECHA_EGRESO BETWEEN  DATE '${fecha_desde}' AND DATE '${fecha_hasta}' 
-                        GROUP BY 
-                            ID_TIPO, total_monto, descripcion;`
+                                            WHERE FECHA_EGRESO BETWEEN  DATE '${format( generar_fecha( fecha_desde ), 'yyyy-MM-dd' )}' AND DATE '${format( generar_fecha( fecha_hasta ), 'yyyy-MM-dd' )}') AS total
+                        WHERE FECHA_EGRESO BETWEEN  DATE '${format( generar_fecha( fecha_desde ), 'yyyy-MM-dd' )}' AND DATE '${format( generar_fecha( fecha_hasta ), 'yyyy-MM-dd' )}'
+                        GROUP BY ID_TIPO, total_monto, descripcion;`
+        //console.log( query )
         let porcentajeEgresos = [];       
               
         porcentajeEgresos = await prisma.$queryRawUnsafe( query );

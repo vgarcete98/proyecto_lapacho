@@ -8,6 +8,7 @@ const ADMINISTRADOR = [
 
     '/socio',
     '/socio/socios_detalle',
+    '/socio/socio_cedula/nombre',
     '/socio/borrar_socio',
     '/socio/editar_socio',
     '/socio/crear_socio',
