@@ -4,88 +4,9 @@ const { request, response } = require('express')
 const prisma = new PrismaClient();
 const { decode } = require('jsonwebtoken');
 
-const ADMINISTRADOR = [
+let ADMINISTRADOR = []
 
-    '/socio',
-    '/socio/socios_detalle',
-    '/socio/socio_cedula/nombre',
-    '/socio/borrar_socio',
-    '/socio/editar_socio',
-    '/socio/crear_socio',
-    '/socio/obtener_socios',
-    '/socio/obtener_socio',
-    '/socio/obtener_tipo_socios',
-
-    '/tipo_socio',
-    
-    '/eventos',
-    
-    '/inscripciones',
-
-    '/reserva_en_club/obtener_mesas_disponibles',
-    '/reserva_en_club/obtener_reservas_club',
-    '/reserva_en_club/crear_reserva_club',
-    '/reserva_en_club/borrar_reserva_club',
-    '/reserva_en_club/editar_reserva_club',
-    '/reserva_en_club/obtener_mesas_disponibles_x_horario',
-
-    '/pagos_socio',
-    '/pagos_socio/socio/pagar_cuota',
-    '/pagos_socio/socio/anular_pago/',
-    '/pagos_socio/socio/pagar_cuota_varias',
-    '/tipo_cuotas',
-    
-    '/calendario_eventos',
-    '/calendario_eventos/eventos_mes',
-    '/calendario_eventos/eventos_annio',
-    '/calendario_eventos/inscripciones_evento',
-    '/calendario_eventos/crear_nuevo_evento',
-    '/calendario_eventos/actualizar_evento',
-    '/calendario_eventos/eliminar_evento',
-    '/calendario_eventos/obtener_tipos_evento',
-    '/calendario_eventos/eventos_mes_todos',
-    
-    '/pases_jugadores',
-    
-    '/profesores',
-    
-    '/agendamiento_clases',
-    '/agendamiento_clases/agendar_clase',
-    '/agendamiento_clases/editar_clase',
-    '/agendamiento_clases/cancelar_clase',
-    '/agendamiento_clases/pagar_x_clase',
-    '/agendamiento_clases/obtener_clases_x_fecha',
-    '/agendamiento_clases/obtener_clases_x_fecha_socio',
-    '/agendamiento_clases/obtener_clases_x_fecha_profesor',
-    '/agendamiento_clases/obtener_mesas_disponibles_x_horario',
-
-    '/ingresos',
-    '/ingresos/obtener_grafico_ingresos',
-    '/ingresos/obtener_grafico_ingresos_torta',
-    '/ingresos/reportes_ingresos_excel',
-    '/ingresos/tipos_ingreso',
-    '/ingresos/agregar_ingreso',
-    '/ingresos/borrar_ingreso',
-    '/ingresos/actualizar_ingreso',
-
-    '/egresos',
-    '/egresos/obtener_datos_grafico',
-    '/egresos/obtener_datos_grafico_torta',    
-    '/egresos/reportes_egresos_excel',
-    '/egresos/tipos_egreso',
-    '/egresos/agregar_gasto',
-    '/egresos/eliminar_egreso',
-    '/egresos/actualizar_egreso',
-
-
-    '/cuotas_club',
-    '/cuotas_club/cuota_socio',
-    '/cuotas_club/cuotas_reporte',
-    '/cuotas_club/cuotas_pendientes_mes',
-
-]
-
-const SOCIO = [
+let SOCIO = [
 
     '/reserva_en_club/obtener_mesas_disponibles',
     '/reserva_en_club/obtener_reservas_club',
@@ -120,7 +41,7 @@ const SOCIO = [
     '/reserva_en_club/editar_reserva_club',
 ]
 
-const PROFESOR = [
+let PROFESOR = [
 
     '/reserva_en_club/obtener_mesas_disponibles',
     '/reserva_en_club/obtener_reservas_club',
@@ -173,7 +94,7 @@ const comprobar_acceso_rol = async ( req = request, res = response, next)=> {
             //console.log( rol )
             switch (rol) {
                 case 'ADMINISTRADOR':
-                    if ( ADMINISTRADOR.find( ( element) => element === path ) ){
+                    if ( ADMINISTRADOR.find( ( element) => element.path_ruta === path ) ){
                         next()
                     }else {
                         res.status( 401 ).json( {
@@ -186,7 +107,7 @@ const comprobar_acceso_rol = async ( req = request, res = response, next)=> {
                     break;
             
                 case 'SOCIO':
-                    if ( SOCIO.find( ( element) => element === path ) ){
+                    if ( SOCIO.find( ( element) => element.path_ruta === path ) ){
                         next()
                     }else {
                         res.status( 401 ).json( {
@@ -199,7 +120,7 @@ const comprobar_acceso_rol = async ( req = request, res = response, next)=> {
 
 
                 case 'PROFESOR':
-                    if ( PROFESOR.find( ( element) => element === path ) ){
+                    if ( PROFESOR.find( ( element) => element.path_ruta === path ) ){
                         next()
                     }else {
                         res.status( 401 ).json( {
@@ -237,4 +158,41 @@ const comprobar_acceso_rol = async ( req = request, res = response, next)=> {
 
 
 
-module.exports = { comprobar_acceso_rol };
+const cargar_rutas_rol = async () =>{
+
+
+    try {
+        
+
+        ADMINISTRADOR = await prisma.$queryRawUnsafe( `SELECT B.PATH_RUTA 
+                                                            FROM ACCESOS_USUARIO A JOIN RUTAS_APP B ON A.ID_RUTA_APP = B.ID_RUTA_APP
+                                                            JOIN ROLES_USUARIO C ON C.ID_ROL_USUARIO = A.ID_ROL_USUARIO
+                                                        WHERE C.ID_ROL_USUARIO = 1`);
+
+        SOCIO = await prisma.$queryRawUnsafe( `SELECT B.PATH_RUTA 
+                                                            FROM ACCESOS_USUARIO A JOIN RUTAS_APP B ON A.ID_RUTA_APP = B.ID_RUTA_APP
+                                                            JOIN ROLES_USUARIO C ON C.ID_ROL_USUARIO = A.ID_ROL_USUARIO
+                                                        WHERE C.ID_ROL_USUARIO = 2` );
+
+        PROFESOR = await prisma.$queryRawUnsafe( `SELECT B.PATH_RUTA 
+                                                                        FROM ACCESOS_USUARIO A JOIN RUTAS_APP B ON A.ID_RUTA_APP = B.ID_RUTA_APP
+                                                                        JOIN ROLES_USUARIO C ON C.ID_ROL_USUARIO = A.ID_ROL_USUARIO
+                                                                    WHERE C.ID_ROL_USUARIO = 3` );
+        //console.log( ADMINISTRADOR)
+    } catch (error) {
+        console.log ( 'No se lograron cargar los accesos de los roles : ' )
+        console.log( error );
+    }
+
+
+}
+
+
+
+
+
+
+module.exports = { 
+                    comprobar_acceso_rol,
+                    cargar_rutas_rol
+                };

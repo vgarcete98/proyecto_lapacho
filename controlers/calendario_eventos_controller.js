@@ -112,6 +112,173 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
 
 
 
+const obtener_categorias_x_evento = async ( req = request, res = response ) =>{
+
+    try {
+        
+        const { id_evento } = req.query;
+        const categorias = await prisma.categorias.findMany( { where : { id_evento_calendario : Number( id_evento ) } } )
+
+        let categoriasEvento = [];
+
+
+        categorias.forEach( ( element ) =>{
+            const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = element;
+
+            categoriasEvento.push( {
+                descripcion, 
+                idCategoria : id_categoria, 
+                nombreCategoria : nombre_categoria, 
+                idEventoCalendario : id_evento_calendario
+            } )
+        } )
+        
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Eventos registrados hasta el momento",
+            categoriasEvento,
+            cantidad : categoriasEvento.length
+
+        } );
+
+
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            //error
+        } );   
+    }   
+
+}
+
+
+
+const crear_categorias_x_evento = async ( req = request, res = response ) =>{
+
+    try {
+        
+        const { descripcionCategoria, idCategoria, nombreCategoria, idEventoCalendario  } = req.body;
+        const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.create( {
+                                                                                                                        data : { 
+                                                                                                                            descripcion : descripcionCategoria, 
+                                                                                                                            id_categoria : idCategoria, 
+                                                                                                                            nombre_categoria : nombreCategoria, 
+                                                                                                                            id_evento_calendario : idEventoCalendario
+                                                                                                                        } 
+                                                                                                                    } );
+
+        let categoriaEvento = { descripcion, 
+                                    idCategoria : id_categoria, 
+                                    nombreCategoria : nombre_categoria, 
+                                    idEventoCalendario : id_evento_calendario
+                            };
+                            
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Categoria creada con exito",
+            categoriaEvento
+
+        } );
+
+
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            //error
+        } );   
+    }   
+
+}
+
+
+const editar_categorias_x_evento = async ( req = request, res = response ) =>{
+    try {
+        
+        const { descripcionCategoria, idCategoria, nombreCategoria, idEventoCalendario  } = req.body;
+        const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.update( {
+                                                                                                                        data : { 
+                                                                                                                            descripcion : descripcionCategoria, 
+                                                                                                                            id_categoria : idCategoria, 
+                                                                                                                            nombre_categoria : nombreCategoria, 
+                                                                                                                            id_evento_calendario : idEventoCalendario
+                                                                                                                        },
+                                                                                                                        where : { 
+                                                                                                                            id_categoria : Number( idCategoria )
+                                                                                                                        }
+                                                                                                                    } );
+
+        let categoriaEvento = { descripcion, 
+                                    idCategoria : id_categoria, 
+                                    nombreCategoria : nombre_categoria, 
+                                    idEventoCalendario : id_evento_calendario
+                            };
+                            
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Categoria editada con exito",
+            categoriaEvento
+
+        } );
+
+
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            //error
+        } );   
+    }   
+
+}
+
+
+
+const eliminar_categorias_x_evento = async ( req = request, res = response ) =>{
+
+    try {
+        
+        const { descripcionCategoria, idCategoria, nombreCategoria, idEventoCalendario  } = req.body;
+        const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.delete( {
+                                                                                                                        data : { 
+                                                                                                                            descripcion : descripcionCategoria, 
+                                                                                                                            id_categoria : idCategoria, 
+                                                                                                                            nombre_categoria : nombreCategoria, 
+                                                                                                                            id_evento_calendario : idEventoCalendario
+                                                                                                                        },
+                                                                                                                        where : { 
+                                                                                                                            id_categoria : Number( idCategoria )
+                                                                                                                        }
+                                                                                                                    } );
+
+        let categoriaEvento = { descripcion, 
+                                    idCategoria : id_categoria, 
+                                    nombreCategoria : nombre_categoria, 
+                                    idEventoCalendario : id_evento_calendario
+                            };
+                            
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Categoria eliminada con exito",
+            categoriaEvento
+
+        } );
+
+
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            //error
+        } );   
+    }   
+
+}
 
 
 const asignar_evento_calendario = async ( req = request, res = response ) =>{
@@ -700,6 +867,175 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
 
 }
 
+const obtener_requerimientos_x_evento = async ( req = request, res = response ) =>{
+
+    try {
+        
+        const { id_evento } = req.query;
+        const categorias = await prisma.categorias.findMany( { where : { id_evento_calendario : Number( id_evento ) } } )
+
+        let categoriasEvento = [];
+
+
+        categorias.forEach( ( element ) =>{
+            const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = element;
+
+            categoriasEvento.push( {
+                descripcion, 
+                idCategoria : id_categoria, 
+                nombreCategoria : nombre_categoria, 
+                idEventoCalendario : id_evento_calendario
+            } )
+        } )
+        
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Eventos registrados hasta el momento",
+            categoriasEvento,
+            cantidad : categoriasEvento.length
+
+        } );
+
+
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            //error
+        } );   
+    }   
+
+}
+
+
+
+const crear_requerimientos_x_evento = async ( req = request, res = response ) =>{
+
+    try {
+        
+        const { descripcionCategoria, idCategoria, nombreCategoria, idEventoCalendario  } = req.body;
+        const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.create( {
+                                                                                                                        data : { 
+                                                                                                                            descripcion : descripcionCategoria, 
+                                                                                                                            id_categoria : idCategoria, 
+                                                                                                                            nombre_categoria : nombreCategoria, 
+                                                                                                                            id_evento_calendario : idEventoCalendario
+                                                                                                                        } 
+                                                                                                                    } );
+
+        let categoriaEvento = { descripcion, 
+                                    idCategoria : id_categoria, 
+                                    nombreCategoria : nombre_categoria, 
+                                    idEventoCalendario : id_evento_calendario
+                            };
+                            
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Categoria creada con exito",
+            categoriaEvento
+
+        } );
+
+
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            //error
+        } );   
+    }   
+
+}
+
+
+const editar_requerimientos_x_evento = async ( req = request, res = response ) =>{
+    try {
+        
+        const { descripcionCategoria, idCategoria, nombreCategoria, idEventoCalendario  } = req.body;
+        const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.update( {
+                                                                                                                        data : { 
+                                                                                                                            descripcion : descripcionCategoria, 
+                                                                                                                            id_categoria : idCategoria, 
+                                                                                                                            nombre_categoria : nombreCategoria, 
+                                                                                                                            id_evento_calendario : idEventoCalendario
+                                                                                                                        },
+                                                                                                                        where : { 
+                                                                                                                            id_categoria : Number( idCategoria )
+                                                                                                                        }
+                                                                                                                    } );
+
+        let categoriaEvento = { descripcion, 
+                                    idCategoria : id_categoria, 
+                                    nombreCategoria : nombre_categoria, 
+                                    idEventoCalendario : id_evento_calendario
+                            };
+                            
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Categoria editada con exito",
+            categoriaEvento
+
+        } );
+
+
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            //error
+        } );   
+    }   
+
+}
+
+
+
+const eliminar_requerimientos_x_evento = async ( req = request, res = response ) =>{
+
+    try {
+        
+        const { descripcionCategoria, idCategoria, nombreCategoria, idEventoCalendario  } = req.body;
+        const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.delete( {
+                                                                                                                        data : { 
+                                                                                                                            descripcion : descripcionCategoria, 
+                                                                                                                            id_categoria : idCategoria, 
+                                                                                                                            nombre_categoria : nombreCategoria, 
+                                                                                                                            id_evento_calendario : idEventoCalendario
+                                                                                                                        },
+                                                                                                                        where : { 
+                                                                                                                            id_categoria : Number( idCategoria )
+                                                                                                                        }
+                                                                                                                    } );
+
+        let categoriaEvento = { descripcion, 
+                                    idCategoria : id_categoria, 
+                                    nombreCategoria : nombre_categoria, 
+                                    idEventoCalendario : id_evento_calendario
+                            };
+                            
+        res.status( 200 ).json( {
+            status : true,
+            msg : "Categoria eliminada con exito",
+            categoriaEvento
+
+        } );
+
+
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            //error
+        } );   
+    }   
+
+}
+
+
 
 
 module.exports = {
@@ -712,6 +1048,14 @@ module.exports = {
     obtener_eventos_x_fecha_calendario,
     obtener_inscripciones_x_evento,
     obtener_inscripciones_x_evento_no_socios,
-    obtener_todos_los_eventos_calendario
+    obtener_todos_los_eventos_calendario,
+    obtener_categorias_x_evento,
+    crear_categorias_x_evento,
+    editar_categorias_x_evento,
+    eliminar_categorias_x_evento,
+    obtener_requerimientos_x_evento,
+    eliminar_requerimientos_x_evento,
+    editar_requerimientos_x_evento,
+    crear_requerimientos_x_evento
 
 }

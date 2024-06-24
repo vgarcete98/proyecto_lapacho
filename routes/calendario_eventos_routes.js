@@ -12,7 +12,15 @@ const {
         obtener_inscripciones_x_evento,
         obtener_tipos_de_evento,
         obtener_eventos_del_mes,
-        obtener_todos_los_eventos_calendario} = require( '../controlers/calendario_eventos_controller' );
+        obtener_todos_los_eventos_calendario,
+        obtener_categorias_x_evento,
+        crear_categorias_x_evento,
+        editar_categorias_x_evento,
+        eliminar_categorias_x_evento,
+        obtener_requerimientos_x_evento,
+        crear_requerimientos_x_evento,
+        editar_requerimientos_x_evento,
+        eliminar_requerimientos_x_evento} = require( '../controlers/calendario_eventos_controller' );
 //-------------------------------------------------------------------------
 
 
@@ -38,5 +46,28 @@ router_eventos.post( '/crear_nuevo_evento', [  comprobar_disponibilidad_evento, 
 router_eventos.delete( '/eliminar_evento', [ comprobar_existe_evento ,comprobar_evento_borrado, verificar_vista_usuario ], borrar_evento_calendario );
 
 router_eventos.put( '/actualizar_evento', [ comprobar_existe_evento , comprobar_disponibilidad_evento, verificar_vista_usuario ], actualizar_evento_calendario );
+
+
+
+router_eventos.get( '/obtener_categorias_evento', [ ], obtener_categorias_x_evento );
+
+router_eventos.post( '/crear_categorias_evento', [ ], crear_categorias_x_evento );
+
+router_eventos.put( '/editar_categorias_evento', [ ], editar_categorias_x_evento );
+
+router_eventos.delete( '/eliminar_categorias_evento', [ ], eliminar_categorias_x_evento );
+
+
+
+router_eventos.get( '/obtener_requerimientos_evento', [ ], obtener_requerimientos_x_evento );
+
+router_eventos.post( '/crear_requerimientos_evento', [ ], crear_requerimientos_x_evento );
+
+router_eventos.put( '/editar_requerimientos_evento', [ ], editar_requerimientos_x_evento );
+
+router_eventos.delete( '/eliminar_requerimientos_evento', [ ], eliminar_requerimientos_x_evento );
+
+
+
 
 module.exports = router_eventos;

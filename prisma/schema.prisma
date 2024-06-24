@@ -38,21 +38,24 @@ model agendamiento_clase {
 }
 
 model calendario_eventos {
-  id_evento_calendario    BigInt                    @id(map: "calendario_eventos_pk") @default(autoincrement())
-  id_tipo_evento          BigInt
-  fecha_desde_evento      DateTime                  @db.Timestamp(6)
-  eventocreadoen          DateTime?                 @db.Date
-  eventoeditadoen         DateTime?                 @db.Date
-  fecha_hasta_evento      DateTime                  @db.Timestamp(6)
-  costo                   Int
-  estadoevento            String?                   @db.VarChar(20)
-  decripcion_evento       String?                   @db.VarChar(255)
-  nombre_evento           String?                   @db.VarChar(255)
-  todo_el_dia             Boolean
-  fechaagendamiento       DateTime?                 @db.Date
-  eventos                 eventos                   @relation(fields: [id_tipo_evento], references: [id_tipo_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_calendario_eventos_fk")
-  inscripciones           inscripciones[]
-  inscripciones_no_socios inscripciones_no_socios[]
+  id_evento_calendario                  BigInt                                  @id(map: "calendario_eventos_pk") @default(autoincrement())
+  id_tipo_evento                        BigInt
+  fecha_desde_evento                    DateTime                                @db.Timestamp(6)
+  eventocreadoen                        DateTime?                               @db.Date
+  eventoeditadoen                       DateTime?                               @db.Date
+  fecha_hasta_evento                    DateTime                                @db.Timestamp(6)
+  costo                                 Int
+  estadoevento                          String?                                 @db.VarChar(20)
+  decripcion_evento                     String?                                 @db.VarChar(255)
+  nombre_evento                         String?                                 @db.VarChar(255)
+  todo_el_dia                           Boolean
+  fechaagendamiento                     DateTime?                               @db.Date
+  es_en_club                            Boolean                                 @default(true)
+  eventos                               eventos                                 @relation(fields: [id_tipo_evento], references: [id_tipo_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_calendario_eventos_fk")
+  categorias                            categorias[]
+  inscripcion_evento_categoria_no_socio inscripcion_evento_categoria_no_socio[]
+  inscripcion_evento_categria_socio     inscripcion_evento_categria_socio[]
+  requerimientos                        requerimientos[]
 }
 
 model clubes_habilitados {
@@ -105,18 +108,17 @@ model gastos_club {
 }
 
 model inscripciones {
-  id_inscripcion         BigInt                   @id(map: "inscripciones_pk")
-  id_socio               BigInt
-  id_evento_calendario   BigInt
-  desc_inscripcion       String?                  @db.VarChar(255)
-  fecha_inscripcion      DateTime                 @db.Date
-  abonado                Boolean
-  inscripcioncreadoen    DateTime?                @db.Date
-  estadoinscripcion      Int?                     @db.SmallInt
-  inscripcioneditadoen   DateTime?                @db.Date
-  calendario_eventos     calendario_eventos       @relation(fields: [id_evento_calendario], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_inscripciones_fk")
-  socio                  socio                    @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_inscripciones_fk")
-  transacciones_ingresos transacciones_ingresos[]
+  id_inscripcion                    BigInt                              @id(map: "inscripciones_pk")
+  id_socio                          BigInt
+  desc_inscripcion                  String?                             @db.VarChar(255)
+  fecha_inscripcion                 DateTime                            @db.Date
+  abonado                           Boolean
+  inscripcioncreadoen               DateTime?                           @db.Date
+  estadoinscripcion                 Int?                                @db.SmallInt
+  inscripcioneditadoen              DateTime?                           @db.Date
+  inscripcion_evento_categria_socio inscripcion_evento_categria_socio[]
+  socio                             socio                               @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_inscripciones_fk")
+  transacciones_ingresos            transacciones_ingresos[]
 }
 
 model mesas {
@@ -150,11 +152,11 @@ model pases_socio {
 }
 
 model persona {
-  id_persona       BigInt   @id(map: "persona_pk") @default(autoincrement())
-  apellido         String   @db.VarChar(255)
-  nombre           String   @db.VarChar(255)
-  cedula           String   @db.VarChar(255)
-  fecha_nacimiento DateTime @db.Date
+  id_persona       BigInt    @id(map: "persona_pk") @default(autoincrement())
+  apellido         String    @db.VarChar(255)
+  nombre           String    @db.VarChar(255)
+  cedula           String    @db.VarChar(255)
+  fecha_nacimiento DateTime? @db.Date
   socio            socio[]
 }
 
@@ -284,17 +286,16 @@ model profesores {
 }
 
 model inscripciones_no_socios {
-  id_inscripcion_no_socio       Int                      @id(map: "inscripciones_no_socios_pk") @default(autoincrement())
-  id_evento_calendario_no_socio BigInt
-  nombre_jugador                String                   @db.VarChar(255)
-  club_jugador                  String?                  @db.VarChar(255)
-  desc_inscripcion              String?                  @db.VarChar(255)
-  fecha_inscripcion             DateTime                 @db.Date
-  abonado                       Boolean
-  estado_inscripcion            Int?                     @db.SmallInt
-  editadoen                     DateTime?                @db.Date
-  calendario_eventos            calendario_eventos       @relation(fields: [id_evento_calendario_no_socio], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_inscripciones_no_socios_fk")
-  transacciones_ingresos        transacciones_ingresos[]
+  id_inscripcion_no_socio               Int                                     @id(map: "inscripciones_no_socios_pk") @default(autoincrement())
+  nombre_jugador                        String                                  @db.VarChar(255)
+  club_jugador                          String?                                 @db.VarChar(255)
+  desc_inscripcion                      String?                                 @db.VarChar(255)
+  fecha_inscripcion                     DateTime                                @db.Date
+  abonado                               Boolean
+  estado_inscripcion                    Int?                                    @db.SmallInt
+  editadoen                             DateTime?                               @db.Date
+  inscripcion_evento_categoria_no_socio inscripcion_evento_categoria_no_socio[]
+  transacciones_ingresos                transacciones_ingresos[]
 }
 
 model acciones {
@@ -305,9 +306,8 @@ model acciones {
 }
 
 model modulos {
-  id_modulo     Int         @id(map: "id_modulo") @default(autoincrement())
-  nombre_modulo String      @db.VarChar(255)
-  rutas_app     rutas_app[]
+  id_modulo     Int    @id(map: "id_modulo") @default(autoincrement())
+  nombre_modulo String @db.VarChar(255)
 }
 
 model modulos_habilitados_rol {
@@ -330,11 +330,9 @@ model api_logs {
 
 model rutas_app {
   id_ruta_app     Int               @id(map: "rutas_app_pk") @default(autoincrement())
-  id_modulo       Int
-  accion          String            @db.VarChar(255)
+  accion          String?           @db.VarChar(255)
   path_ruta       String            @db.VarChar(255)
   accesos_usuario accesos_usuario[]
-  modulos         modulos           @relation(fields: [id_modulo], references: [id_modulo], onDelete: NoAction, onUpdate: NoAction, map: "modulos_rutas_app_fk")
 }
 
 model rutas_habilitadas_rol {
@@ -434,4 +432,43 @@ model transacciones_ingresos {
   ingresos                   ingresos                 @relation(fields: [column_d_operacion_ingreso], references: [column_d_operacion_ingreso], onDelete: NoAction, onUpdate: NoAction, map: "ingresos_cuotas_ingresos_fk")
   inscripciones_no_socios    inscripciones_no_socios? @relation(fields: [id_inscripcion_no_socio], references: [id_inscripcion_no_socio], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_no_socios_transacciones_ingresos_fk")
   inscripciones              inscripciones?           @relation(fields: [id_inscripcion], references: [id_inscripcion], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_transacciones_ingresos_fk")
+}
+
+model categorias {
+  id_categoria                          Int                                     @id(map: "categorias_pk") @default(autoincrement())
+  id_evento_calendario                  BigInt
+  nombre_categoria                      String                                  @db.VarChar(255)
+  descripcion                           String                                  @db.VarChar(255)
+  calendario_eventos                    calendario_eventos                      @relation(fields: [id_evento_calendario], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_categorias_fk")
+  inscripcion_evento_categoria_no_socio inscripcion_evento_categoria_no_socio[]
+  inscripcion_evento_categria_socio     inscripcion_evento_categria_socio[]
+}
+
+model requerimientos {
+  id_requerimiento     Int                @id(map: "requerimientos_pk") @default(autoincrement())
+  descripcion          String             @db.VarChar(255)
+  cantidad             Int
+  costo_unidad         Int
+  id_evento_calendario BigInt
+  calendario_eventos   calendario_eventos @relation(fields: [id_evento_calendario], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_requerimientos_fk")
+}
+
+model inscripcion_evento_categoria_no_socio {
+  id_inscripcion_categoria_no_socio Int                     @id(map: "inscripcion_evento_categoria_no_socio_pk") @default(autoincrement())
+  id_inscripcion_no_socio           Int
+  id_categoria                      Int
+  id_evento_calendario              BigInt
+  calendario_eventos                calendario_eventos      @relation(fields: [id_evento_calendario], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_inscripcion_evento_categoria_no_socio_fk")
+  categorias                        categorias              @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "categorias_inscripcion_evento_categoria_no_socio_fk")
+  inscripciones_no_socios           inscripciones_no_socios @relation(fields: [id_inscripcion_no_socio], references: [id_inscripcion_no_socio], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_no_socios_inscripcion_evento_categoria_no_soci40")
+}
+
+model inscripcion_evento_categria_socio {
+  id_inscripcion_categoria Int                @id(map: "inscripcion_evento_categria_socio_pk") @default(autoincrement())
+  id_inscripcion           BigInt
+  id_evento_calendario     BigInt
+  id_categoria             Int
+  calendario_eventos       calendario_eventos @relation(fields: [id_evento_calendario], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_inscripcion_evento_categria_socio_fk")
+  categorias               categorias         @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "categorias_inscripcion_evento_categria_socio_fk")
+  inscripciones            inscripciones      @relation(fields: [id_inscripcion], references: [id_inscripcion], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_inscripcion_evento_categria_socio_fk")
 }

@@ -34,25 +34,6 @@ async function main() {
     cena_fin_anio : "CENA_FIN_ANIO"
   }
 
-//-----------------------------------------------------------------------------------------------------------------
-  const modulos = await prisma.modulos.createMany(
-                                                                  {
-                                                                    data : [
-                                                                      { nombre_modulo : 'SOCIOS' },
-                                                                      { nombre_modulo : 'PAGO_CUOTAS' },
-                                                                      { nombre_modulo : 'PASES_CLUBES_JUGADORES' },
-                                                                      { nombre_modulo : 'EVENTOS' },
-                                                                      { nombre_modulo : 'SEGURIDAD' },
-                                                                      { nombre_modulo : 'INSCRIPCIONES_EVENTOS' },
-                                                                      { nombre_modulo : 'PROFESORES' },    
-                                                                      { nombre_modulo : 'RESERVAS' },
-                                                                      { nombre_modulo : 'INGRESOS_CLUB' },   
-                                                                      { nombre_modulo : 'EGRESOS_CLUB' }, 
-                                                                      { nombre_modulo : 'CLASES' },                                                                      
-                                                                    ]
-                                                                  }
-                                                                );
-//-----------------------------------------------------------------------------------------------------------------------------
 
 // PRIMER ROL CREADO
 //--------------------------------------------------------------------------------------------------------------
@@ -68,50 +49,81 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
   const rutas_app = await prisma.rutas_app.createMany(
                                                             {
                                                               data : [
-                                                                //----------------------------------------
-                                                                { path_ruta : '/socio', id_modulo : 1, accion : 'CREAR SOCIO'  },
-                                                                { path_ruta : '/socio', id_modulo : 1, accion : 'VER SOCIO'  },
-                                                                { path_ruta : '/socio', id_modulo : 1, accion : 'ACTUALIZAR SOCIO'  },
-                                                                { path_ruta : '/socio', id_modulo : 1, accion : 'BORRAR SOCIO'  },
-                                                                //----------------------------------------
-                                                                //----------------------------------------
-                                                                { path_ruta : '/cuotas_club/cuota_socio', id_modulo : 2, accion : 'VER CUOTAS DE SOCIO'  },
-                                                                { path_ruta : '/pagos_socio/socio/pagar_cuota', id_modulo : 2, accion : 'PAGAR CUOTA'  },
-                                                                { path_ruta : '/pagos_socio/socio/anular_pago', id_modulo : 2, accion : 'ANULAR PAGO CUOTA'  },
-                                                                { path_ruta : '/cuotas_club/cuotas_reporte', id_modulo : 2, accion : 'REPORTE DE CUOTAS'  },
-                                                                //----------------------------------------
-
-                                                                //----------------------------------------
-                                                                { path_ruta : '/roles/obtener_roles' , id_modulo :  5, accion : 'VER ROLES'  },
-                                                                { path_ruta : '/roles/crear_rol' ,  id_modulo : 5, accion : 'CREAR ROLES'  },
-                                                                { path_ruta : '/roles/borrar_rol' ,  id_modulo : 5, accion : 'BORRAR ROLES'  },
-                                                                { path_ruta : '/roles/editar_rol' ,  id_modulo : 5, accion : 'EDITAR ROLES'  },
-
-                                                                //----------------------------------------
-                                                                { path_ruta : '/accesos/crear_accesos' ,  id_modulo : 5, accion : 'CREAR ACCESO PARA ROLES'  },
-                                                                { path_ruta : '/accesos/editar_accesos' ,  id_modulo : 5, accion : 'EDITAR ACCESO PARA ROLES'  },
-                                                                { path_ruta : '/accesos/borrar_accesos' ,  id_modulo : 5, accion : 'BORRAR ACCESO PARA ROLES'  },
-                                                                { path_ruta : '/accesos/obtener_accesos' ,  id_modulo : 5, accion : 'VER ACCESO PARA ROLES'  },
-                                                                { path_ruta : '/accesos/asignar_accesos' ,  id_modulo : 5, accion : 'ASIGNAR ACCESO A ROL'  },
-                                                                { path_ruta : '/accesos/quitar_accesos' ,  id_modulo : 5, accion : 'REPORTE DE CUOTAS'  },
-                                                                //----------------------------------------
-
-                                                                //----------------------------------------
-                                                                { path_ruta : '/accesos/crear_modulos' ,  id_modulo : 5, accion : 'VER CUOTAS DE SOCIO'  },
-                                                                { path_ruta : '/accesos/editar_modulos' ,  id_modulo : 5, accion : 'PAGAR CUOTA'  },
-                                                                { path_ruta : '/accesos/obtener_modulos' ,  id_modulo : 5, accion : 'ANULAR PAGO CUOTA'  },
-                                                                { path_ruta : '/accesos/eliminar_modulos' ,  id_modulo : 5, accion : 'REPORTE DE CUOTAS'  },
-                                                                //----------------------------------------
-
-                                                                { path_ruta : '/profesores', id_modulo : 7, accion : 'BORRAR SOCIO'  },
+                                                                {path_ruta : '/socio',},
+                                                                {path_ruta : '/socio/socios_detalle',},
+                                                                {path_ruta : '/socio/socio_cedula/nombre',},
+                                                                {path_ruta : '/socio/borrar_socio',},
+                                                                {path_ruta : '/socio/editar_socio',},
+                                                                {path_ruta : '/socio/crear_socio',},
+                                                                {path_ruta : '/socio/obtener_socios',},
+                                                                {path_ruta : '/socio/obtener_socio',},
+                                                                {path_ruta : '/socio/obtener_tipo_socios',},
+                                                          
+                                                                {path_ruta : '/tipo_socio',},
                                                                 
-                                                        
+                                                                {path_ruta : '/eventos',},
+                                                                
+                                                                {path_ruta : '/inscripciones',},
+                                                         
+                                                                {path_ruta : '/reserva_en_club/obtener_mesas_disponibles',},
+                                                                {path_ruta : '/reserva_en_club/obtener_reservas_club',},
+                                                                {path_ruta : '/reserva_en_club/crear_reserva_club',},
+                                                                {path_ruta : '/reserva_en_club/borrar_reserva_club',},
+                                                                {path_ruta : '/reserva_en_club/editar_reserva_club',},
+                                                                {path_ruta : '/reserva_en_club/obtener_mesas_disponibles_x_horario',},
+                                                          
+                                                                {path_ruta : '/pagos_socio',},
+                                                                {path_ruta : '/pagos_socio/socio/pagar_cuota',},
+                                                                {path_ruta : '/pagos_socio/socio/anular_pago/',},
+                                                                {path_ruta : '/pagos_socio/socio/pagar_cuota_varias',},
+                                                                {path_ruta : '/tipo_cuotas',},
+                                                              
+                                                                {path_ruta : '/calendario_eventos',},
+                                                                {path_ruta : '/calendario_eventos/eventos_mes',},
+                                                                {path_ruta : '/calendario_eventos/eventos_annio',},
+                                                                {path_ruta : '/calendario_eventos/inscripciones_evento',},
+                                                                {path_ruta : '/calendario_eventos/crear_nuevo_evento',},
+                                                                {path_ruta : '/calendario_eventos/actualizar_evento',},
+                                                                {path_ruta : '/calendario_eventos/eliminar_evento',},
+                                                                {path_ruta : '/calendario_eventos/obtener_tipos_evento',},
+                                                                {path_ruta : '/calendario_eventos/eventos_mes_todos',},
+                                                                
+                                                                {path_ruta : '/pases_jugadores',},
+                                                               
+                                                                {path_ruta : '/profesores',},
+                                                              
+                                                                {path_ruta : '/agendamiento_clases',},
+                                                                {path_ruta : '/agendamiento_clases/agendar_clase',},
+                                                                {path_ruta : '/agendamiento_clases/editar_clase',},
+                                                                {path_ruta : '/agendamiento_clases/cancelar_clase',},
+                                                                {path_ruta : '/agendamiento_clases/pagar_x_clase',},
+                                                                {path_ruta : '/agendamiento_clases/obtener_clases_x_fecha',},
+                                                                {path_ruta : '/agendamiento_clases/obtener_clases_x_fecha_socio',},
+                                                                {path_ruta : '/agendamiento_clases/obtener_clases_x_fecha_profesor',},
+                                                                {path_ruta : '/agendamiento_clases/obtener_mesas_disponibles_x_horario',},
+                                                         
+                                                                {path_ruta : '/ingresos',},
+                                                                {path_ruta : '/ingresos/obtener_grafico_ingresos',},
+                                                                {path_ruta : '/ingresos/obtener_grafico_ingresos_torta',},
+                                                                {path_ruta : '/ingresos/reportes_ingresos_excel',},
+                                                                {path_ruta : '/ingresos/tipos_ingreso',},
+                                                                {path_ruta : '/ingresos/agregar_ingreso',},
+                                                                {path_ruta : '/ingresos/borrar_ingreso',},
+                                                                {path_ruta : '/ingresos/actualizar_ingreso',},
 
+                                                                {path_ruta : '/egresos',},
+                                                                {path_ruta : '/egresos/obtener_datos_grafico',},
+                                                                {path_ruta : '/egresos/obtener_datos_grafico_torta',    },
+                                                                {path_ruta : '/egresos/reportes_egresos_excel',},
+                                                                {path_ruta : '/egresos/tipos_egreso',},
+                                                                {path_ruta : '/egresos/agregar_gasto',},
+                                                                {path_ruta : '/egresos/eliminar_egreso',},
+                                                                {path_ruta : '/egresos/actualizar_egreso',},
 
-                                                                //----------------------------------------
-                                                                //{ path_ruta : '/socio', id_modulo : 1  },
-                                                                //----------------------------------------
-
+                                                                {path_ruta : '/cuotas_club',},
+                                                                {path_ruta : '/cuotas_club/cuota_socio',},
+                                                                {path_ruta : '/cuotas_club/cuotas_reporte',},
+                                                                {path_ruta : '/cuotas_club/cuotas_pendientes_mes', },
                                                               ]
                                                             }
                                                           );
@@ -131,6 +143,62 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                                 { id_rol_usuario : 1, id_ruta_app : 6 },
                                                                                 { id_rol_usuario : 1, id_ruta_app : 7 },
                                                                                 { id_rol_usuario : 1, id_ruta_app : 8 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 9 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 10 },                                                                                
+                                                                                { id_rol_usuario : 1, id_ruta_app : 11 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 12 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 13 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 14 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 15 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 16 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 17 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 18 },                                                                                
+                                                                                { id_rol_usuario : 1, id_ruta_app : 19 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 20 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 21 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 22 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 23 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 24 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 25 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 26 },                                                                                
+                                                                                { id_rol_usuario : 1, id_ruta_app : 27 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 28 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 29 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 30 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 31 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 32 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 33 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 34 },                                                                                
+                                                                                { id_rol_usuario : 1, id_ruta_app : 35 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 36 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 37 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 38 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 39 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 40 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 41 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 42 },                                                                                
+                                                                                { id_rol_usuario : 1, id_ruta_app : 43 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 44 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 45 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 46 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 47 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 48 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 49 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 50 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 51 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 52 },                                                                                
+                                                                                { id_rol_usuario : 1, id_ruta_app : 53 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 54 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 55 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 56 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 57 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 58 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 59 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 60 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 61 },
+                                                                                { id_rol_usuario : 1, id_ruta_app : 62 },                                                                                
+                                                                                { id_rol_usuario : 1, id_ruta_app : 63 },
+
                                                                               ]
                                                                             }
 

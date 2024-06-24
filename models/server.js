@@ -49,7 +49,7 @@ const { desencriptar_body_login } = require('../middlewares/desencriptar_login')
 const { validar_existe_usuario_socio } = require( '../middlewares/validar_existe_usuario' );
 const { obtener_data_socio } = require('../helpers/verficar_socio_carga');
 const router_agendamientos_clase = require('../routes/agendamiento_clases_routes');
-const { comprobar_acceso_rol } = require('../helpers/comprobar_acceso_rol');
+const { comprobar_acceso_rol, cargar_rutas_rol } = require('../helpers/comprobar_acceso_rol');
 //----------------------------------------------------------------------------
 
 //CRON JOBS QUE VOY A NECESITAR
@@ -180,6 +180,10 @@ class Server {
         //console.log(getEndpoints(this.app));
     }
 
+    cargar_accesos_rol(){
+
+        cargar_rutas_rol();
+    }
 
     listen(){
 
