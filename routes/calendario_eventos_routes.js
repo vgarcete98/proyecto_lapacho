@@ -21,6 +21,7 @@ const {
         crear_requerimientos_x_evento,
         editar_requerimientos_x_evento,
         eliminar_requerimientos_x_evento} = require( '../controlers/calendario_eventos_controller' );
+const { obtener_ganancias_gastos_x_evento, obtener_grafico_inscriptos_x_evento_categoria, obtener_cantidad_inscriptos_x_evento } = require('../controlers/inscripciones_controller');
 //-------------------------------------------------------------------------
 
 
@@ -66,6 +67,14 @@ router_eventos.post( '/crear_requerimientos_evento', [ ], crear_requerimientos_x
 router_eventos.put( '/editar_requerimientos_evento', [ ], editar_requerimientos_x_evento );
 
 router_eventos.delete( '/eliminar_requerimientos_evento', [ ], eliminar_requerimientos_x_evento );
+
+
+
+router_eventos.get( '/ganancias_gastos_x_evento', [ ], obtener_ganancias_gastos_x_evento );
+
+router_eventos.get( '/grafico_torta_inscriptos_x_evento', [ ], obtener_grafico_inscriptos_x_evento_categoria );
+
+router_eventos.get( '/total_inscriptos_evento', [ ], obtener_cantidad_inscriptos_x_evento );
 
 
 

@@ -9,21 +9,15 @@ const obtener_accesos = async ( req = request, res = response ) => {
 
     try {
         //OBTIENE TODOS LOS ACCESOS CON SUS ACCIONES CORRESPONDIENTES
-        let accesos = [];
-        accesos = await prisma.$queryRaw`SELECT C.ID_RUTA_APP, C.PATH_RUTA, D.ID_MODULO, D.nombre_modulo
-                                        	FROM rutas_app C JOIN modulos D ON D.id_modulo = C.id_modulo
-                                        ORDER BY C.ID_RUTA_APP`;
-        let accesosDisponibles = [];
 
-        accesosDisponibles = accesos.map( ( element )=>{
-            const { id_ruta_app, path_ruta, id_modulo, nombre_modulo } = element;
-            return {
-                idRutaApp : id_ruta_app, 
-                pathRuta : path_ruta, 
-                idModulo : id_modulo, 
-                nombreModulo : nombre_modulo
-            }
-        } )
+        const { accion } = req.query;
+
+        let accesosDisponibles = await prisma.$queryRaw`SELECT C.ID_RUTA_APP AS "idRutaApp", 
+                                                C.PATH_RUTA AS "pathRuta", 
+                                                C.accion
+                                        	FROM rutas_app C
+                                            ${ ( accion === undefined ) ? `` : `WHERE C.accion LIKE '%${ accion }%'` } 
+                                        ORDER BY C.ID_RUTA_APP`;
         res.status( 200 ).json(
             {
                 status : true,
@@ -51,8 +45,7 @@ const obtener_accesos_rol = async ( req = request, res = response ) => {
         //OBTIENE LOS ACCESOS ASIGNADOS A ESE ROL Y LOS QUE NO
         let accesos = [];
         const { rol } = req.query;
-        const query = `SELECT D.ID_MODULO AS "idModulo",
-                            D.nombre_modulo AS "nombreModulo",
+        const query = `SELECT
                             '[' || STRING_AGG(
                                 json_build_object(
                                     'idRutaApp', C.ID_RUTA_APP,
@@ -66,7 +59,6 @@ const obtener_accesos_rol = async ( req = request, res = response ) => {
                                                 FROM ACCESOS_USUARIO A 
                                                 JOIN roles_usuario B ON B.id_rol_usuario = A.id_rol_usuario
                                                 JOIN rutas_app C ON C.id_ruta_app = A.id_ruta_app
-                                                JOIN modulos D ON D.id_modulo = C.id_modulo
                                                 WHERE B.descripcion_rol = '${rol}'
                                             ) 
                                             THEN 'ASIGNADO' 
@@ -76,12 +68,7 @@ const obtener_accesos_rol = async ( req = request, res = response ) => {
                                 ','
                             ) || ']' AS "accesosDisponibles"
                         FROM 
-                            rutas_app C 
-                        JOIN 
-                            modulos D ON D.id_modulo = C.id_modulo
-                        GROUP BY 
-                            D.ID_MODULO, 
-                            D.nombre_modulo;`
+                            rutas_app C ;`
         accesos = await prisma.$queryRawUnsafe( query );
         accesos.forEach((element) => {
             element.accesosDisponibles = JSON.parse( element.accesosDisponibles );
@@ -291,22 +278,42 @@ const asignar_accesos = async ( req = request, res = response ) => {
 
     try {
 
-        const { idRolUsuario, idRutaApp, idSocio } = req.body;
+        const { idRolUsuario, accesos } = req.body;
 
-        const { id_acceso, id_rol_usuario, id_ruta_app,  } = await prisma.accesos_usuario.create( { data : { 
-                                                                        id_rol_usuario : idRolUsuario, 
-                                                                        id_ruta_app : idRutaApp, 
-                                                                        id_usuario_crea : idSocio 
-                                                                    } 
-                                                        } );
+        let accesosUsuario = [];
+
+
+        for ( let element in accesos ){
+            console.log( element, accesos[element], idRolUsuario );
+            const { idRutaApp } = accesos[element];
+            //const query_acceso = `INSERT INTO ACCESOS_USUARIO ( ID_ROL_USUARIO, ID_RUTA_APP )
+            //                        VALUES ( ${ idRolUsuario }, ${ idRutaApp } )`
+            //console.log( query_acceso )
+            //const insert = await prisma.$executeRawUnsafe( query_acceso );
+            const acceso_creado = await prisma.accesos_usuario.create( { data : { 
+                                                                            id_rol_usuario : idRolUsuario, 
+                                                                            id_ruta_app : idRutaApp,
+
+    
+                                                                        } 
+                                                            } );
+            const { path_ruta, accion_ruta } = await prisma.rutas_app.findUnique( { where : { id_ruta_app : idRutaApp } } )
+            accesosUsuario.push( { 
+                //idAcceso : id_acceso,
+                //idRolUsuario : idRolUsuario,
+                pathRuta : path_ruta, 
+                accion : accion_ruta
+    
+            } );
+            
+        }
 
         res.status( 200 ).json({
             status : true,
-            msj : 'Acceso Asignado',
+            msj : 'Accesos Asignados',
             acceso : {
-                idRolUsuario : id_rol_usuario, 
-                idRutaApp : id_ruta_app,
-                idAcceso : id_acceso
+                idRolUsuario : Number( idRolUsuario ), 
+                accesosUsuario
             }
 
         });

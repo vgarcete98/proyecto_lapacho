@@ -5,11 +5,87 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient();
 
 
-const crear_rol = async ( req = request, res = response ) => {
 
-    const { descripcionRol, idSocio } = req.body;
+
+const crear_rol_con_accesos = async (  req = request, res = response  ) =>{
 
     try {
+
+        const { descripcionRol, accesos } = req.body;
+
+        let accesosRol = [];
+
+        const { id_rol_usuario, descripcion_rol } = await prisma.roles_usuario.create( { 
+                                                        data : { 
+                                                                    descripcion_rol : descripcionRol,
+                                                                    rol__creado_en : new Date(),
+                                                                    estado_rol_usuario : 1
+
+                                                                } 
+                                                    } );
+
+        for (const element of accesos) {
+            
+            const { idPathRuta } = accesos[element];
+            const acceso_para_el_rol = await prisma.accesos_usuario.create( { 
+                                                                data : { 
+                                                                    id_ruta_app : Number( idPathRuta ), 
+                                                                    id_rol_usuario :  (  typeof( id_rol_usuario ) === 'bigint') ? Number(id_rol_usuario.toString()) : id_rol_usuario,
+                                                                    rol_creado_en : new Date(),
+                                                                    id_usuario_crea : 1
+    
+                                                                } } );
+            const { id_ruta_app, accion, path_ruta } = await prisma.rutas_app.findUnique( { where : { id_ruta_app : Number( idPathRuta ) } } );
+    
+            accesosRol.push( {
+    
+                idRutaApp : id_ruta_app,
+                accion,
+                pathRuta : path_ruta
+                
+            } );
+        }
+
+
+        res.status( 200 ).json(
+
+            {
+                status : true,
+                msj : 'Rol Creado con accesos',
+                rol : {
+                    idRolUsuario : (  typeof( id_rol_usuario ) === 'bigint') ? Number(id_rol_usuario.toString()) : id_rol_usuario,
+                    descripcionRol,
+                    accesosRol
+                }
+            }
+
+        );   
+        
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json(
+            {
+                status : false,
+                msj : `No se pudo crear el Rol y sus accesos : ${error}`,
+                //rol_nuevo : descripcionRol
+            }
+
+        );
+    }
+
+
+
+}
+
+
+
+
+
+const crear_rol = async ( req = request, res = response ) => {
+
+    
+    try {
+        const { descripcionRol, idSocio } = req.body;
 
         const { descripcion_rol, id_rol_usuario, id_usuario_crea_rol, 
                 rol_editado_en, id_usuario_edita_rol, rol__creado_en } = await prisma.roles_usuario.create( { data : { 
@@ -217,11 +293,191 @@ const obtener_roles = async ( req = request, res = response ) => {
 
 
 
+const actualizar_accesos_rol = async ( req = request, res = response ) => {
+
+    try {
+
+    
+        const { idRolUsuario, descripcionRol, accesos } = req.body;
+
+        let accesosRol = [];
+
+        for (const element of accesos) {
+            
+            let { idPathRuta } = accesos[element];
+            let validar_acceso = await prisma.accesos_usuario.findUnique( { where : { id_ruta_app : Number( idPathRuta ) } } )
+            if ( validar_acceso !== undefined && validar_acceso !== null ){
+
+                let acceso_para_el_rol = await prisma.accesos_usuario.create( { 
+                                                                    data : { 
+                                                                        id_ruta_app : Number( idPathRuta ), 
+                                                                        id_rol_usuario :  (  typeof( id_rol_usuario ) === 'bigint') ? Number(id_rol_usuario.toString()) : id_rol_usuario,
+                                                                        rol_creado_en : new Date(),
+                                                                        id_usuario_crea : 1
+        
+                                                                    } } );
+                const { id_ruta_app, accion, path_ruta } = await prisma.rutas_app.findUnique( { where : { id_ruta_app : Number( idPathRuta ) } } );
+        
+                accesosRol.push( {
+        
+                    idRutaApp : id_ruta_app,
+                    accion,
+                    pathRuta : path_ruta
+                    
+                } );
+
+            }
+        }
+
+        res.status( 200 ).json(
+
+            {
+                status : true,
+                msj : 'Accesos actualizados del rol',
+                rol : {
+                    idRolUsuario : (  typeof( id_rol_usuario ) === 'bigint') ? Number(id_rol_usuario.toString()) : id_rol_usuario,
+                    descripcionRol,
+                    accesosRol
+                }
+            }
+
+        );   
+        
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json(
+            {
+                status : false,
+                msj : `No se pudo crear el Rol y sus accesos : ${error}`,
+                //rol_nuevo : descripcionRol
+            }
+
+        );
+    }
+
+
+}
+
+
+const quitar_accesos_rol = async ( req = request, res = response ) => {
+
+    try {
+
+    
+        const { idRolUsuario, descripcionRol, accesos } = req.body;
+
+        let accesosRol = [];
+
+        for (const element of accesos) {
+            
+            let { idPathRuta } = accesos[element];
+            let validar_acceso = await prisma.accesos_usuario.findUnique( { where : { id_ruta_app : Number( idPathRuta ) } } )
+            if ( validar_acceso !== undefined && validar_acceso !== null ){
+
+                let acceso_para_el_rol = await prisma.accesos_usuario.delete( { where : { id_ruta_app : Number( idPathRuta ) } } );
+                const { id_ruta_app, accion, path_ruta } = await prisma.rutas_app.findUnique( { where : { id_ruta_app : Number( idPathRuta ) } } );
+        
+                accesosRol.push( {
+        
+                    idRutaApp : id_ruta_app,
+                    accion,
+                    pathRuta : path_ruta
+                    
+                } );
+
+            }
+        }
+
+        res.status( 200 ).json(
+
+            {
+                status : true,
+                msj : 'Accesos removidos del rol',
+                rol : {
+                    idRolUsuario : (  typeof( idRolUsuario ) === 'bigint') ? Number(idRolUsuario.toString()) : idRolUsuario,
+                    descripcionRol,
+                    accesosRol
+                }
+            }
+
+        );   
+        
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json(
+            {
+                status : false,
+                msj : `No se pudo crear el Rol y sus accesos : ${error}`,
+                //rol_nuevo : descripcionRol
+            }
+
+        );
+    }
+
+
+}
+
+const obtener_accesos_rol = async ( req = request, res = response ) => {
+
+    try {
+
+        const { rol_usuario } = req.query;
+
+        const [ first, ...rest ] = await prisma.roles_usuario.findMany( { where : { descripcion_rol : rol_usuario }  } );
+
+        const { descripcion_rol, id_rol_usuario } = first;
+
+        const query = `SELECT C.path_ruta AS "pathRuta",
+                            C.id_ruta_app AS "idRutaApp",
+                            CASE WHEN C.id_ruta_app IN ( SELECT id_ruta_app FROM ACCESOS_USUARIO WHERE id_rol_usuario = ${ id_rol_usuario } ) THEN 'S' ELSE 'N' END AS "tieneAcceso"
+                        FROM RUTAS_APP C`;
+        const resultado = await prisma.$queryRawUnsafe( query );
+
+        let accesoUsuario = {
+            idRolUsuario : id_rol_usuario,
+            descripcionRol : descripcion_rol,
+            tieneAceso : [],
+            noTieneAcceso : []
+
+        }
+
+        res.status( 200 ).json(
+
+            {
+                status : true,
+                msj : 'Accesos del usuario',
+                accesoUsuario
+            }
+
+        );  
+        
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json(
+            {
+                status : false,
+                msj : `No se pudo crear el Rol y sus accesos : ${error}`,
+                //rol_nuevo : descripcionRol
+            }
+
+        );
+    }
+
+
+
+
+}
+
+
 
 module.exports = {  
     actualizar_rol, 
     borrar_rol, 
     crear_rol, 
     obtener_roles,
+    crear_rol_con_accesos,
+    actualizar_accesos_rol,
+    quitar_accesos_rol,
+    obtener_accesos_rol
     //obtener_modulos_x_rol
 };

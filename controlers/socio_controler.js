@@ -564,6 +564,13 @@ const obtener_socio = async ( req = request, res = response ) => {
 
 
 
+
+
+
+
+
+
+
 module.exports = { 
                     crear_socio, 
                     actualizar_socio, 

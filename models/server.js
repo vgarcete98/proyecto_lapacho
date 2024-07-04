@@ -112,7 +112,7 @@ class Server {
         
         //this.app.use( obtener_data_socio );
         
-        this.app.use(comprobar_acceso_rol);
+        //this.app.use(comprobar_acceso_rol);
         
         //this.app.use( multer )
         //this.app.use( comprobar_acceso_rol );

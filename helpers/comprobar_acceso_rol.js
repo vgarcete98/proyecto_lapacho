@@ -80,6 +80,7 @@ let PROFESOR = [
 const comprobar_acceso_rol = async ( req = request, res = response, next)=> {
 
     try {
+        //console.log("validacion del rol" )
         if ( req.path === '/auth/login' ){
             next();
         }else{

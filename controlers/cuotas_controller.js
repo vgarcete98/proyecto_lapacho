@@ -783,6 +783,10 @@ const obtener_socios_al_dia = async ( req = request, res = response ) => {
 
 }
 
+
+
+
+
 module.exports = {
     obtener_cuotas_pendientes_x_socio,
     obtener_cuotas_x_socio,

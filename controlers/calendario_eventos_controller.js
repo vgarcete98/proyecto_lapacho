@@ -129,9 +129,10 @@ const obtener_categorias_x_evento = async ( req = request, res = response ) =>{
                 descripcion, 
                 idCategoria : id_categoria, 
                 nombreCategoria : nombre_categoria, 
-                idEventoCalendario : id_evento_calendario
+                idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario) 
             } )
         } )
+        console.log( categoriasEvento )
         
         res.status( 200 ).json( {
             status : true,
@@ -146,7 +147,7 @@ const obtener_categorias_x_evento = async ( req = request, res = response ) =>{
         //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `
             //error
         } );   
     }   
@@ -172,7 +173,7 @@ const crear_categorias_x_evento = async ( req = request, res = response ) =>{
         let categoriaEvento = { descripcion, 
                                     idCategoria : id_categoria, 
                                     nombreCategoria : nombre_categoria, 
-                                    idEventoCalendario : id_evento_calendario
+                                    idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
                             };
                             
         res.status( 200 ).json( {
@@ -214,7 +215,7 @@ const editar_categorias_x_evento = async ( req = request, res = response ) =>{
         let categoriaEvento = { descripcion, 
                                     idCategoria : id_categoria, 
                                     nombreCategoria : nombre_categoria, 
-                                    idEventoCalendario : id_evento_calendario
+                                    idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
                             };
                             
         res.status( 200 ).json( {
@@ -258,7 +259,7 @@ const eliminar_categorias_x_evento = async ( req = request, res = response ) =>{
         let categoriaEvento = { descripcion, 
                                     idCategoria : id_categoria, 
                                     nombreCategoria : nombre_categoria, 
-                                    idEventoCalendario : id_evento_calendario
+                                    idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
                             };
                             
         res.status( 200 ).json( {
@@ -292,6 +293,8 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                 costoEvento,
                 todoEldia, 
                 descripcion,
+                categorias,
+                requerimientos
                 /*fechaAgendamiento*/ } = req.body;
     
         const nuevo_evento = await prisma.calendario_eventos.create( { 
@@ -319,6 +322,66 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                 id_evento_calendario,
                 eventocreadoen,
                 fechaagendamiento } = nuevo_evento;
+
+        let cat= [], 
+            reque = [];
+        const idEventoCalendario = (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario;
+        if ( Number( tipoEvento )  === 5 ) { 
+
+            //QUIERE DECIR QUE SE TRATA DE UN TORNEO
+            categorias.forEach( async ( element ) => {
+
+
+                const { descripcion, nombreCategoria } = element;
+                //reque.push( { descripcion, cantidad,  } )
+                const nuevo_categoria  = await prisma.categorias.create( { 
+                                                                                    data : { 
+                                                                                        descripcion,
+                                                                                        nombre_categoria : nombreCategoria,
+                                                                                        id_evento_calendario : Number( idEventoCalendario )
+                                                                                    } 
+                                                                                } );
+
+
+                cat.push( {
+                    descripcion : nuevo_categoria.descripcion,
+                    nombreCategoria : nuevo_categoria.nombre_categoria,
+                    idEventoCalendario : nuevo_categoria.id_evento_calendario
+                } )
+
+
+            } )
+
+
+            requerimientos.forEach( async ( element ) => {
+
+
+                const { descripcion, cantidad, costoUnidad } = element;
+                //reque.push( { descripcion, cantidad,  } )
+                const nuevo_requerimiento  = await prisma.requerimientos.create( { 
+                                                                                    data : { 
+                                                                                        cantidad, 
+                                                                                        costo_unidad : Number( costoUnidad ), 
+                                                                                        descripcion, 
+                                                                                        id_evento_calendario : Number( idEventoCalendario )
+                                                                                    } 
+                                                                                } );
+
+
+                reque.push( {
+                    descripcion : nuevo_requerimiento.descripcion,
+                    cantidad : nuevo_requerimiento.cantidad,
+                    costo : nuevo_requerimiento.costo_unidad,
+                    idRequerimiento : nuevo_requerimiento.id_requerimiento
+                } )
+            } )
+
+
+
+        }
+        
+
+
         res.status( 200 ).json( {
             status : true, 
             msg : 'Evento insertado en calendario',
@@ -335,6 +398,8 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                 costo,
                 idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
                 todoEldia : todo_el_dia,
+                categorias : cat,
+                requerimientos : reque
             }
         } );
     } catch (error) {
@@ -870,29 +935,31 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
 const obtener_requerimientos_x_evento = async ( req = request, res = response ) =>{
 
     try {
-        
-        const { id_evento } = req.query;
-        const categorias = await prisma.categorias.findMany( { where : { id_evento_calendario : Number( id_evento ) } } )
 
-        let categoriasEvento = [];
+        const { id_requerimiento, id_evento } = req.query;
+
+        const requerimientos = await prisma.requerimientos.findMany( { where : { id_evento_calendario : Number( id_evento ) } } )
+
+        let requerimientosEvento = [];
 
 
-        categorias.forEach( ( element ) =>{
-            const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = element;
+        requerimientos.forEach( ( element ) =>{
+            const { cantidad, costo_unidad, descripcion, id_requerimiento, id_evento_calendario } = element;
 
-            categoriasEvento.push( {
+            requerimientosEvento.push( {
                 descripcion, 
-                idCategoria : id_categoria, 
-                nombreCategoria : nombre_categoria, 
-                idEventoCalendario : id_evento_calendario
+                cantidad,
+                idRequerimiento : id_requerimiento, 
+                costoUnidad : costo_unidad, 
+                idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
             } )
         } )
         
         res.status( 200 ).json( {
             status : true,
-            msg : "Eventos registrados hasta el momento",
-            categoriasEvento,
-            cantidad : categoriasEvento.length
+            msg : "Requerimientos registrados para el evento",
+            requerimientosEvento,
+            cantidad : requerimientosEvento.length
 
         } );
 
@@ -901,7 +968,7 @@ const obtener_requerimientos_x_evento = async ( req = request, res = response ) 
         //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            msg : `Ha ocurrido un error al obtener los requerimientos del evento ${error} `,
             //error
         } );   
     }   
@@ -913,27 +980,30 @@ const obtener_requerimientos_x_evento = async ( req = request, res = response ) 
 const crear_requerimientos_x_evento = async ( req = request, res = response ) =>{
 
     try {
-        
-        const { descripcionCategoria, idCategoria, nombreCategoria, idEventoCalendario  } = req.body;
-        const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.create( {
+
+        const { cantidadRequerida, costoUnidad, descripcionRequerimiento, idEventoCalendario } = req.body;
+
+        const { cantidad, costo_unidad, descripcion, id_requerimiento, id_evento_calendario } = await prisma.requerimientos.create( {
                                                                                                                         data : { 
-                                                                                                                            descripcion : descripcionCategoria, 
-                                                                                                                            id_categoria : idCategoria, 
-                                                                                                                            nombre_categoria : nombreCategoria, 
+                                                                                                                            descripcion : descripcionRequerimiento, 
+                                                                                                                            cantidad : cantidadRequerida, 
+                                                                                                                            costo_unidad : costoUnidad, 
                                                                                                                             id_evento_calendario : idEventoCalendario
                                                                                                                         } 
                                                                                                                     } );
 
-        let categoriaEvento = { descripcion, 
-                                    idCategoria : id_categoria, 
-                                    nombreCategoria : nombre_categoria, 
-                                    idEventoCalendario : id_evento_calendario
-                            };
+        let requerimientoEvento = {
+                                    descripcion, 
+                                    cantidad,
+                                    idRequerimiento : id_requerimiento, 
+                                    costoUnidad : costo_unidad, 
+                                    idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
+                                };
                             
         res.status( 200 ).json( {
             status : true,
-            msg : "Categoria creada con exito",
-            categoriaEvento
+            msg : "Requerimiento para evento creado con exito",
+            requerimientoEvento
 
         } );
 
@@ -942,7 +1012,7 @@ const crear_requerimientos_x_evento = async ( req = request, res = response ) =>
         //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            msg : `Ha ocurrido un error al crear el requerimiento para el evento ${error} `,
             //error
         } );   
     }   
@@ -953,29 +1023,30 @@ const crear_requerimientos_x_evento = async ( req = request, res = response ) =>
 const editar_requerimientos_x_evento = async ( req = request, res = response ) =>{
     try {
         
-        const { descripcionCategoria, idCategoria, nombreCategoria, idEventoCalendario  } = req.body;
-        const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.update( {
+        const { cantidadRequerida, costoUnidad, descripcionRequerimiento, idEventoCalendario, idRequerimiento } = req.body;
+
+        const { cantidad, costo_unidad, descripcion, id_requerimiento, id_evento_calendario } = await prisma.requerimientos.update( {
                                                                                                                         data : { 
-                                                                                                                            descripcion : descripcionCategoria, 
-                                                                                                                            id_categoria : idCategoria, 
-                                                                                                                            nombre_categoria : nombreCategoria, 
+                                                                                                                            descripcion : descripcionRequerimiento, 
+                                                                                                                            cantidad : cantidadRequerida, 
+                                                                                                                            costo_unidad : costoUnidad, 
                                                                                                                             id_evento_calendario : idEventoCalendario
                                                                                                                         },
-                                                                                                                        where : { 
-                                                                                                                            id_categoria : Number( idCategoria )
-                                                                                                                        }
+                                                                                                                        where : { id_requerimiento : Number( idRequerimiento ) }
                                                                                                                     } );
 
-        let categoriaEvento = { descripcion, 
-                                    idCategoria : id_categoria, 
-                                    nombreCategoria : nombre_categoria, 
-                                    idEventoCalendario : id_evento_calendario
-                            };
+        let requerimientoEvento = {
+                                    descripcion, 
+                                    cantidad,
+                                    idRequerimiento : id_requerimiento, 
+                                    costoUnidad : costo_unidad, 
+                                    idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
+                                };
                             
         res.status( 200 ).json( {
             status : true,
-            msg : "Categoria editada con exito",
-            categoriaEvento
+            msg : "Requerimiento para evento creado con exito",
+            requerimientoEvento
 
         } );
 
@@ -984,7 +1055,7 @@ const editar_requerimientos_x_evento = async ( req = request, res = response ) =
         //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            msg : `Ha ocurrido un error al editar el requerimiento del evento ${error} `,
             //error
         } );   
     }   
@@ -997,29 +1068,22 @@ const eliminar_requerimientos_x_evento = async ( req = request, res = response )
 
     try {
         
-        const { descripcionCategoria, idCategoria, nombreCategoria, idEventoCalendario  } = req.body;
-        const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.delete( {
-                                                                                                                        data : { 
-                                                                                                                            descripcion : descripcionCategoria, 
-                                                                                                                            id_categoria : idCategoria, 
-                                                                                                                            nombre_categoria : nombreCategoria, 
-                                                                                                                            id_evento_calendario : idEventoCalendario
-                                                                                                                        },
-                                                                                                                        where : { 
-                                                                                                                            id_categoria : Number( idCategoria )
-                                                                                                                        }
-                                                                                                                    } );
+        const { cantidadRequerida, costoUnidad, descripcionRequerimiento, idEventoCalendario, idRequerimiento } = req.body;
 
-        let categoriaEvento = { descripcion, 
-                                    idCategoria : id_categoria, 
-                                    nombreCategoria : nombre_categoria, 
-                                    idEventoCalendario : id_evento_calendario
-                            };
+        const { cantidad, costo_unidad, descripcion, id_requerimiento, id_evento_calendario } = await prisma.requerimientos.delete( { where : { id_requerimiento : Number( idRequerimiento ) } } );
+
+        let requerimientoEvento = {
+                                    descripcion, 
+                                    cantidad,
+                                    idRequerimiento : id_requerimiento, 
+                                    costoUnidad : costo_unidad, 
+                                    idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
+                                };
                             
         res.status( 200 ).json( {
             status : true,
-            msg : "Categoria eliminada con exito",
-            categoriaEvento
+            msg : "Requerimiento para evento eliminado con exito",
+            requerimientoEvento
 
         } );
 
@@ -1028,7 +1092,7 @@ const eliminar_requerimientos_x_evento = async ( req = request, res = response )
         //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
+            msg : `Ha ocurrido un error al eliminar el requerimiento ${error} `,
             //error
         } );   
     }   
