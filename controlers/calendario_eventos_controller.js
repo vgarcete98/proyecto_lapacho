@@ -981,28 +981,36 @@ const crear_requerimientos_x_evento = async ( req = request, res = response ) =>
 
     try {
 
-        const { cantidadRequerida, costoUnidad, descripcionRequerimiento, idEventoCalendario } = req.body;
 
-        const { cantidad, costo_unidad, descripcion, id_requerimiento, id_evento_calendario } = await prisma.requerimientos.create( {
-                                                                                                                        data : { 
-                                                                                                                            descripcion : descripcionRequerimiento, 
-                                                                                                                            cantidad : cantidadRequerida, 
-                                                                                                                            costo_unidad : costoUnidad, 
-                                                                                                                            id_evento_calendario : idEventoCalendario
-                                                                                                                        } 
-                                                                                                                    } );
+        const { requerimientos } = req.body;
+        let requerimientoEvento = [];
 
-        let requerimientoEvento = {
-                                    descripcion, 
-                                    cantidad,
-                                    idRequerimiento : id_requerimiento, 
-                                    costoUnidad : costo_unidad, 
-                                    idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
-                                };
+        for (const element of requerimientos) {
+            
+            const { cantidadRequerida, costoUnidad, descripcionRequerimiento, idEventoCalendario } = requerimientos[element];
+            const { cantidad, costo_unidad, descripcion, id_requerimiento, id_evento_calendario } = await prisma.requerimientos.create( {
+                                                                                                                            data : { 
+                                                                                                                                descripcion : descripcionRequerimiento, 
+                                                                                                                                cantidad : cantidadRequerida, 
+                                                                                                                                costo_unidad : costoUnidad, 
+                                                                                                                                id_evento_calendario : idEventoCalendario
+                                                                                                                            } 
+                                                                                                                        } );
+
+            requerimientoEvento.push( {
+
+                descripcion, 
+                cantidad,
+                idRequerimiento : id_requerimiento, 
+                costoUnidad : costo_unidad, 
+                idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
+
+            } )
+        }
                             
         res.status( 200 ).json( {
             status : true,
-            msg : "Requerimiento para evento creado con exito",
+            msg : "Requerimientos para evento creado con exito",
             requerimientoEvento
 
         } );
@@ -1022,40 +1030,53 @@ const crear_requerimientos_x_evento = async ( req = request, res = response ) =>
 
 const editar_requerimientos_x_evento = async ( req = request, res = response ) =>{
     try {
-        
-        const { cantidadRequerida, costoUnidad, descripcionRequerimiento, idEventoCalendario, idRequerimiento } = req.body;
 
-        const { cantidad, costo_unidad, descripcion, id_requerimiento, id_evento_calendario } = await prisma.requerimientos.update( {
-                                                                                                                        data : { 
-                                                                                                                            descripcion : descripcionRequerimiento, 
-                                                                                                                            cantidad : cantidadRequerida, 
-                                                                                                                            costo_unidad : costoUnidad, 
-                                                                                                                            id_evento_calendario : idEventoCalendario
-                                                                                                                        },
-                                                                                                                        where : { id_requerimiento : Number( idRequerimiento ) }
-                                                                                                                    } );
+        const { requerimientos } = req.body;
+        const requerimientosEditados = [];
 
-        let requerimientoEvento = {
-                                    descripcion, 
-                                    cantidad,
-                                    idRequerimiento : id_requerimiento, 
-                                    costoUnidad : costo_unidad, 
-                                    idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
-                                };
-                            
+
+
+        for (const element of requerimientos) {
+            const { cantidadRequerida, costoUnidad, descripcionRequerimiento, idEventoCalendario, idRequerimiento } = element;
+
+            const { cantidad, costo_unidad, descripcion,
+                    id_evento_calendario, id_requerimiento } = await prisma.requerimientos.update( { 
+                                                                                                        data : { 
+                                                                                                            costo_unidad : Number( costoUnidad ),
+                                                                                                            descripcion : descripcionRequerimiento,
+                                                                                                            cantidad : Number( cantidadRequerida )    
+                                                                                                        },
+                                                                                                        where : {
+                                                                                                            AND : [
+                                                                                                                { id_requerimiento : Number( idRequerimiento ) },
+                                                                                                                { id_evento_calendario : Number( idEventoCalendario ) }
+                                                                                                            ] 
+                                                                                                        } 
+                                                                                                    } );
+            requerimientosEditados.push( {
+                descripcion, 
+                cantidad,
+                idRequerimiento : id_requerimiento, 
+                costoUnidad : costo_unidad, 
+                idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
+
+            } )
+                                                                                
+
+            
+        }
         res.status( 200 ).json( {
             status : true,
-            msg : "Requerimiento para evento creado con exito",
-            requerimientoEvento
+            msg : "Requerimientos para evento editados con exito",
+            requerimientosEditados
 
         } );
-
 
     } catch (error) {
         //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Ha ocurrido un error al editar el requerimiento del evento ${error} `,
+            msg : `Ha ocurrido un error al editar los requerimiento del evento ${error} `,
             //error
         } );   
     }   
@@ -1067,35 +1088,51 @@ const editar_requerimientos_x_evento = async ( req = request, res = response ) =
 const eliminar_requerimientos_x_evento = async ( req = request, res = response ) =>{
 
     try {
-        
-        const { cantidadRequerida, costoUnidad, descripcionRequerimiento, idEventoCalendario, idRequerimiento } = req.body;
 
-        const { cantidad, costo_unidad, descripcion, id_requerimiento, id_evento_calendario } = await prisma.requerimientos.delete( { where : { id_requerimiento : Number( idRequerimiento ) } } );
+        const { requerimientos } = req.body;
+        const requerimientosEditados = [];
 
-        let requerimientoEvento = {
-                                    descripcion, 
-                                    cantidad,
-                                    idRequerimiento : id_requerimiento, 
-                                    costoUnidad : costo_unidad, 
-                                    idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
-                                };
-                            
+
+
+        for (const element of requerimientos) {
+            const { cantidadRequerida, costoUnidad, descripcionRequerimiento, idEventoCalendario, idRequerimiento } = element;
+
+            const { cantidad, costo_unidad, descripcion,
+                    id_evento_calendario, id_requerimiento } = await prisma.requerimientos.delete( {    where : {
+                                                                                                            AND : [
+                                                                                                                { id_requerimiento : Number( idRequerimiento ) },
+                                                                                                                { id_evento_calendario : Number( idEventoCalendario ) }
+                                                                                                            ] 
+                                                                                                        } 
+                                                                                                    } );
+            requerimientosEditados.push( {
+                descripcion, 
+                cantidad,
+                idRequerimiento : id_requerimiento, 
+                costoUnidad : costo_unidad, 
+                idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
+
+            } )
+                                                                                
+
+            
+        }
         res.status( 200 ).json( {
             status : true,
-            msg : "Requerimiento para evento eliminado con exito",
-            requerimientoEvento
+            msg : "Requerimientos para evento eliminados con exito",
+            requerimientosEditados
 
         } );
-
 
     } catch (error) {
         //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Ha ocurrido un error al eliminar el requerimiento ${error} `,
+            msg : `Ha ocurrido un error al eliminar los requerimiento del evento ${error} `,
             //error
         } );   
-    }   
+    }
+    
 
 }
 

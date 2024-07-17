@@ -534,17 +534,29 @@ const obtener_grafico_inscriptos_x_evento_categoria = async ( req = request, res
         
     try {
         const { id_evento } = req.params;
-        
-        const inscripciones = await prisma.inscripciones_no_socios.findMany( {
-                                                                    where : { id_evento_calendario_no_socio : id_evento }
-                                                                } );
-        const cant_inscripciones = inscripciones.length;
 
+
+        const query = `SELECT *
+                            --CANT_INSCRIPTOS_X_CATEGORIA.nombreCategoria,
+                            --CANT_INSCRIPTOS_X_CATEGORIA.cantInscriptos AS "inscriptosCategoria", 
+                            --CANT_INSCRIPTOS_X_CATEGORIA.cantInscriptos/CANT_INSCRIPTOS.cantInscriptos AS "porcentaje"
+                        FROM (SELECT COUNT (A.id_inscripcion) AS "cantInscriptos", 
+                                        A.id_categoria AS "idCategoria",
+                                        C.nombre_categoria AS "nombreCategoria"
+                                    FROM inscripciones A JOIN calendario_eventos B ON A.id_evento_calendario = B.id_evento_calendario
+                                    JOIN categorias C ON C.id_evento_calendario = B.id_evento_calendario AND A.id_categoria = C.id_categoria
+                                WHERE A.id_evento_calendario = ${ id_evento }
+                                GROUP BY A.id_categoria, C.nombre_categoria) AS CANT_INSCRIPTOS_X_CATEGORIA, 
+                                ( SELECT COUNT (A.id_inscripcion) AS "cantInscriptos"
+                                        FROM inscripciones A JOIN calendario_eventos B ON A.id_evento_calendario = B.id_evento_calendario
+                                        JOIN categorias C ON C.id_evento_calendario = B.id_evento_calendario AND A.id_categoria = C.id_categoria
+                                    WHERE A.id_evento_calendario =  ${ id_evento }
+                                    GROUP BY A.id_categoria ) AS CANT_INSCRIPTOS`
+        const graficoInscriptos = await prisma.$queryRawUnsafe( query );
         res.status( 200 ).json( { 
                                     status : true,
-                                    msg : "Inscripciones de ese evento",
-                                    cant_inscripciones,
-                                    inscripciones
+                                    msg : "Datos para grafico de inscripciones",
+                                    graficoInscriptos
                                 } );
 
     } catch (error) {
@@ -575,8 +587,7 @@ const obtner_todas_inscripciones_x_evento = async ( req = request, res = respons
                                                         A.fecha_inscripcion AS "fechaInscripcion",
                                                         A.abonado,
                                                         E.costo AS "costoInscripcion"
-                                                    FROM inscripciones A JOIN inscripcion_evento_categria_socio B ON B.id_inscripcion = A.id_inscripcion
-                                                    JOIN socio C ON C.id_socio = A.id_socio
+                                                    FROM inscripciones A JOIN socio C ON C.id_socio = A.id_socio
                                                     JOIN categorias D ON D.id_categoria = B.id_categoria
                                                     JOIN calendario_eventos E ON E.id_evento_calendario = B.id_evento_calendario
                                                     
@@ -592,8 +603,7 @@ const obtner_todas_inscripciones_x_evento = async ( req = request, res = respons
                                                     A.fecha_inscripcion AS "fechaInscripcion",
                                                     A.abonado,
                                                     E.costo AS "costoInscripcion"
-                                                FROM inscripciones A JOIN inscripcion_evento_categria_socio B ON B.id_inscripcion = A.id_inscripcion
-                                                JOIN socio C ON C.id_socio = A.id_socio
+                                                FROM inscripciones A JOIN socio C ON C.id_socio = A.id_socio
                                                 JOIN categorias D ON D.id_categoria = B.id_categoria
                                                 JOIN calendario_eventos E ON E.id_evento_calendario = B.id_evento_calendario
                                                 
@@ -631,11 +641,32 @@ const obtener_ganancias_gastos_x_evento = async ( req = request, res = response 
         
     try {
         const { id_evento } = req.params;
+
+
+        //GANANCIAS SERIAN POR EJEMPLO LA CANTIDAD DE PERSONAS INSCRIPTAS PARA LOS TORNEOS 
         
-        const inscripciones = await prisma.inscripciones_no_socios.findMany( {
-                                                                    where : { id_evento_calendario_no_socio : id_evento }
-                                                                } );
-        const cant_inscripciones = inscripciones.length;
+        const { costo } = await prisma.calendario_eventos.findUnique( { where :  { id_evento_calendario : Number( id_evento ) } } );
+
+        const inscripciones_no_socios =  await prisma.inscripciones_no_socios.count( { where : { id_evento_calendario : Number(id_evento) } } );
+
+        const inscripciones_socios =  await prisma.inscripciones.count( { where : { id_evento_calendario : Number(id_evento) } } );
+
+        const ganacias = (costo*inscripciones_no_socios) + (costo*inscripciones_socios);
+        
+        //GASTOS SERIAN LOS REQUERIMIENTOS Y DEMAS QUE SE UTILIZO PARA EL EVENTO
+
+        const gastos = await prisma.requerimientos.findMany( { where : { id_evento_calendario : Number( id_evento ) } } );
+
+        gastos.forEach( ( element ) =>{ 
+
+            const { cantidad, costo_unidad, id_requerimiento } = element;
+            
+        } );
+
+
+
+
+
 
         res.status( 200 ).json( { 
                                     status : true,
