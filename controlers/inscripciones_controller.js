@@ -8,15 +8,15 @@ const prisma = new PrismaClient();
 
 
 /*
-id_inscripcion AS "idInscripcion", 
-id_socio AS "idSocio", 
-id_evento_calendario AS "idEventoCalendario", 
-desc_inscripcion AS "descInscripcion", 
-fecha_inscripcion AS "fechaInscripcion", 
-abonado AS "abonado", 
-inscripcioncreadoen AS "inscripcionCreadoEn", 
-estadoinscripcion AS "estadoInscripcion", 
-inscripcioneditadoen AS "inscripcionEditadoEn"
+    id_inscripcion AS "idInscripcion", 
+    id_socio AS "idSocio", 
+    id_evento_calendario AS "idEventoCalendario", 
+    desc_inscripcion AS "descInscripcion", 
+    fecha_inscripcion AS "fechaInscripcion", 
+    abonado AS "abonado", 
+    inscripcioncreadoen AS "inscripcionCreadoEn", 
+    estadoinscripcion AS "estadoInscripcion", 
+    inscripcioneditadoen AS "inscripcionEditadoEn"
 */
 
 
@@ -26,26 +26,30 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
         
         // NECESITO REGISTRAR UNA INSCRIPCION 
         // Voy a manejar que se abona entero por la inscripcion y no por partes como sucede con las clases particulares
-        const { idSocio, idEvento, montoAbonado, categorias } = req.body;
+        const { idSocio, idEvento, categorias } = req.body;
 
         let cat = [];
         let nuevaInscripcion = [];
         
         for (const element of categorias) {
             
-            const { idCategoria } = element;
+            const { idCategoria, idEventoCalendario, montoAbonado, descInscripcion } = element;
+            //console.log( req.body );
             const { abonado, desc_inscripcion, estadoinscripcion, 
                     fecha_inscripcion, id_evento_calendario, id_inscripcion,
                     id_socio, inscripcioncreadoen, inscripcioneditadoen, id_categoria } = await prisma.inscripciones.create( { 
-                                                                            data : {
-                                                                                id_socio : idSocio,
-                                                                                id_evento_calendario : idEvento,
-                                                                                abonado : montoAbonado,
-                                                                                inscripcioncreadoen : new Date(),
-                                                                                id_categoria : Number( idCategoria )
-                                                                            } 
-                                                                        } );
-            
+                                                                                                                                data : {
+                                                                                                                                    id_socio : idSocio,
+                                                                                                                                    id_evento_calendario : idEvento,
+                                                                                                                                    abonado : montoAbonado,
+                                                                                                                                    inscripcioncreadoen : new Date(),
+                                                                                                                                    id_categoria : Number( idCategoria ),
+                                                                                                                                    abonado : montoAbonado,
+                                                                                                                                    fecha_inscripcion : new Date(),
+                                                                                                                                    desc_inscripcion : descInscripcion
+                                                                                                                                } 
+                                                                                                                            } );
+                                                                
             const { nombre_cmp, nombre, apellido } = await prisma.socio.findUnique( 
                                                                     {
     
@@ -63,9 +67,9 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
             const { nombre_categoria   } = await prisma.categorias.findUnique( { where : { id_categoria  :  Number(idCategoria)} } );
 
             nuevaInscripcion.push( {
-                "idInscripcion" : id_inscripcion , 
-                "idSocio" : id_socio , 
-                "idEventoCalendario" : id_evento_calendario, 
+                "idInscripcion" :  (typeof id_inscripcion === 'bigint' ? Number(id_inscripcion.toString()) : id_inscripcion), 
+                "idSocio" :  (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio), 
+                "idEventoCalendario" : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario), 
                 "descInscripcion" : desc_inscripcion , 
                 "fechaInscripcion" :fecha_inscripcion , 
                 "abonado" : abonado , 
@@ -93,7 +97,7 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
 
 
     } catch (error) {
-        //console.log( error );
+        console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : `No se pudo ingresar el registro  ${ error }`,
@@ -111,7 +115,7 @@ const inscribirse_a_evento_no_socios = async ( req = request, res = response ) =
 
     try {
         // NECESITO REGISTRAR UNA INSCRIPCION 
-        const { idEvento, nombreJugador, montoAbonado, categorias  } = req.body;
+        const { idEvento, nombreJugador, categorias  } = req.body;
         
         // Voy a manejar que se abona entero por la inscripcion y no por partes como sucede con las clases particulares
         
@@ -119,32 +123,32 @@ const inscribirse_a_evento_no_socios = async ( req = request, res = response ) =
         let nuevaInscripcion = [];
          
         for (const element of categorias) {
-            const { idCategoria } = element;
+            console.log( element )
+            const { idCategoria, montoAbonado, descInscripcion } = element;
             const { abonado, desc_inscripcion, editadoen,
-                    estado_inscripcion, fecha_inscripcion, 
+                    estado_inscripcion, fecha_inscripcion, nombre_jugador, 
                     id_evento_calendario_no_socio , id_inscripcion_no_socio, id_categoria } = await prisma.inscripciones_no_socios.create( { 
                                                                                         data : {
-                                                                                            id_evento_calendario_no_socio : idEvento,
+                                                                                            id_evento_calendario : idEvento,
                                                                                             nombre_jugador : nombreJugador,
                                                                                             abonado : montoAbonado,
                                                                                             fecha_inscripcion : new Date() ,
-                                                                                            id_categoria : Number( idCategoria )
+                                                                                            id_categoria : Number( idCategoria ),
+                                                                                            desc_inscripcion : descInscripcion
     
                                                                                         } 
                                                                                     } );
             const { nombre_categoria   } = await prisma.categorias.findUnique( { where : { id_categoria  :  Number(idCategoria)} } );
             nuevaInscripcion.push( {
                 "idInscripcion" : id_inscripcion_no_socio , 
-                "idSocio" : id_socio , 
-                "idEventoCalendario" : id_evento_calendario_no_socio, 
+                "idEventoCalendario" : (typeof id_evento_calendario_no_socio === 'bigint' ? Number(id_evento_calendario_no_socio.toString()) : id_evento_calendario_no_socio), 
                 "descInscripcion" : desc_inscripcion , 
                 "fechaInscripcion" :fecha_inscripcion , 
                 "abonado" : abonado , 
-                "inscripcionCreadoEn" : inscripcioncreadoen, 
+                "inscripcionCreadoEn" : fecha_inscripcion, 
                 "estadoInscripcion" : estado_inscripcion, 
                 "inscripcionEditadoEn" : editadoen,
-                "nombreSocio" : nombre_cmp,
-                nombreCmp : `${ nombre } ${ apellido }`,
+                "nombreJugador" : nombre_jugador,
                 categoria : { 
                     idCategoria,
                     nombreCategoria : nombre_categoria
@@ -162,7 +166,7 @@ const inscribirse_a_evento_no_socios = async ( req = request, res = response ) =
 
 
     } catch (error) {
-        //console.log( error );
+        console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : `No se pudo crear el registro ${ error }`,
@@ -364,9 +368,9 @@ const abonar_x_inscripcion = async ( req = request, res = response ) =>{
 
 const abonar_x_inscripcion_no_socio = async ( req = request, res = response ) =>{
 
-    const { id_inscripcion } = req.params;
     
     try {
+        const { id_inscripcion } = req.params;
         const inscripcion_abonada = await prisma.inscripciones_no_socios.update( { 
                                                                             where : { id_inscripcion_no_socio : id_inscripcion }, 
                                                                             data : {
@@ -399,21 +403,26 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
 
     
     try {
-        const { id_evento } = req.params;
-        
-        const query = `SELECT   A.id_inscripcion AS "idInscripcion", 
-                                A.id_socio AS "idSocio", 
-                                A.id_evento_calendario AS "idEventoCalendario", 
+        const { id_evento, id_categoria } = req.query;
+        //console.log( req.query )
+        const query = `SELECT   CAST ( A.id_inscripcion AS INTEGER )AS "idInscripcion",
+								C.id_categoria AS "idCategoria",
+								C.nombre_categoria AS "nombreCategoria",
+                                CAST ( A.id_socio AS INTEGER ) AS "idSocio", 
+                                CAST ( A.id_evento_calendario AS INTEGER ) AS "idEventoCalendario", 
                                 A.desc_inscripcion AS "descInscripcion", 
                                 A.fecha_inscripcion AS "fechaInscripcion", 
                                 A.abonado AS "abonado", 
                                 A.inscripcioncreadoen AS "inscripcionCreadoEn", 
                                 A.estadoinscripcion AS "estadoInscripcion", 
                                 A.inscripcioneditadoen AS "inscripcionEditadoEn",
-                                B.nombre_cmp as "nombreSocio",
-                                CONCAT( C.nombre, ' ', C.apellido ) as "nombreCmp"
-                            FROM inscripciones JOIN SOCIO B ON A.id_socio = B.id_socio
-                        WHERE id_evento_calendario = ${ id_evento };`
+                                B.nombre_cmp as "nombreSocio"--,
+                                --CONCAT( B.nombre, ' ', B.apellido ) as "nombreCmp",
+								--B.nombrecmp AS "nombreCmp"
+                            FROM inscripciones A JOIN SOCIO B ON A.id_socio = B.id_socio
+							JOIN CATEGORIAS C on A.id_categoria = c.id_categoria
+                        WHERE A.id_evento_calendario = ${ id_evento }
+                            ${ ( id_categoria !== undefined ) ? `AND C.id_categoria = ${ id_categoria }` : `` }`
         const inscripciones = await prisma.$queryRawUnsafe( query )
         const cantInscripciones = inscripciones.length;
 
@@ -425,10 +434,10 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
                                 } );
 
     } catch (error) {
-        console.log ( error );  
+        //console.log ( error );  
         res.status( 500 ).json( { 
             status : false,
-            msg : "No se ha podido obtener las inscripciones de ese evento",
+            msg : `No se ha podido obtener las inscripciones de ese evento ${error}`,
             //cant_inscripciones : 0
         } );
 
@@ -474,12 +483,35 @@ const ver_inscripciones_x_evento_no_socio = async ( req = request, res = respons
 const ver_todas_las_inscripciones_x_evento = async ( req = request, res = response  ) =>{
         
     try {
+
+        //VOY A DEVOLVER LA CANTIDAD DE INSCRIPTOS POR CATEGORIA CON EL PORCENTAJE QUE ESO REPRESENTA
         const { id_evento } = req.params;
         
-        const inscripciones = await prisma.inscripciones_no_socios.findMany( {
-                                                                    where : { id_evento_calendario_no_socio : id_evento }
-                                                                } );
+        let inscripciones = 0;
+
         const cant_inscripciones = inscripciones.length;
+
+        const query = `SELECT A.cant_inscripciones AS "cantInscripciones",
+                                A.id_categoria AS "idCategoria",
+                                A.categoria AS "categoria",
+                                A.id_evento AS "idEvento",
+                                B.cant_inscripciones_evento AS "cantInscripciones",
+                                CAST (A.cant_inscripciones AS FLOAT) / CAST (B.cant_inscripciones_evento AS FLOAT ) * 100 AS "porcentaje"
+                            FROM ( SELECT COUNT(A.id_inscripcion) AS "cant_inscripciones_evento"
+                                        FROM INSCRIPCIONES A 
+                                    WHERE A.id_evento_calendario = ${id_evento} ) B
+                                    
+                                CROSS JOIN 
+                                    
+                                ( SELECT COUNT(A.id_inscripcion) AS "cant_inscripciones",
+                                            C.id_categoria AS "id_categoria",
+                                            C.nombre_categoria AS "categoria",
+                                            A.id_evento_calendario AS "id_evento"
+                                        FROM INSCRIPCIONES A JOIN CATEGORIAS C ON A.id_categoria = C.id_categoria
+                                    WHERE A.id_evento_calendario = ${id_evento}
+                                    GROUP BY C.id_categoria, C.nombre_categoria, A.id_evento_calendario ) A ;`
+
+
 
         res.status( 200 ).json( { 
                                     status : true,

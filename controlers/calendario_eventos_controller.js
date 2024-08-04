@@ -159,12 +159,13 @@ const obtener_categorias_x_evento = async ( req = request, res = response ) =>{
 const crear_categorias_x_evento = async ( req = request, res = response ) =>{
 
     try {
+
+        //VOY A AGREGAR LA POSIBILIDAD DE CREAR VARIAS CATEGORIAS POR EVENTO
         
-        const { descripcionCategoria, idCategoria, nombreCategoria, idEventoCalendario  } = req.body;
+        const { descripcionCategoria, nombreCategoria, idEventoCalendario  } = req.body;
         const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.create( {
                                                                                                                         data : { 
-                                                                                                                            descripcion : descripcionCategoria, 
-                                                                                                                            id_categoria : idCategoria, 
+                                                                                                                            descripcion : descripcionCategoria,  
                                                                                                                             nombre_categoria : nombreCategoria, 
                                                                                                                             id_evento_calendario : idEventoCalendario
                                                                                                                         } 

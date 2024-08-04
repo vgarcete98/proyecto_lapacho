@@ -18,6 +18,8 @@ const obtener_accesos = async ( req = request, res = response ) => {
                                         	FROM rutas_app C
                                             ${ ( accion === undefined ) ? `` : `WHERE C.accion LIKE '%${ accion }%'` } 
                                         ORDER BY C.ID_RUTA_APP`;
+
+        console.log( accesosDisponibles )
         res.status( 200 ).json(
             {
                 status : true,

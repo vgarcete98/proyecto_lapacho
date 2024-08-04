@@ -108,7 +108,7 @@ model gastos_club {
 }
 
 model inscripciones {
-  id_inscripcion         BigInt                   @id(map: "inscripciones_pk")
+  id_inscripcion         BigInt                   @id(map: "inscripciones_pk") @default(autoincrement())
   id_socio               BigInt
   id_categoria           Int
   id_evento_calendario   BigInt
