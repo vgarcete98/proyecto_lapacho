@@ -3,28 +3,10 @@ const { request, response } = require('express')
 const { PrismaClient, Prisma } = require('@prisma/client');
 const { generar_fecha } = require('../helpers/generar_fecha');
 
-const axios = require('axios');
 const prisma = new PrismaClient();
 
-//const url = env("URL_BASE");
 
-const instance = axios.create({
-    baseURL: 'url',
-    timeout: 1000,
-    //headers: {'X-Custom-Header': 'foobar'}
-  });
-
-const extraerMensaje = (str = '') => {
-    //console.log( str )
-    const jsonStart = str.indexOf('message:');
-    const jsonEnd = str.lastIndexOf('}') + 1;
-
-    const [ mensaje1, mensaje2, ...resto ] = str.substring(jsonStart, jsonEnd).split( ',' ) ;
-    return mensaje2;
-};
-
-
-const obtener_reservas_en_club = async ( req = request, res = response ) => {
+const obtener_reservas_en_club_no_socio = async ( req = request, res = response ) => {
 
     //DEVUELVO TODAS LAS RESERVAS EN EL CLUB
     try {
@@ -32,9 +14,8 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
         const { fecha_desde, 
                 fecha_hasta, 
                 pagina, 
-                idUsuario,
-                nombre_socio,
-                apellido_socio,
+                nombre,
+                apellido,
                 nro_cedula  } = req.query;
 
 
@@ -47,40 +28,51 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
         const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
 
 
-        const query = `SELECT CAST(A.id_socio_reserva AS INTEGER) AS "idSocioReserva", 
-                        		C.nombre || ', ' || C.apellido AS "nombreCmp",
-                        		A.fecha_reserva AS "fechaAgendamiento",
-                        		A.fecha_creacion AS "fechaCreacion",
-                        		A.hora_desde AS "horaDesde",
-                        		A.hora_hasta AS "horaHasta",
-                        		D.desc_mesa AS "descMesa",
-                        		CAST(D.id_mesa AS INTEGER) AS "idMesa"
-                        	FROM RESERVAS A JOIN SOCIO B ON A.id_socio = B.id_socio
-                        	JOIN PERSONA C ON C.id_persona = B.id_persona
-                        	JOIN MESAS D ON D.id_mesa = A.id_mesa
-                            JOIN PERSONA F ON F.id_persona = B.id_persona
+        const query = `SELECT A.ID_RESERVA_NO_SOCIO AS "idReservaNoSocio", 
+                                A.ID_MESA AS "idMesa",
+                                C.DESC_MESA AS "descMesa",
+                                A.NOMBRE || ', ' || A.APELLIDO AS "nombreCmp",
+                                A.FECHA_RESERVA AS "fechaReserva",
+                                A.HORA_DESDE AS "horaDesde",
+                                A.HORA_HASTA AS "horaHasta",
+                                A.ABONADO as "abonado",
+                                json_agg(
+                                json_build_object(
+                                'idInvitado', B.id_invitado,
+                                'nombreInvitado', B.nombre || ', ' || B.apellido ,
+                                'cedula', B.cedula)
+                                ) AS "invitados"
+                            FROM RESERVA_NO_SOCIO A JOIN INVITADOS B ON A.ID_RESERVA_NO_SOCIO = B.ID_RESERVA_NO_SOCIO
+                            JOIN MESAS C ON C.ID_MESA = A.ID_MESA
                         WHERE A.fecha_reserva BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
-                                ${ ( idUsuario === undefined ) ? `` : `AND B.id_socio = ${ idUsuario }` }
-                                ${ ( nombre_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ nombre_socio }%'` }
-                                ${ ( apellido_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ apellido_socio }%'` }
-                                ${ ( nro_cedula === undefined ) ? `` : `AND F.cedula  = '${ nro_cedula }'` }
+                                ${ ( nombre === undefined ) ? `` : `AND A.nombre  LIKE '%${ nombre }%'` }
+                                ${ ( apellido === undefined ) ? `` : `AND A.apellido  LIKE '%${ apellido }%'` }
+                                ${ ( nro_cedula === undefined ) ? `` : `AND A.cedula  = '${ nro_cedula }'` }
+                        GROUP BY A.ID_RESERVA_NO_SOCIO, 
+                                A.ID_MESA,
+                                C.DESC_MESA,
+                                A.NOMBRE || ', ' || A.APELLIDO,
+                                A.FECHA_RESERVA,
+                                A.HORA_DESDE,
+                                A.HORA_HASTA,
+                                A.ABONADO
                         ORDER BY A.fecha_reserva DESC
-                        LIMIT 10 OFFSET ${Number(pagina) -1 };`;
+                        LIMIT 10 OFFSET ${Number(pagina) -1 }`;
         //console.log( query );
-        const reservasClub = await prisma.$queryRawUnsafe( query );
+        const reservasClubNoSocio = await prisma.$queryRawUnsafe( query );
         
-        if ( reservasClub.length === 0 ) {
+        if ( reservasClubNoSocio.length === 0 ) {
             res.status( 200 ).json( {
                 reservas : false,
                 msg : "No existen reservas",
-                reservasClub
+                reservasClubNoSocio
             } );
         } else {
 
             res.status( 200 ).json( {
                 reservas : true,
                 msg : "Reservas del club",
-                reservasClub
+                reservasClubNoSocio
             } );
         }        
     } catch (error) {
@@ -98,38 +90,41 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
 
 
 
-const crear_reserva_en_club = async ( req = request, res = response ) => {
+const crear_reserva_en_club_no_socio = async ( req = request, res = response ) => {
 
     try {
 
-        const {  idSocio, horaDesde, horaHasta, idMesa } = req.body;
+        const {  horaDesde, horaHasta, idMesa, invitados, abonado, montoReserva, cantInvitados, nombre, apellido } = req.body;
 
 
-        const nueva_reserva = await prisma.reservas.create( { data : {
-                                                                        id_socio : Number(idSocio),
-                                                                        fecha_creacion : new Date(),
-                                                                        //fecha_reserva : generar_fecha( fechaAgendamiento ),
-                                                                        hora_desde : generar_fecha(horaDesde),
-                                                                        hora_hasta : generar_fecha(horaHasta),
-                                                                        id_mesa : idMesa,
-
-                                                                    } 
-                                                                });
+        const nueva_reserva = await prisma.reserva_no_socio.create( { data : {
+                                                                            fecha_reserva : new Date(),
+                                                                            fecha_creacion : new Date(),
+                                                                            apellido,
+                                                                            nombre,
+                                                                            
+                                                                            //fecha_reserva : generar_fecha( fechaAgendamiento ),
+                                                                            hora_desde : generar_fecha(horaDesde),
+                                                                            hora_hasta : generar_fecha(horaHasta),
+                                                                            id_mesa : idMesa,
+                                                                            abonado : abonado,
+                                                                            monto_x_hora : Number(montoReserva),    
+                                                                            cant_invitados : Number( cantInvitados )
+                                                                        } 
+                                                                    });
         //console.log( nueva_reserva)
         const { fecha_creacion, fecha_reserva, hora_desde, 
-                hora_hasta, id_mesa, id_socio, 
-                id_socio_reserva, id_tipo_reserva, reserva_editada, reserva_eliminada } = nueva_reserva;
+                hora_hasta, id_mesa, cedula, id_reserva_no_socio  } = nueva_reserva;
         
         const { desc_mesa } = await prisma.mesas.findUnique(  { where : { id_mesa : Number(idMesa) } } );
-        const socio  = await prisma.socio.findUnique( { where : { id_socio : Number( idSocio ) } } );
-        //console.log( socio )
-        const { id_persona, nombre_cmp } = socio;
+
         res.status( 200 ).json( {
             status : true,
             msg : "Reserva creada exitosamente",
             reserva : {
-                idSocioReserva : idSocio,
-                nombreCmp : nombre_cmp,
+                idNoSocioReserva : id_reserva_no_socio,
+                nombreCmp : nueva_reserva.nombre + ', ' + nueva_reserva.apellido,
+                cedula,
                 //fechaAgendamiento : fecha_reserva,
                 fechaCreacion : fecha_creacion,
                 horaDesde : hora_desde,
@@ -140,10 +135,10 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
         } );
         
     } catch (error) {
-        //console.log( error );
+        console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Reserva no generada : ${ extraerMensaje( error.message ) }`,
+            msg : `Reserva no generada : ${error }`,
             //error
         } );
         
@@ -154,60 +149,6 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
 }
 
 
-const crear_reserva_en_club_administrador = async ( req = request, res = response ) => {
-
-    try {
-
-        const {  idSocio, horaDesde, horaHasta, idMesa } = req.body;
-
-
-        const nueva_reserva = await prisma.reservas.create( { data : {
-                                                                        id_socio : Number(idSocio),
-                                                                        fecha_creacion : new Date(),
-                                                                        //fecha_reserva : generar_fecha( fechaAgendamiento ),
-                                                                        hora_desde : generar_fecha(horaDesde),
-                                                                        hora_hasta : generar_fecha(horaHasta),
-                                                                        id_mesa : idMesa,
-
-                                                                    } 
-                                                                });
-        //console.log( nueva_reserva)
-        const { fecha_creacion, fecha_reserva, hora_desde, 
-                hora_hasta, id_mesa, id_socio, 
-                id_socio_reserva, id_tipo_reserva, reserva_editada, reserva_eliminada } = nueva_reserva;
-        
-        const { desc_mesa } = await prisma.mesas.findUnique(  { where : { id_mesa : Number(idMesa) } } );
-        const socio  = await prisma.socio.findUnique( { where : { id_socio : Number( idSocio ) } } );
-        //console.log( socio )
-        const { id_persona, nombre_cmp } = socio;
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Reserva creada exitosamente",
-            reserva : {
-                idSocioReserva : idSocio,
-                nombreCmp : nombre_cmp,
-                //fechaAgendamiento : fecha_reserva,
-                fechaCreacion : fecha_creacion,
-                horaDesde : hora_desde,
-                horaHasta : hora_hasta,
-                descMesa : desc_mesa,
-                idMesa : Number(typeof( id_mesa ) === 'bigint' ? id_mesa.toString() : id_mesa),
-            }
-        } );
-        
-    } catch (error) {
-        //console.log( error );
-        res.status( 500 ).json( {
-            status : false,
-            msg : `Reserva no generada : ${ extraerMensaje( error.message ) }`,
-            //error
-        } );
-        
-    }
-
-
-
-}
 
 
 const obtener_mesas_disponibles_x_horario = async ( req = request, res = response ) => {
@@ -263,7 +204,7 @@ const obtener_mesas_disponibles_x_horario = async ( req = request, res = respons
 
 
 
-const editar_reserva_en_club = async ( req = request, res = response ) => {
+const editar_reserva_en_club_no_socio = async ( req = request, res = response ) => {
 
     
     try {
@@ -319,28 +260,26 @@ const editar_reserva_en_club = async ( req = request, res = response ) => {
 }
 
 
-const borrar_reserva_en_club = async ( req = request, res = response ) => {
+const borrar_reserva_en_club_no_socio = async ( req = request, res = response ) => {
 
     try {
-        const { idReserva, idSocio, fechaReserva, horaDesde, horaHasta, idMesa } = req.body;
-        const reserva_cancelada = await prisma.reservas.delete( { 
-            where : { id_socio_reserva : Number( idReserva ) }
+        const { idNoSocioReserva } = req.body;
+        const reserva_cancelada = await prisma.reserva_no_socio.delete( { 
+            where : { id_reserva_no_socio : Number( idNoSocioReserva ) }
         } );
 
         const { fecha_creacion, fecha_reserva, hora_desde, 
-                hora_hasta, id_mesa, id_socio, 
-                id_socio_reserva, id_tipo_reserva } = reserva_cancelada;
+                hora_hasta, id_mesa, id_reserva_no_socio,
+                id_socio_reserva } = reserva_cancelada;
         
-        const { desc_mesa } = await prisma.mesas.findUnique(  { where : { id_mesa : Number(idMesa) } } );
-        const socio  = await prisma.socio.findUnique( { where : { id_socio : Number( idSocio ) } } );
-        const { id_persona, nombre_cmp } = socio;
+        const { desc_mesa } = await prisma.mesas.findUnique(  { where : { id_mesa : Number(id_mesa) } } );
 
         res.status( 200 ).json( {
             status : true,
             msg : "Reserva eliminada exitosamente",
             reserva : {
-                idSocioReserva : Number(typeof( id_socio_reserva ) === 'bigint' ? Number(id_socio_reserva.toString()) : id_socio_reserva),
-                nombreCmp : nombre_cmp,
+                idNoSocioReserva : id_reserva_no_socio,
+                nombreCmp : reserva_cancelada.nombre + ', ' + reserva_cancelada.apellido,
                 //fechaAgendamiento : fecha_reserva,
                 fechaCreacion : fecha_creacion,
                 horaDesde : hora_desde,
@@ -411,74 +350,11 @@ const obtener_mesas_reserva = async ( req = request, res = response ) =>{
 
 
 
-const realizar_reserva_via_bff = async ( req = request, res = response ) =>{
-
-
-    try {
-        
-        const { acceso } = req.body;
-        let data = {};
-
-        if ( acceso === 'ADMINISTRADOR' ){
-
-            const { id_socio } = req.body;
-            if ( id_socio === undefined || id_socio === null ) {
-                throw new Error('Debe proporcionar la clave de usuario para realizar la reserva');
-            }else {
-
-                //SE DEBE DE REALIZAR LA PETICION NORMALMENTE
-                await instance.post('/user', {
-                    firstName: 'Fred',
-                    lastName: 'Flintstone'
-                })
-                .then(function (response) {
-                  console.log(response);
-                })
-                .catch(function (error) {
-                  console.log(error);
-                });
-
-
-            }
-        }else{
-
-            //REALIZAR EL POST PERO HACIA OTRA RUTA
-            await instance.post('/user', {
-                firstName: 'Fred',
-                lastName: 'Flintstone'
-            })
-            .then(function (response) {
-              console.log(response);
-            })
-            .catch(function (error) {
-              console.log(error);
-            });
-
-        }
-
-        
-        
-    } catch (error) {
-        //console.log ( error );
-        res.status( 500 ).json( {
-            status : false,
-            msg : `Ha ocurrido un error al eliminar la reserva : ${ error }`,
-            //error
-        } );
-
-    }
-
-}
-
-
-
 module.exports = {
-    obtener_reservas_en_club,
-    crear_reserva_en_club,
-    borrar_reserva_en_club, 
-    editar_reserva_en_club,
+    obtener_reservas_en_club_no_socio,
+    crear_reserva_en_club_no_socio,
+    borrar_reserva_en_club_no_socio, 
+    editar_reserva_en_club_no_socio,
     obtener_mesas_reserva,
     obtener_mesas_disponibles_x_horario,
-    realizar_reserva_via_bff,
-    crear_reserva_en_club_administrador
 };

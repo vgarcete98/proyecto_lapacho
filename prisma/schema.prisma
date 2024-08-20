@@ -108,7 +108,7 @@ model gastos_club {
 }
 
 model inscripciones {
-  id_inscripcion         BigInt                   @id(map: "inscripciones_pk") @default(autoincrement())
+  id_inscripcion         BigInt                   @id(map: "inscripciones_pk")
   id_socio               BigInt
   id_categoria           Int
   id_evento_calendario   BigInt
@@ -128,6 +128,7 @@ model mesas {
   id_mesa            BigInt               @id(map: "mesas_pk") @default(autoincrement())
   desc_mesa          String               @db.VarChar(255)
   agendamiento_clase agendamiento_clase[]
+  reserva_no_socio   reserva_no_socio[]
   reservas           reservas[]
 }
 
@@ -206,6 +207,7 @@ model socio {
   creadoen             DateTime?              @db.Date
   editadoen            DateTime?              @db.Date
   agendamiento_clase   agendamiento_clase[]
+  caja_chica           caja_chica[]
   cuotas_socio         cuotas_socio[]
   egresos              egresos[]
   ingresos             ingresos[]
@@ -471,4 +473,63 @@ model inscripcion_evento_categria_socio {
   id_inscripcion           BigInt
   id_evento_calendario     BigInt
   id_categoria             Int
+}
+
+model invitados {
+  id_invitado         Int              @id(map: "invitados_pk") @default(autoincrement())
+  id_reserva_no_socio Int
+  nombre              String?          @db.VarChar(200)
+  cedula              String?          @db.VarChar(200)
+  apellido            String?          @db.VarChar(200)
+  reserva_no_socio    reserva_no_socio @relation(fields: [id_reserva_no_socio], references: [id_reserva_no_socio], onDelete: NoAction, onUpdate: NoAction, map: "reserva_no_socio_invitados_fk")
+}
+
+model reserva_no_socio {
+  id_reserva_no_socio Int         @id(map: "reserva_no_socio_pk") @default(autoincrement())
+  id_mesa             BigInt
+  nombre              String?     @db.VarChar(200)
+  apellido            String?     @db.VarChar(200)
+  cedula              String?     @db.VarChar(200)
+  fecha_reserva       DateTime?   @db.Timestamp(6)
+  hora_hasta          DateTime    @db.Timestamp(6)
+  reserva_editada     DateTime?   @db.Date
+  fecha_creacion      DateTime    @db.Date
+  hora_desde          DateTime    @db.Timestamp(6)
+  abonado             Boolean     @default(false)
+  monto_x_hora        Int
+  cant_invitados      Int?
+  invitados           invitados[]
+  mesas               mesas       @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reserva_no_socio_fk")
+}
+
+model caja_chica {
+  id_caja_chica           Int                       @id(map: "caja_chica_pk") @default(autoincrement())
+  id_socio                BigInt
+  monto_inicial           Int
+  monto_actual            Float?                    @default(0) @db.Real
+  fecha_creacion          DateTime                  @default(now()) @db.Timestamp(6)
+  estado                  Boolean                   @default(false)
+  socio                   socio                     @relation(fields: [id_socio], references: [id_socio], onDelete: NoAction, onUpdate: NoAction, map: "socio_caja_chica_fk")
+  gastos_caja_chica       gastos_caja_chica[]
+  reposiciones_caja_chica reposiciones_caja_chica[]
+}
+
+model gastos_caja_chica {
+  id_gasto_caja_chica    Int        @id(map: "gastos_caja_chica_pk") @default(autoincrement())
+  monto                  Int
+  id_caja_chica          Int
+  descripcion            String?    @db.VarChar(255)
+  fecha_gasto_caja_chica DateTime   @db.Timestamp(6)
+  nro_factura            String?    @db.VarChar(255)
+  comprobante            String?    @db.VarChar(255)
+  fecha_edicion          DateTime?  @db.Timestamp(6)
+  caja_chica             caja_chica @relation(fields: [id_caja_chica], references: [id_caja_chica], onDelete: NoAction, onUpdate: NoAction, map: "caja_chica_gastos_caja_chica_fk")
+}
+
+model reposiciones_caja_chica {
+  id_reposicion_caja_chica Int        @id(map: "reposiciones_caja_chica_pk") @default(autoincrement())
+  id_caja_chica            Int
+  monto_reposicion         Int
+  fecha_reposicion         DateTime?  @db.Timestamp(6)
+  caja_chica               caja_chica @relation(fields: [id_caja_chica], references: [id_caja_chica], onDelete: NoAction, onUpdate: NoAction, map: "caja_chica_reposiciones_caja_chica_fk")
 }

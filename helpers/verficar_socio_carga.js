@@ -74,6 +74,33 @@ const verificar_vista_usuario = async ( req = request, res = response, next ) =>
 
 
 
+const verificar_acceso_usuario = async ( req = request, res = response, next ) =>{
+
+    try {
+        const { x_token } = req.headers;
+        const { id_usuario, rol } = decode( x_token, process.env.SECRET0RPR1VAT3K3Y );
+
+        req.body.acceso = rol;
+
+        next();
+    } catch (error) {
+        res.status( 500 ).json(
+        
+            {
+                status : false,
+                msj : `Ha ocurrido un error al realizar la consulta, No se pudo generar el token : ${ error }`,
+                //mensaje_error : error
+            }
+    
+        );
+    }
+
+
+
+
+}
+
+
 const verificar_vista_profesor = async ( req = request, res = response, next ) =>{
 
     try {
@@ -123,4 +150,4 @@ const verificar_vista_profesor = async ( req = request, res = response, next ) =
 
 
 
-module.exports = { obtener_data_socio, verificar_vista_usuario, verificar_vista_profesor };
+module.exports = { obtener_data_socio, verificar_vista_usuario, verificar_vista_profesor, verificar_acceso_usuario };

@@ -39,47 +39,89 @@ const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response 
 
 
 
-        const query = `SELECT CAST ( C.ID_CUOTA_SOCIO AS INTEGER ) AS idCuotaSocio ,
-                                CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocio, 
-                                CAST ( B.ID_SOCIO AS INTEGER ) AS id_socio,
-                                A.CEDULA AS CEDULA, TO_CHAR ( C.FECHA_VENCIMIENTO, 'MONTH') AS cuota_mes,
-                                TO_CHAR ( C.FECHA_VENCIMIENTO, 'MM') AS NUMERO_MES,
-                                C.FECHA_VENCIMIENTO AS fechaVencimiento,
-                                C.fecha_pago_realizado as fecha_pago,
-                                D.desc_tipo_cuota as tipo_cuota,
-                                C.monto_cuota as monto
-                            FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
-                            JOIN CUOTAS_SOCIO C ON C.ID_SOCIO = B.ID_SOCIO
-                            JOIN TIPO_CUOTA D ON D.ID_TIPO_CUOTA = C.ID_TIPO_CUOTA
-                        WHERE EXTRACT(YEAR FROM C.FECHA_VENCIMIENTO) = ${annio}
-                            AND C.PAGO_REALIZADO = false AND A.CEDULA = '${numero_cedula}';`
+        const query = `SELECT A.ID_SOCIO AS "idSocio", 
+                                A.NOMBRE_USUARIO AS "nombreUsuario", 
+                                A.NOMBRE_CMP AS "nombreCmp",
+                                --B.ID_CUOTA_SOCIO,
+                                --B.DESCRIPCION,
+                                --B.MONTO_CUOTA
+                                json_agg(
+                            json_build_object(
+                                'idCuotaSocio', B.ID_CUOTA_SOCIO,
+                                'descripcion', B.DESCRIPCION,
+                                'monto', B.MONTO_CUOTA
+                            )
+                        ) AS "cuotasPendientes"
+                            FROM SOCIO A JOIN CUOTAS_SOCIO B ON A.ID_SOCIO = B.ID_SOCIO
+                            --JOIN PAGOS_SOCIO C ON C.ID_CUOTA_SOCIO = B.ID_CUOTA_SOCIO
+                        WHERE  B.FECHA_VENCIMIENTO < CURRENT_DATE 
+                            AND B.PAGO_REALIZADO = FALSE
+                            AND FECHA_PAGO_REALIZADO IS NULL
+                        GROUP BY A.ID_SOCIO,  A.NOMBRE_USUARIO, A.NOMBRE_CMP;`
         
-        const cuotas_pendientes = await prisma.$queryRawUnsafe( query );
 
-        //console.log( cuotas_pendientes );
-        let cuotasPendientes = [];
-        cuotasPendientes = cuotas_pendientes.map( ( element ) =>{
+        if ( cuotasPendientes.length === 0 ){
+            res.status( 200 ).json(
 
-            const { idcuotasocio, nombresocio, id_socio, 
-                    fechavencimiento, cedula, numero_mes,
-                    fecha_pago, tipo_cuota, monto_cuota } = element;
-            
-            const mes_español = MESES_ESPAÑOL[ Number( numero_mes ) -1 ];
+                {
+                    status : false,
+                    msj : 'El socio no registra pagos pendientes',
+                    //cantidad : cuotas_pendientes.length
+                }
+            );
+        }else {
+            res.status( 200 ).json(
 
-            return {
-                idCuotaSocio : idcuotasocio,
-                nombreSocio : nombresocio,
-                idSocio : id_socio,
-                fechaVencimiento : fechavencimiento,
-                cuotaMes : mes_español,
-                numeroMes : numero_mes,
-                cedula,
-                fechaPago : fecha_pago,
-                tipoCuota : tipo_cuota,
-                monto : monto_cuota
-            }
-
+                {
+                    status : true,
+                    msj : 'Pagos pendientes del socio',
+                    cuotasPendientes
+                }
+            );
+        } 
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'No se pudo obtener los pagos pendientes del socio',
+            //error
         } );
+        
+    } 
+
+}
+
+
+
+const obtener_cuotas_pendientes_x_socio_a_la_fecha = async ( req = request, res = response ) =>{
+
+    const { numero_cedula, annio, id_socio } = req.query;
+    //console.log( numero_cedula);
+    // OBTIENE LAS CUOTAS PENDIENTES DEL SOCIO EN EL AÑO
+    try {
+        const query = `SELECT A.ID_SOCIO::integer AS "idSocio", 
+                                A.NOMBRE_USUARIO AS "nombreUsuario", 
+                                A.NOMBRE_CMP AS "nombreCmp",
+                                --B.ID_CUOTA_SOCIO,
+                                --B.DESCRIPCION,
+                                --B.MONTO_CUOTA
+                                json_agg(
+                            json_build_object(
+                                'idCuotaSocio', B.ID_CUOTA_SOCIO,
+                                'descripcion', B.DESCRIPCION,
+                                'monto', B.MONTO_CUOTA
+                            )
+                        ) AS "cuotasPendientes"
+                            FROM SOCIO A JOIN CUOTAS_SOCIO B ON A.ID_SOCIO = B.ID_SOCIO
+                            --JOIN PAGOS_SOCIO C ON C.ID_CUOTA_SOCIO = B.ID_CUOTA_SOCIO
+                        WHERE  A.ID_SOCIO = ${id_socio}
+                            AND B.FECHA_VENCIMIENTO < CURRENT_DATE 
+                            AND B.PAGO_REALIZADO = FALSE
+                            AND FECHA_PAGO_REALIZADO IS NULL
+                        GROUP BY A.ID_SOCIO,  A.NOMBRE_USUARIO, A.NOMBRE_CMP;`;
+        
+        let cuotasPendientes = await prisma.$queryRawUnsafe(query);
+        //console.log( cuotasPendientes )
         if ( cuotasPendientes.length === 0 ){
             res.status( 200 ).json(
 
@@ -111,6 +153,71 @@ const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response 
 
 
 }
+
+
+
+const obtener_cuotas_pendientes_a_la_fecha = async ( req = request, res = response ) =>{
+
+    const { numero_cedula, annio, id_socio } = req.query;
+    //console.log( numero_cedula);
+    // OBTIENE LAS CUOTAS PENDIENTES DEL SOCIO EN EL AÑO
+    try {
+
+        const query = `SELECT A.ID_SOCIO::integer AS "idSocio", 
+                                A.NOMBRE_USUARIO AS "nombreUsuario", 
+                                A.NOMBRE_CMP AS "nombreCmp",
+                                --B.ID_CUOTA_SOCIO,
+                                --B.DESCRIPCION,
+                                --B.MONTO_CUOTA
+                                json_agg(
+                            json_build_object(
+                                'idCuotaSocio', B.ID_CUOTA_SOCIO,
+                                'descripcion', B.DESCRIPCION,
+                                'monto', B.MONTO_CUOTA
+                            )
+                        ) AS "cuotasPendientes"
+                            FROM SOCIO A JOIN CUOTAS_SOCIO B ON A.ID_SOCIO = B.ID_SOCIO
+                            --JOIN PAGOS_SOCIO C ON C.ID_CUOTA_SOCIO = B.ID_CUOTA_SOCIO
+                        WHERE B.FECHA_VENCIMIENTO < CURRENT_DATE 
+                            AND B.PAGO_REALIZADO = FALSE
+                            AND FECHA_PAGO_REALIZADO IS NULL
+                        GROUP BY A.ID_SOCIO,  A.NOMBRE_USUARIO, A.NOMBRE_CMP;`;
+        
+        let cuotasPendientes = [];
+        cuotasPendientes = await prisma.$queryRawUnsafe(query);
+        if ( cuotasPendientes.length === 0 ){
+            res.status( 200 ).json(
+
+                {
+                    status : false,
+                    msj : 'El socio no registra pagos pendientes',
+                    //cantidad : cuotas_pendientes.length
+                }
+            );
+        }else {
+            res.status( 200 ).json(
+
+                {
+                    status : true,
+                    msj : 'Pagos pendientes del socio',
+                    cuotasPendientes
+                }
+            );
+        } 
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'No se pudo obtener los pagos pendientes del socio',
+            //error
+        } );
+        
+    } 
+
+
+}
+
+
 
 
 const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
@@ -796,5 +903,7 @@ module.exports = {
     obtener_cantidad_socios_al_dia,
     obtener_cantidad_socios_atrasados,
     obtener_socios_atrasados,
-    obtener_socios_al_dia
+    obtener_socios_al_dia,
+    obtener_cuotas_pendientes_x_socio_a_la_fecha,
+    obtener_cuotas_pendientes_a_la_fecha
 }

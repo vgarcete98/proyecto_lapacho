@@ -102,7 +102,18 @@ const rutas = {
     cuotas_del_club : {
 
         ruta : "/cuotas_club"
+    },
+
+    reservas_club_no_socio : {
+
+        ruta : "/reservas_no_socios"
+    },
+
+    caja_chica : {
+
+        ruta : "/caja_chica"
     }
+
 
 
 }

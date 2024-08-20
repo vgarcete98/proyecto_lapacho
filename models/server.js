@@ -38,6 +38,8 @@ const { router_rutas_app } = require('../routes/rutas_app_routes');
 const router_tipo_cuota = require('../routes/tipo_cuota_routes');
 const router_cuotas = require('../routes/cuotas_routes');
 
+const router_reservas_club_no_socio = require( "../routes/reservas_club_no_socio_routes" );
+
 //----------------------------------------------------------------------------
 
 
@@ -56,6 +58,7 @@ const { comprobar_acceso_rol, cargar_rutas_rol } = require('../helpers/comprobar
 //----------------------------------------------------------------------------
 const { cron_job_genera_cuotas_anio } = require( '../helpers/cron_job_genera_cuotas_anio' );
 const { cron_job_genera_gastos_fijos } = require( '../helpers/cron_job_genera_cuotas_anio' );
+const router_caja_chica = require('../routes/caja_chica_routes');
 //----------------------------------------------------------------------------
 
 
@@ -168,6 +171,10 @@ class Server {
         this.app.use( rutas.tipo_cuotas.ruta, router_tipo_cuota );
 
         this.app.use( rutas.cuotas_del_club.ruta, router_cuotas );
+
+        this.app.use( rutas.reservas_club_no_socio.ruta, router_reservas_club_no_socio );
+
+        this.app.use( rutas.caja_chica.ruta, router_caja_chica );
     }
 
     listar_rutas (){
