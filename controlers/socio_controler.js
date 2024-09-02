@@ -25,83 +25,44 @@ const crear_socio = async ( req = request, res = response ) => {
                 correo, numeroTel, direccion, ruc, tipoSocio,
                 contraseña, nombreUsuario, idAcceso } = req.body;
         
-
-        //console.log ( nombre, apellido, fecha_nacimiento );
         //convertir la fecha de nacimiento a fecha
         const fecha_db = generar_fecha( fechaNacimiento);
-        console.log( fecha_db );
-        //primero debo de crear una persona y el sgte codigo devuelve el id de la persona creada
-
-        //------------------------------------------------------------------------------------------
-        /*
-        const persona = await prisma.persona.create( { 
-                                                        data : {
-                                                            nombre,
-                                                            apellido,
-                                                            cedula,
-                                                            fecha_nacimiento : fecha_db
-                                                        } 
-                                                    } );
-        */
-        //------------------------------------------------------------------------------------------       
-        const persona = await prisma.$executeRaw`INSERT INTO public.persona(
-                                                        apellido, nombre, cedula, fecha_nacimiento)
-                                                    VALUES ( ${apellido}, ${nombre}, ${cedula}, ${fecha_db});`;
+        //console.log( fecha_db );
         
         //OBTENER EL SOCIO INSERTADO
-        
         //------------------------------------------------------------------------------------------
-        
-        const result  =  await prisma.$queryRaw`SELECT CAST ( id_persona AS INTEGER ) AS id_persona 
-                                                    FROM  public.persona
-                                                WHERE cedula = CAST( ${ cedula } AS VARCHAR )` ;
-        const [ primer_resultado,...resto ] = result;
-        const { id_persona } = primer_resultado;
-        //console.log ( result )
-        //------------------------------------------------------------------------------------------
-
-        //const { id_persona } = persona;
-
-        //------------------------------------------------------------------------------------------
-        /*       
-        const socio = await prisma.$executeRaw`INSERT INTO public.socio(
-                                                    id_tipo_socio, id_persona, correo_electronico, numero_telefono, direccion, ruc)
-                                                VALUES ( ${ tipoSocio }, ${ id_persona },${correo} , ${numeroTel}, ${direccion}, ${ruc} )`;
-        */
-        //------------------------------------------------------------------------------------------
-        const [ correoSocio, direccionSocio, rucSocio, idPersona ]= [ correo , direccion, ruc, id_persona ];
         const fecha_creacion_socio = new Date();
-        const nuevo_socio = await prisma.socio.create( { 
+        const nuevo_socio = await prisma.cliente.create( { 
                                                             data : {
+                                                                nombre : nombre,
+                                                                apellido : apellido,
+                                                                cedula : cedula,
+                                                                fecha_nacimiento : fecha_db,
                                                                 id_tipo_socio : tipoSocio,
-                                                                id_persona : idPersona,
-                                                                correo_electronico : correoSocio,
+                                                                correo_electronico : correo,
                                                                 numero_telefono : numeroTel,
-                                                                direccion : direccionSocio,
-                                                                ruc : rucSocio,
+                                                                direccion : direccion,
+                                                                ruc : ruc,
                                                                 nombre_cmp : `${ nombre } ${ apellido }`,
                                                                 creadoen : fecha_creacion_socio,
                                                                 estado_socio : estados_socio.activo.id_estado,
                                                                 contrasea : contraseña,
                                                                 nombre_usuario : nombreUsuario,
-                                                                id_acceso_socio : idAcceso,
+                                                                id_rol_usuario : idAcceso,
                                                                 tipo_usuario : ''
 
                                                             } 
                                                     
                                                     } );
-        const { id_socio, nombre_cmp, correo_electronico, creadoen, estado_socio  } = nuevo_socio;
+        const { id_cliente, nombre_cmp, correo_electronico, creadoen, estado_socio  } = nuevo_socio;
         const direccion_socio = nuevo_socio.direccion;
-
-        const idSocioConvert = (typeof id_socio === 'bigint') ? Number(id_socio.toString()) : id_socio;
-        //console.log( idSocioConvert );
         res.status( 200 ).json(
             {
 
                 status : true,
                 msj : 'Socio Creado',
                 socio : {
-                    idSocio : idSocioConvert,
+                    idCliente : id_cliente,
                     tipoSocio,
                     //nombreCmp : nombre_cmp,
                     numeroTel,
@@ -120,7 +81,7 @@ const crear_socio = async ( req = request, res = response ) => {
         );   
 
     } catch ( error ) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json(
 
             {
@@ -141,32 +102,30 @@ const actualizar_socio = async ( req = request, res = response ) => {
 
 
     try {
-        const { nombre, apellido, fechaNacimiento, cedula, estadoSocio,
+        const { nombre, apellido, fechaNacimiento, cedula, estadoSocio, nroCedula,
             correo, numeroTel, direccion, ruc, tipoSocio,
-            contraseña, nombreUsuario, idAcceso, idSocio } = req.body;
+            contraseña, nombreUsuario, idAcceso, idCliente } = req.body;
         const rucNuevo = ruc ;
         //------------------------------------------------------------------------------------------
-        /*const socio_actualizado = prisma.$executeRaw`UPDATE public.socio
-                                                            SET correo_electronico=${correo}, 
-                                                                numero_telefono=${telefono}, 
-                                                                direccion=${direccion}
-                                                    WHERE id_socio = ${id}`;*/
-        //------------------------------------------------------------------------------------------
         const fecha_socio_actualizado = new Date();
-        const socio_actualizado = await prisma.socio.update( { 
-                                                                where : {  id_socio : Number ( idSocio )  },
+        const socio_actualizado = await prisma.cliente.update( { 
+                                                                where : {  id_cliente : Number ( idCliente )  },
                                                                 data : {
-
+                                                                    nombre : nombre,
+                                                                    apellido : apellido,
+                                                                    direccion : direccion,
+                                                                    fecha_nacimiento : generar_fecha( fechaNacimiento ),
+                                                                    cedula : nroCedula,
                                                                     editadoen : fecha_socio_actualizado,
                                                                     correo_electronico : correo,
-                                                                    id_acceso_socio : idAcceso,
+                                                                    id_rol_usuario : idAcceso,
                                                                     contrasea : contraseña,
                                                                     nombre_usuario : nombreUsuario,
                                                                     ruc : rucNuevo,
                                                                     tipo_socio : tipoSocio,
                                                                     numero_telefono : numeroTel,
                                                                     estado_socio : estadoSocio,
-                                                                    direccion : direccionNuevo
+                                                                    direccion : direccion
                                                                 }
                                                             } );
         //console.log( socio_actualizado );
@@ -193,7 +152,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
 
         });        
     } catch (error) {
-        //console.log( error );
+        console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : `No se pudo actualizar al Socio  ${ error }`,
@@ -211,35 +170,23 @@ const borrar_socio = async ( req = request, res = response ) => {
     // SE IMPLEMENTA EL BORRADO DEL SOCIO ACTUALIZANDO NADA MAS CIERTOS CAMPOS DE LA TABLA
     
     try {
-        const { idSocio } = req.body;
-        const socio_eliminado = id_socio;
-        //----------------------------------------------------------------------------
-        /*
-        const socio_actualizado = prisma.$executeRaw`UPDATE public.socio
-                                                            SET socio_activo = false
-                                                    WHERE id_socio = ${id}`;
-        */
+        const { idCliente } = req.body;
+
         //----------------------------------------------------------------------------
         const fecha_edicion = new Date();
-        const socio_actualizado = await prisma.socio.update( { 
+        const socio_actualizado = await prisma.cliente.update( { 
                                                                 data : {
                                                                     estado_socio : estados_socio.eliminado.id_estado,
                                                                     editadoen : fecha_edicion
                                                                 },
-                                                                where : { id_socio : Number(socio_eliminado) }
+                                                                where : { id_cliente : Number(idCliente) }
                                                             } );
         const { editadoen, direccion, correo_electronico, 
-                numero_telefono, estado_socio, ruc, id_persona,
-                nombre_cmp, id_socio, id_tipo_socio, nombre_usuario, contrasea } = socio_actualizado;
-        const idSocioConvert = (typeof id_socio === 'bigint') ? Number(id_socio.toString()) : id_socio;
-        const tipoSocioConvert = (typeof id_tipo_socio === 'bigint') ? Number(id_tipo_socio.toString()) : id_tipo_socio;
-        const [ nombre, apellido ] = nombre_cmp.split( ' ' );
+                numero_telefono, estado_socio, ruc,
+                nombre_cmp, id_cliente, id_tipo_socio, nombre_usuario, contrasea } = socio_actualizado;
 
-        //-------------------------------------------------------------------------------
-        const id_persona_convert = (typeof id_persona === 'bigint') ? Number(id_persona.toString()) : id_persona;
-        const { fecha_nacimiento, cedula } = await prisma.persona.findUnique( { where : { id_persona : id_persona_convert } } )
-        const cedula_convert = cedula;
-        //-------------------------------------------------------------------------------        
+        const [ nombre, apellido ] = nombre_cmp.split( ' ' );
+       
 
         res.status( 200 ).json(
             {
@@ -247,7 +194,7 @@ const borrar_socio = async ( req = request, res = response ) => {
                 status : true,
                 msj : 'Socio Borrado',
                 socioBorrado : {
-                    idSocio : idSocioConvert,
+                    idCliente : id_cliente,
                     tipoSocio : tipoSocioConvert,
                     //nombreCmp : nombre_cmp,
                     numeroTel : numero_telefono,

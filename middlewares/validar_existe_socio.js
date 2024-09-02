@@ -13,7 +13,7 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
     
     try {
         const { cedula, ruc } = req.body;
-        const persona = await prisma.persona.findFirst( { where : { cedula } } );
+        const persona = await prisma.cliente.findFirst( { where : { cedula } } );
         //console.log( persona );
         
         if ( persona === null || persona === undefined ) {
@@ -33,7 +33,7 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
             } );
         }
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo verificar que haya un socio repetido',
