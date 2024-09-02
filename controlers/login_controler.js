@@ -20,7 +20,7 @@ const login = async ( req = request, res = response )=> {
         //                                                    FROM  public.Socio
         //                                                WHERE nombre_usuario = ${ usuario } AND contrasea = ${ contraseña }`;
 
-        const socio = await prisma.socio.findFirst( { where : { 
+        const socio = await prisma.cliente.findFirst( { where : { 
                                                                     AND : [
                                                                         { nombre_usuario : usuario },
                                                                         { contrasea : contraseña }
@@ -40,11 +40,11 @@ const login = async ( req = request, res = response )=> {
             );
         }else {
 
-            const { id_socio, id_rol_usuario,  } = socio;
+            const { id_cliente, id_rol_usuario,  } = socio;
             
             const idRolUsuario  = ( typeof( id_rol_usuario ) === 'bigint' )? Number( id_rol_usuario.toString() ) : id_rol_usuario;
 
-            const idUsuario = ( typeof( id_socio ) === 'bigint' )? Number( id_socio.toString() ) : id_socio;
+            const idUsuario = ( typeof( id_socio ) === 'bigint' )? Number( id_socio.toString() ) : id_cliente;
             
             //console.log( idRolUsuario, idUsuario )
             //console.log ( consulta_acceso );
