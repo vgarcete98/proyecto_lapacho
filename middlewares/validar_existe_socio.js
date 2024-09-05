@@ -8,32 +8,61 @@ const prisma = new PrismaClient();
 
 const validar_existe_socio = async ( req = request, res = response, next ) =>{
 
-
-
-    
     try {
+
+        // primero la cabecera
+        let clientesExistentes = [];
         const { cedula, ruc } = req.body;
         const persona = await prisma.cliente.findFirst( { where : { cedula } } );
         //console.log( persona );
         
-        if ( persona === null || persona === undefined ) {
-            // QUIERE DECIR QUE NO SE ENCONTRO POR TANTO NO EXISTE
-            next();
-        }else {
+        if ( persona !== null && persona !== undefined ) {
             const { nombre, apellido, fecha_nacimiento } = persona;
-            res.status( 400 ).json( {
-                status : false,
-                msg : 'Ya existe un socio con esos datos',
-                persona_encontrada : {
-                    nombre, 
-                    apellido, 
-                    fecha_nacimiento,
-                    cedula
-                }
+            clientesExistentes.push( {
+                nombre, 
+                apellido, 
+                fecha_nacimiento,
+                cedula
             } );
+        }else {
+                        //HAGO UNA VALIDACION MAS PARA QUE LOS DEPENDIENTES DEL SOCIO NO SE REPITAN
+            const { dependientes } = req.body;
+
+            if (dependientes.lenght !== 0 ) {
+                for (let dependiente in dependientes ) {
+                    const { cedula } = dependientes[dependiente];
+                    const dep = await prisma.cliente.findFirst( { where : { cedula } } );       
+                    if ( dep !== null && persona !== undefined  ){
+                        const { nombre, apellido, fecha_nacimiento } =  dependientes[dependiente];
+                        clientesExistentes.push( 
+                            {
+                                nombre, 
+                                apellido, 
+                                fecha_nacimiento,
+                                cedula
+                            }
+                        );
+                    }
+                }
+            
+            }
         }
+
+        if (clientesExistentes.length !== 0 ){ 
+
+            res.status( 400 ).json({
+
+                status : false,
+                msg : 'Ya existen estos clientes, No se pueden agregar',
+                clientesExistentes
+            })
+        }else {
+
+            next();
+        }
+
     } catch (error) {
-        //console.log( error );
+        console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo verificar que haya un socio repetido',

@@ -23,10 +23,10 @@ const crear_socio = async ( req = request, res = response ) => {
         //console.log ( req.body)
         const { nombre, apellido, fechaNacimiento, cedula, estadoSocio,
                 correo, numeroTel, direccion, ruc, tipoSocio,
-                contraseña, nombreUsuario, idAcceso } = req.body;
+                contraseña, nombreUsuario, idAcceso, dependientes } = req.body;
         
         //convertir la fecha de nacimiento a fecha
-        const fecha_db = generar_fecha( fechaNacimiento);
+        let fecha_db = generar_fecha( fechaNacimiento);
         //console.log( fecha_db );
         
         //OBTENER EL SOCIO INSERTADO
@@ -54,8 +54,60 @@ const crear_socio = async ( req = request, res = response ) => {
                                                             } 
                                                     
                                                     } );
-        const { id_cliente, nombre_cmp, correo_electronico, creadoen, estado_socio  } = nuevo_socio;
+        let { id_cliente, nombre_cmp, correo_electronico, creadoen, estado_socio  } = nuevo_socio;
         const direccion_socio = nuevo_socio.direccion;
+        const idClienteTitular = id_cliente;
+        let sociosDependientes = [];
+        //console.log( dependientes );
+        if (dependientes.length !== 0 && dependientes !== undefined && dependientes !== null) {
+
+            for (let element in dependientes ) {
+                console.log( dependientes[element] );
+                fecha_db = generar_fecha( dependientes[element].fechaNacimiento);
+                const dependiente = await prisma.cliente.create(  { 
+                                                                    data : {
+                                                                        nombre : dependientes[element].nombre,
+                                                                        apellido : dependientes[element].apellido,
+                                                                        cedula : dependientes[element].cedula,
+                                                                        fecha_nacimiento : fecha_db,
+                                                                        id_tipo_socio : dependientes[element].tipoSocio,
+                                                                        correo_electronico : dependientes[element].correo,
+                                                                        numero_telefono : dependientes[element].numeroTel,
+                                                                        direccion : dependientes[element].direccion,
+                                                                        ruc : dependientes[element].ruc,
+                                                                        nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
+                                                                        creadoen : dependientes[element].fecha_creacion_socio,
+                                                                        estado_socio : estados_socio.activo.id_estado,
+                                                                        contrasea : dependientes[element].contraseña,
+                                                                        nombre_usuario : dependientes[element].nombreUsuario,
+                                                                        id_rol_usuario : dependientes[element].idAcceso,
+                                                                        tipo_usuario : '',
+                                                                        parent_id_cliente : idClienteTitular
+
+                                                                    } 
+                                                            
+                                                            }  );
+                    let { id_cliente, nombre_cmp, correo_electronico, creadoen, estado_socio  } = dependientes[element];
+                    sociosDependientes.push( {
+                                                idCliente : id_cliente,
+                                                tipoSocio,
+                                                //nombreCmp : nombre_cmp,
+                                                numeroTel,
+                                                nombre,
+                                                apellido,
+                                                fechaNacimiento,
+                                                cedula,
+                                                //correoElectronico : correo_electronico, 
+                                                creadoEn : creadoen,
+                                                nombreUsuario,
+                                                contraseña, 
+                                                estadoSocio : estado_socio,
+                                                direccionSocio : direccion_socio
+                                            });
+            }
+
+        }
+
         res.status( 200 ).json(
             {
 
@@ -75,18 +127,19 @@ const crear_socio = async ( req = request, res = response ) => {
                     nombreUsuario,
                     contraseña, 
                     estadoSocio : estado_socio,
-                    direccionSocio : direccion_socio
+                    direccionSocio : direccion_socio,
+                    sociosDependientes
                 }
             }
         );   
 
     } catch ( error ) {
-        //console.log( error );
+        console.log( error );
         res.status( 500 ).json(
 
             {
                 status : false,
-                msj : 'No se puede crear al socio solicitado',
+                msj : `No se puede crear al socio solicitado ${error}`,
                 //error
             }
 
@@ -104,7 +157,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
     try {
         const { nombre, apellido, fechaNacimiento, cedula, estadoSocio, nroCedula,
             correo, numeroTel, direccion, ruc, tipoSocio,
-            contraseña, nombreUsuario, idAcceso, idCliente } = req.body;
+            contraseña, nombreUsuario, idAcceso, idCliente, dependientes } = req.body;
         const rucNuevo = ruc ;
         //------------------------------------------------------------------------------------------
         const fecha_socio_actualizado = new Date();
@@ -122,19 +175,104 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                                     contrasea : contraseña,
                                                                     nombre_usuario : nombreUsuario,
                                                                     ruc : rucNuevo,
-                                                                    tipo_socio : tipoSocio,
+                                                                    //tipo_socio : tipoSocio,
                                                                     numero_telefono : numeroTel,
                                                                     estado_socio : estadoSocio,
                                                                     direccion : direccion
                                                                 }
                                                             } );
         //console.log( socio_actualizado );
-        const { editadoen, correo_electronico, telefono, estado_socio, nombre_cmp } = socio_actualizado;
+
+
+        //DEBERIAMOS PODER ACTUA
+        let sociosDependientes = [];
+
+        if (dependientes.length !== 0 && dependientes !== undefined && dependientes !== null) {
+            let clienteTitular = idCliente;
+            let dependiente;
+            for (let element in dependientes ) {
+                
+                //VALIDO SI ES QUE NO EXISTE ESE CLIENTE ENTONCES LO CREO, SINO SIMPLEMENTE LO ACTUALIZO
+                const cliente_dependiente = await prisma.cliente.findFirst( { where : { cedula : dependientes[element].cedula } } );
+                fecha_db = generar_fecha( dependientes[element].fechaNacimiento);
+                if ( cliente_dependiente === null || cliente_dependiente === undefined ) {
+                        dependiente = await prisma.cliente.create(  { 
+                                                                        data : {
+                                                                            nombre : dependientes[element].nombre,
+                                                                            apellido : dependientes[element].apellido,
+                                                                            cedula : dependientes[element].cedula,
+                                                                            fecha_nacimiento : fecha_db,
+                                                                            id_tipo_socio : dependientes[element].tipoSocio,
+                                                                            correo_electronico : dependientes[element].correo,
+                                                                            numero_telefono : dependientes[element].numeroTel,
+                                                                            direccion : dependientes[element].direccion,
+                                                                            ruc : dependientes[element].ruc,
+                                                                            nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
+                                                                            creadoen : dependientes[element].fecha_creacion_socio,
+                                                                            estado_socio : estados_socio.activo.id_estado,
+                                                                            contrasea : dependientes[element].contraseña,
+                                                                            nombre_usuario : dependientes[element].nombreUsuario,
+                                                                            id_rol_usuario : dependientes[element].idAcceso,
+                                                                            //tipo_usuario : '',
+                                                                            parent_id_cliente : clienteTitular
+
+                                                                        } 
+                                                                    
+                                                                    }  );
+                }else {
+
+                    dependiente = await prisma.cliente.update(  { 
+                                                where : {  id_cliente : dependientes[element].idCliente  },
+                                                data : {
+                                                    nombre : dependientes[element].nombre,
+                                                    apellido : dependientes[element].apellido,
+                                                    cedula : dependientes[element].cedula,
+                                                    fecha_nacimiento : fecha_db,
+                                                    id_tipo_socio : dependientes[element].tipoSocio,
+                                                    correo_electronico : dependientes[element].correo,
+                                                    numero_telefono : dependientes[element].numeroTel,
+                                                    direccion : dependientes[element].direccion,
+                                                    ruc : dependientes[element].ruc,
+                                                    nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
+                                                    creadoen : dependientes[element].fecha_creacion_socio,
+                                                    estado_socio : estados_socio.activo.id_estado,
+                                                    contrasea : dependientes[element].contraseña,
+                                                    nombre_usuario : dependientes[element].nombreUsuario,
+                                                    id_rol_usuario : dependientes[element].idAcceso,
+                                                    //tipo_usuario : '',
+                                                    parent_id_cliente : clienteTitular
+                                                
+                                                } 
+                                            
+                                            }  );
+                    
+                }
+                const { id_cliente, nombre_cmp, correo_electronico, creadoen, estado_socio, direccion  } = dependiente;
+                sociosDependientes.push( {
+                    idCliente : id_cliente,
+                    tipoSocio,
+                    //nombreCmp : nombre_cmp,
+                    numeroTel,
+                    nombre,
+                    apellido,
+                    fechaNacimiento,
+                    cedula,
+                    //correoElectronico : correo_electronico, 
+                    creadoEn : creadoen,
+                    nombreUsuario,
+                    contraseña, 
+                    estadoSocio : estado_socio,
+                    direccionSocio : direccion
+                });
+            }
+
+        }
+        const { editadoen, correo_electronico, telefono, estado_socio, nombre_cmp, creadoen } = socio_actualizado;
         res.status( 200 ).json({
             status : true,
             msj : 'Socio Actualizado con exito',
             socio : {
-                idSocio : idSocioConvert,
+                idSocio : idCliente,
                 tipoSocio,
                 //nombreCmp : nombre_cmp,
                 numeroTel,
@@ -147,7 +285,8 @@ const actualizar_socio = async ( req = request, res = response ) => {
                 nombreUsuario,
                 contraseña, 
                 estadoSocio : estado_socio,
-                direccionSocio : direccion_socio
+                direccionSocio : direccion,
+                sociosDependientes
             }
 
         });        
@@ -214,7 +353,7 @@ const borrar_socio = async ( req = request, res = response ) => {
 
         );        
     } catch (error) {
-        //console.log( error );
+        console.log( error );
         res.status( 500 ).json(
 
             {
@@ -246,16 +385,23 @@ const obtener_socios = async ( req = request, res = response ) => {
 
         let socios;
         //console.log( cantidad, omitir, nombre, apellido )
-        const query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocioCmp, 
-                            A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO, A.CEDULA,
-                            B.CORREO_ELECTRONICO AS CORREO, B.DIRECCION AS DIRECCION,
-                            CAST ( B.ID_SOCIO AS INTEGER ) AS idSocio, B.RUC AS RUC,
-                            B.CREADOEN, B.CONTRASEA, B.NOMBRE_USUARIO AS USUARIO,
-                            A.FECHA_NACIMIENTO AS FECHA_NACIMIENTO,CAST ( C.ID_TIPO_SOCIO AS INTEGER ) as id_tipo_socio,
-                            C.DESC_TIPO_SOCIO AS descTipoSocio, B.NUMERO_TELEFONO AS numeroTel 
-                            /*B.ESTADO_SOCIO AS estadoSocio*/
-                        FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
-                        JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
+        const query = `
+SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
+                                --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
+                                A.CEDULA AS "cedula",
+                                A.CORREO_ELECTRONICO AS "correoElectronico", 
+                                A.DIRECCION AS "direccion",
+                                A.ID_CLIENTE AS "idCliente", 
+                                A.RUC AS "ruc" ,
+                                A.CREADOEN AS "creadoEn", 
+                                A.CONTRASEA AS "contrasea",
+                                A.NOMBRE_USUARIO AS "nombreUsuario",
+                                A.FECHA_NACIMIENTO AS "fechaNacimiento",
+                                CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
+                                C.DESC_TIPO_SOCIO AS "descTipoSocio", 
+                                A.NUMERO_TELEFONO AS "numeroTelefono",
+                                A.ESTADO_SOCIO AS "estadoSocio" 
+                            FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
@@ -331,35 +477,24 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
         const query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
                                 --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
                                 A.CEDULA AS "cedula",
-                                B.CORREO_ELECTRONICO AS "correoElectronico", 
-                                B.DIRECCION AS "direccion",
-                                CAST ( B.ID_SOCIO AS INTEGER ) AS "idSocio", 
-                                B.RUC AS "ruc" ,
-                                B.CREADOEN AS "creadoEn", 
-                                B.CONTRASEA AS "contrasea",
-                                B.NOMBRE_USUARIO AS "nombreUsuario",
+                                A.CORREO_ELECTRONICO AS "correoElectronico", 
+                                A.DIRECCION AS "direccion",
+                                A.ID_CLIENTE AS "idCliente", 
+                                A.RUC AS "ruc" ,
+                                A.CREADOEN AS "creadoEn", 
+                                A.CONTRASEA AS "contrasea",
+                                A.NOMBRE_USUARIO AS "nombreUsuario",
                                 A.FECHA_NACIMIENTO AS "fechaNacimiento",
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
                                 C.DESC_TIPO_SOCIO AS "descTipoSocio", 
-                                B.NUMERO_TELEFONO AS "numeroTelefono",
-                                B.ESTADO_SOCIO AS "estadoSocio" 
-                            FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
-                            JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
-                        WHERE B.ESTADO_SOCIO = ${ estados_socio.activo.id_estado }
+                                A.NUMERO_TELEFONO AS "numeroTelefono",
+                                A.ESTADO_SOCIO AS "estadoSocio" 
+                            FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                        WHERE A.ESTADO_SOCIO = ${ estados_socio.activo.id_estado }
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
 
-
-        //const socios_detallados = await prisma.$queryRaw`SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocio, 
-        //                                                        A.CEDULA,
-        //                                                        CAST ( B.ID_SOCIO AS INTEGER ) AS idSocio,
-        //                                                        B.NUMERO_TELEFONO AS numeroTelefono, B.ESTADO_SOCIO AS estadoSocio, 
-        //                                                        C.DESC_TIPO_SOCIO AS descTipoSocio
-        //                                            FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
-        //                                            JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
-        //                                        WHERE B.ESTADO_SOCIO = ${ estados_socio.activo.id_estado };`
-        //console.log( query )
         let sociosFormateados = await prisma.$queryRawUnsafe( query ); 
         res.status(200).json({
             status: true,
@@ -396,21 +531,20 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
         const query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
                                 --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
                                 A.CEDULA AS "cedula",
-                                B.CORREO_ELECTRONICO AS "correoElectronico", 
-                                B.DIRECCION AS "direccion",
-                                CAST ( B.ID_SOCIO AS INTEGER ) AS "idSocio", 
-                                B.RUC AS "ruc" ,
-                                B.CREADOEN AS "creadoEn", 
-                                B.CONTRASEA AS "contrasea",
-                                B.NOMBRE_USUARIO AS "nombreUsuario",
+                                A.CORREO_ELECTRONICO AS "correoElectronico", 
+                                A.DIRECCION AS "direccion",
+                                A.ID_CLIENTE AS "idCliente", 
+                                A.RUC AS "ruc" ,
+                                A.CREADOEN AS "creadoEn", 
+                                A.CONTRASEA AS "contrasea",
+                                A.NOMBRE_USUARIO AS "nombreUsuario",
                                 A.FECHA_NACIMIENTO AS "fechaNacimiento",
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
                                 C.DESC_TIPO_SOCIO AS "descTipoSocio", 
-                                B.NUMERO_TELEFONO AS "numeroTelefono",
-                                B.ESTADO_SOCIO AS "estadoSocio" 
-                            FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
-                            JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
-                        WHERE B.ESTADO_SOCIO = ${ estados_socio.activo.id_estado }
+                                A.NUMERO_TELEFONO AS "numeroTelefono",
+                                A.ESTADO_SOCIO AS "estadoSocio" 
+                            FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                        WHERE A.ESTADO_SOCIO = ${ estados_socio.activo.id_estado }
                         ${ ( cedula !== undefined && cedula !== '' )? `AND A.CEDULA = '${ cedula }'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
@@ -448,18 +582,24 @@ const obtener_socio = async ( req = request, res = response ) => {
     try {
         const { cantidad, omitir, nombre, apellido, cedula } = req.query;
 
-        let socios;
+        
         //console.log( cantidad, omitir, nombre, apellido )
-        const socio = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocio, 
-                            A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO, A.cedula,
-                            B.CORREO_ELECTRONICO AS CORREO, B.DIRECCION AS DIRECCION,
-                            CAST ( B.ID_SOCIO AS INTEGER ) AS idSocio, B.RUC AS RUC,
-                            B.CREADOEN, B.CONTRASEA, B.NOMBRE_USUARIO AS USUARIO,
-                            A.FECHA_NACIMIENTO AS FECHA_NACIMIENTO,CAST ( C.ID_TIPO_SOCIO AS INTEGER ) as id_tipo_socio,
-                            C.DESC_TIPO_SOCIO AS descTipoSocio, B.NUMERO_TELEFONO AS "numeroTel" 
-                            /*B.ESTADO_SOCIO AS estadoSocio*/
-                        FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
-                        JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
+        const query_socio = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
+                                --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
+                                A.CEDULA AS "cedula",
+                                A.CORREO_ELECTRONICO AS "correoElectronico", 
+                                A.DIRECCION AS "direccion",
+                                A.ID_CLIENTE AS "idCliente", 
+                                A.RUC AS "ruc" ,
+                                A.CREADOEN AS "creadoEn", 
+                                A.CONTRASEA AS "contrasea",
+                                A.NOMBRE_USUARIO AS "nombreUsuario",
+                                A.FECHA_NACIMIENTO AS "fechaNacimiento",
+                                CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
+                                C.DESC_TIPO_SOCIO AS "descTipoSocio", 
+                                A.NUMERO_TELEFONO AS "numeroTelefono",
+                                A.ESTADO_SOCIO AS "estadoSocio" 
+                            FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         ${ ( nombre !== undefined ) && (apellido === undefined )? `AND A.NOMBRE LIKE '%${nombre}%'` : `` }
                         ${ ( nombre === undefined ) && (apellido !== undefined )? `AND A.APELLIDO LIKE '%${apellido}%'` : `` }
                         ${ ( nombre !== undefined ) && (apellido !== undefined )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre} ${apellido}%'` : `` }
@@ -467,8 +607,10 @@ const obtener_socio = async ( req = request, res = response ) => {
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
 
+        let socios = await prisma.$queryRawUnsafe(query_socio);
+
         //console.log ( socios );
-        if ( socio.length === 0 ){
+        if ( socios.length === 0 ){
 
             res.status(200).json({
                 status: false,
@@ -476,23 +618,11 @@ const obtener_socio = async ( req = request, res = response ) => {
             });
         }else {
 
-            let sociosFormateados = []; 
-            socio.forEach( element => {
-                const { nombre_socio, cedula, id_socio, numero_telefono, estado_socio, desc_tipo_socio } = element;
-                sociosFormateados.push( {
-                    nombreSocio : nombre_socio,
-                    cedula,
-                    idSocio : id_socio,
-                    numeroTel : numero_telefono,
-                    estadoSocio : estado_socio,
-                    descTipoSocio : desc_tipo_socio
-                } );
-            });
             res.status(200).json({
                 status: true,
                 msg: 'Socio del club',
-                cant : socio.length,
-                sociosFormateados
+                cant : socios.length,
+                socios
             });
         }        
     } catch (error) {

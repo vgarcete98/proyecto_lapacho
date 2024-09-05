@@ -774,57 +774,6 @@ const obtener_inscripciones_x_evento = async ( req = request, res = response ) =
 
 
 
-const obtener_inscripciones_x_evento_no_socios = async ( req = request, res = response ) =>{
-
-
-    try {
-
-        //AHORA LAS INSCRIPCIONES DE LOS NO SOCIOS
-        const inscripciones_no_socios = await prisma.inscripciones_no_socios.findMany( { where : { id_evento_calendario_no_socio : Number( id_evento ) } } );
-        let inscripcionesNoSocios = [];
-
-        if ( inscripciones_no_socios.length > 0 ){
-            inscripciones_no_socios.forEach( ( element ) => { 
-
-                inscripcionesNoSocios.push( {
-
-                    idInscripcion : element.id_inscripcion_no_socio,
-                    nombreCmp : element.nombre_jugador,
-                    fechaInscripcion : fecha_inscripcion,
-                    descripcion : element.desc_inscripcion,
-                    pagado : (element.abonado === true) ? 'Si' : 'No'
-                    
-                } );
-                
-            });
-
-
-        }
-
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Inscripciones del evento ",
-            inscripcionesNoSocios
-        } );
-
-
-    } catch (error) {
-        //console.log( error );
-
-        res.status( 500 ).json( {
-            status : true,
-            msg : `Ha ocurrido un error al obtener las inscripciones ${ error }`
-        } );
-        
-    }
-
-
-}
-
-
-
-
-
 
 const obtener_tipos_de_evento = async (req = request, res = response)=>{
 
@@ -1149,7 +1098,6 @@ module.exports = {
     actualizar_evento_calendario,
     obtener_eventos_x_fecha_calendario,
     obtener_inscripciones_x_evento,
-    obtener_inscripciones_x_evento_no_socios,
     obtener_todos_los_eventos_calendario,
     obtener_categorias_x_evento,
     crear_categorias_x_evento,
