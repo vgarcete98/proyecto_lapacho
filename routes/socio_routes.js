@@ -24,7 +24,7 @@ router_socio.get( '/socio_cedula/nombre',[], obtener_socio_cedula_nombre )
 
 router_socio.get( '/crear_tipo_socio', [], crear_tipo_socio );
 
-router_socio.post( '/obtener_tipo_socios', [ ], obtener_tipos_socios );
+router_socio.get( '/obtener_tipo_socios', [ ], obtener_tipos_socios );
 
 router_socio.get( '/obtener_socio',[  comprobar_existe_socio ], obtener_socio );
 

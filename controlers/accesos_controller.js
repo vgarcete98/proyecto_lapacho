@@ -12,14 +12,24 @@ const obtener_accesos = async ( req = request, res = response ) => {
 
         const { accion } = req.query;
 
-        let accesosDisponibles = await prisma.$queryRaw`SELECT C.ID_RUTA_APP AS "idRutaApp", 
-                                                C.PATH_RUTA AS "pathRuta", 
-                                                C.accion
-                                        	FROM rutas_app C
-                                            ${ ( accion === undefined ) ? `` : `WHERE C.accion LIKE '%${ accion }%'` } 
-                                        ORDER BY C.ID_RUTA_APP`;
+        let accesos_disponibles = await prisma.roles_usuario.findMany( 
+            {
+                select : {
+                    id_rol_usuario : true,
+                    descripcion_rol : true
+                }
+            }
+         );
 
-        console.log( accesosDisponibles )
+        const accesosDisponibles = accesos_disponibles.map( ( element )=> { 
+                                                                            return { 
+                                                                                        id_rol_usuario : element.id_rol_usuario, 
+                                                                                        descripcionRol : element.descripcion_rol 
+                                                                                    }  
+                                                                        } 
+                                                        );
+
+        //console.log( accesosDisponibles )
         res.status( 200 ).json(
             {
                 status : true,

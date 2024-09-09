@@ -107,6 +107,11 @@ const rutas = {
     caja_chica : {
 
         ruta : "/caja_chica"
+    },
+
+    clientes : {
+
+        ruta : "/cliente"
     }
 
 

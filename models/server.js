@@ -37,6 +37,7 @@ const router_egresos = require('../routes/egresos_routes');
 const { router_rutas_app } = require('../routes/rutas_app_routes');
 const router_tipo_cuota = require('../routes/tipo_cuota_routes');
 const router_cuotas = require('../routes/cuotas_routes');
+const router_clientes = require( '../routes/clientes_routes' );
 
 //----------------------------------------------------------------------------
 
@@ -171,6 +172,8 @@ class Server {
         this.app.use( rutas.cuotas_del_club.ruta, router_cuotas );
 
         this.app.use( rutas.caja_chica.ruta, router_caja_chica );
+
+        this.app.use( rutas.clientes.ruta, router_clientes )
     }
 
     listar_rutas (){

@@ -29,14 +29,30 @@ const crear_tipo_socio = async ( req = request, res = response ) => {
 const obtener_tipos_socios = async ( req = request, res = response ) => {
 
 
-    const tipos_socio = prisma.$queryRaw`SELECT id_tipo_socio, desc_tipo_socio
-                                                    FROM public.tipo_socio;`;
+    const tipos_socio = await prisma.tipo_socio.findMany(
+        {
+            select : {
+                id_tipo_socio : true,
+                desc_tipo_socio : true
+            }
+        }
+    );
+
+    const tipoSocio = tipos_socio.map( ( element ) => { 
+                                                        return {
+                                                                    idTipoSocio : typeof ( element.id_tipo_socio ) === 'bigint'? Number(element.id_tipo_socio.toString()) : element.id_tipo_socio, 
+                                                                    descTipoSocio : element. desc_tipo_socio 
+                                                                }
+                                                    } 
+                                    );
+
+
     res.status( 200 ).json(
 
         {
             status : true,
-            msj : 'Tipo de Socio Creado',
-            tipos_socio
+            msj : 'Tipos de socio en el club',
+            tipoSocio
         }
 
     );   

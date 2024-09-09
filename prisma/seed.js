@@ -318,27 +318,31 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                               END IF;
                                                                                                                           
                                                               SELECT MONTO_CUOTA INTO monto_cuota_socio FROM TIPO_CUOTA A WHERE A.ID_TIPO_CUOTA = tipo_cuota LIMIT 1;
-                                                                                                                          
-                                                              LOOP
-                                                                  -- Inserta la cuota del socio
-                                                                  INSERT INTO CUOTAS_SOCIO (
-                                                                      id_cliente, id_tipo_cuota, id_tipo_descuento, 
-                                                                      fecha_vencimiento, descripcion, pago_realizado, monto_cuota
-                                                                  )
-                                                                  VALUES (
-                                                                      NEW.id_cliente, tipo_cuota, 1,
-                                                                      fecha_vencimiento_cuota, CONCAT('CUOTA : ', fecha_vencimiento_cuota), false, monto_cuota_socio
-                                                                  );
+                                                            IF (NEW.es_socio = True ) THEN
+                                                            
+                                                                LOOP
+                                                                    -- Inserta la cuota del socio
+                                                                    INSERT INTO CUOTAS_SOCIO (
+                                                                        id_cliente, id_tipo_cuota, id_tipo_descuento, 
+                                                                        fecha_vencimiento, descripcion, pago_realizado, monto_cuota
+                                                                    )
+                                                                    VALUES (
+                                                                        NEW.id_cliente, tipo_cuota, 1,
+                                                                        fecha_vencimiento_cuota, CONCAT('CUOTA : ', fecha_vencimiento_cuota), false, monto_cuota_socio
+                                                                    );
                                                                 
-                                                                  -- Incrementa el bucle en un mes
-                                                                  fecha_loop := fecha_loop + INTERVAL '1 month';
-                                                                  fecha_vencimiento_cuota := fecha_loop + INTERVAL '4 days'; -- Ajustamos para que sea el 5 de cada mes
+                                                                    -- Incrementa el bucle en un mes
+                                                                    fecha_loop := fecha_loop + INTERVAL '1 month';
+                                                                    fecha_vencimiento_cuota := fecha_loop + INTERVAL '4 days'; -- Ajustamos para que sea el 5 de cada mes
                                                                 
-                                                                  -- Comprueba la condición de salida
-                                                                  IF (EXTRACT(MONTH FROM fecha_loop) = 12) THEN
-                                                                  EXIT; -- Sale del bucle después de diciembre del mismo año
-                                                              END IF;
-                                                              END LOOP;
+                                                                    -- Comprueba la condición de salida
+                                                                    IF (EXTRACT(MONTH FROM fecha_loop) = 12) THEN
+                                                                        EXIT; -- Sale del bucle después de diciembre del mismo año
+                                                                    END IF;
+                                                                END LOOP;                                                            
+                                                            
+                                                            END IF;                                                        
+
                                                                 
                                                               RETURN NEW;
                                                           END;
@@ -411,7 +415,7 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                               cedula : '4365710', fecha_nacimiento : generar_fecha( '29/05/2023' ) ,
                                                               id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "Victor Garcete", numero_telefono : "0985552004",
-                                                              nombre_usuario : "v_garcete", contrasea : "12345678", estado_usuario : 1, 
+                                                              nombre_usuario : "v_garcete", password : "12345678", estado_usuario : 1, 
                                                               creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 2
                                                             },
 
@@ -420,7 +424,7 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                               cedula : '12345678', fecha_nacimiento : new Date(),
                                                               id_tipo_socio : 4, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "ADMINISTRADOR CLUB", numero_telefono : "----------",
-                                                              nombre_usuario : "ADMINISTRADOR_CLUB", contrasea : pass_admin , estado_usuario : 1, 
+                                                              nombre_usuario : "ADMINISTRADOR_CLUB", password : pass_admin , estado_usuario : 1, 
                                                               creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 1
                                                             },
 
@@ -429,7 +433,7 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                               cedula : '1111111', fecha_nacimiento : generar_fecha( '13/05/2000' ),  
                                                               id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "Lucas Torres", numero_telefono : "------------",
-                                                              nombre_usuario : "lucas.torres", contrasea : "12345678", estado_usuario : 2, 
+                                                              nombre_usuario : "lucas.torres", password : "12345678", estado_usuario : 2, 
                                                               creadoen : new Date(), tipo_usuario : "SUSPENDIDO" , id_rol_usuario : 1 
                                                             }
                                                           ] 

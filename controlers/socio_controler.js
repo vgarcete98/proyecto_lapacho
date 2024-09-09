@@ -62,7 +62,7 @@ const crear_socio = async ( req = request, res = response ) => {
         if (dependientes.length !== 0 && dependientes !== undefined && dependientes !== null) {
 
             for (let element in dependientes ) {
-                console.log( dependientes[element] );
+                //console.log( dependientes[element] );
                 fecha_db = generar_fecha( dependientes[element].fechaNacimiento);
                 const dependiente = await prisma.cliente.create(  { 
                                                                     data : {
@@ -113,23 +113,7 @@ const crear_socio = async ( req = request, res = response ) => {
 
                 status : true,
                 msj : 'Socio Creado',
-                socio : {
-                    idCliente : id_cliente,
-                    tipoSocio,
-                    //nombreCmp : nombre_cmp,
-                    numeroTel,
-                    nombre,
-                    apellido,
-                    fechaNacimiento,
-                    cedula,
-                    //correoElectronico : correo_electronico, 
-                    creadoEn : creadoen,
-                    nombreUsuario,
-                    contraseña, 
-                    estadoSocio : estado_socio,
-                    direccionSocio : direccion_socio,
-                    sociosDependientes
-                }
+                descripcion : `${ ( sociosDependientes.length === 0 ) ? `Socio Creado con exito ${nombre}, ${apellido}` : `Socios creados con exito ${nombre}, ${apellido}, ${ sociosDependientes.reduce( (acumulador, element)=> ` ${element.nombre}, ${element.apellido} ` ) }` }`
             }
         );   
 

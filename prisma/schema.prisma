@@ -67,21 +67,21 @@ model clubes_habilitados {
 }
 
 model cuotas_socio {
-  id_cuota_socio         BigInt                   @id(map: "cuotas_socio_pk") @default(autoincrement())
-  id_cliente             Int
-  id_tipo_cuota          Int
-  id_tipo_descuento      BigInt
-  fecha_vencimiento      DateTime                 @db.Date
-  descripcion            String                   @db.VarChar(255)
-  descuento              Float?                   @db.Real
-  pago_realizado         Boolean?                 @default(false)
-  fecha_pago_realizado   DateTime?                @db.Date
-  monto_cuota            Int
-  cliente                cliente                  @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_cuotas_socio_fk")
-  tipo_cuota             tipo_cuota               @relation(fields: [id_tipo_cuota], references: [id_tipo_cuota], onDelete: NoAction, onUpdate: NoAction, map: "tipo_cuota_cuotas_socio_fk")
-  tipo_descuento         tipo_descuento           @relation(fields: [id_tipo_descuento], references: [id_tipo_descuento], onDelete: NoAction, onUpdate: NoAction, map: "tipo_descuento_cuotas_socio_fk")
-  pagos_socio            pagos_socio[]
-  transacciones_ingresos transacciones_ingresos[]
+  id_cuota_socio       BigInt         @id(map: "cuotas_socio_pk") @default(autoincrement())
+  id_cliente           Int
+  id_tipo_cuota        Int
+  id_tipo_descuento    BigInt
+  fecha_vencimiento    DateTime       @db.Date
+  descripcion          String         @db.VarChar(255)
+  descuento            Float?         @db.Real
+  pago_realizado       Boolean?       @default(false)
+  fecha_pago_realizado DateTime?      @db.Date
+  monto_cuota          Int
+  cliente              cliente        @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_cuotas_socio_fk")
+  tipo_cuota           tipo_cuota     @relation(fields: [id_tipo_cuota], references: [id_tipo_cuota], onDelete: NoAction, onUpdate: NoAction, map: "tipo_cuota_cuotas_socio_fk")
+  tipo_descuento       tipo_descuento @relation(fields: [id_tipo_descuento], references: [id_tipo_descuento], onDelete: NoAction, onUpdate: NoAction, map: "tipo_descuento_cuotas_socio_fk")
+  pagos_socio          pagos_socio[]
+  ventas               ventas[]
 }
 
 model eventos {
@@ -107,20 +107,19 @@ model gastos_club {
 }
 
 model inscripciones {
-  id_inscripcion         BigInt                   @id(map: "inscripciones_pk")
-  id_cliente             Int
-  id_categoria           Int
-  id_evento_calendario   BigInt
-  desc_inscripcion       String?                  @db.VarChar(255)
-  fecha_inscripcion      DateTime                 @db.Date
-  abonado                Boolean
-  inscripcioncreadoen    DateTime?                @db.Date
-  estadoinscripcion      Int?                     @db.SmallInt
-  inscripcioneditadoen   DateTime?                @db.Date
-  calendario_eventos     calendario_eventos       @relation(fields: [id_evento_calendario], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_inscripciones_fk")
-  categorias             categorias               @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "categorias_inscripciones_fk")
-  cliente                cliente                  @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_inscripciones_fk")
-  transacciones_ingresos transacciones_ingresos[]
+  id_inscripcion       BigInt             @id(map: "inscripciones_pk")
+  id_cliente           Int
+  id_categoria         Int
+  id_evento_calendario BigInt
+  desc_inscripcion     String?            @db.VarChar(255)
+  fecha_inscripcion    DateTime           @db.Date
+  abonado              Boolean
+  inscripcioncreadoen  DateTime?          @db.Date
+  estadoinscripcion    Int?               @db.SmallInt
+  inscripcioneditadoen DateTime?          @db.Date
+  calendario_eventos   calendario_eventos @relation(fields: [id_evento_calendario], references: [id_evento_calendario], onDelete: NoAction, onUpdate: NoAction, map: "calendario_eventos_inscripciones_fk")
+  categorias           categorias         @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "categorias_inscripciones_fk")
+  cliente              cliente            @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_inscripciones_fk")
 }
 
 model mesas {
@@ -173,6 +172,7 @@ model reservas {
   hora_hasta       DateTime  @db.Timestamp(6)
   mesas            mesas     @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reservas_fk")
   cliente          cliente   @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_socio_reservas_fk")
+  ventas           ventas[]
 }
 
 model roles_usuario {
@@ -365,19 +365,18 @@ model egresos {
 }
 
 model ingresos {
-  column_d_operacion_ingreso Int                      @id(map: "ingresos_pk") @default(autoincrement())
+  column_d_operacion_ingreso Int           @id(map: "ingresos_pk") @default(autoincrement())
   id_cliente                 Int
   id_tipo                    Int
-  nro_factura                String?                  @db.VarChar(255)
-  cargado_en                 DateTime                 @db.Date
-  editado_en                 DateTime?                @db.Date
-  descripcion                String?                  @db.VarChar
+  nro_factura                String?       @db.VarChar(255)
+  cargado_en                 DateTime      @db.Date
+  editado_en                 DateTime?     @db.Date
+  descripcion                String?       @db.VarChar
   monto                      Int
-  borrado                    Boolean                  @default(false)
-  fecha_ingreso              DateTime                 @db.Date
-  cliente                    cliente                  @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_ingresos_fk")
-  tipos_ingreso              tipos_ingreso            @relation(fields: [id_tipo], references: [id_tipo], onDelete: NoAction, onUpdate: NoAction, map: "tipos_ingreso_ingresos_fk")
-  transacciones_ingresos     transacciones_ingresos[]
+  borrado                    Boolean       @default(false)
+  fecha_ingreso              DateTime      @db.Date
+  cliente                    cliente       @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_ingresos_fk")
+  tipos_ingreso              tipos_ingreso @relation(fields: [id_tipo], references: [id_tipo], onDelete: NoAction, onUpdate: NoAction, map: "tipos_ingreso_ingresos_fk")
 }
 
 model refinanciacion {
@@ -414,14 +413,11 @@ model tipos_ingreso {
 }
 
 model transacciones_ingresos {
-  id_transaccion_ingreso     Int            @id(map: "transacciones_ingresos_pk") @default(autoincrement())
+  id_transaccion_ingreso     Int     @id(map: "transacciones_ingresos_pk") @default(autoincrement())
   column_d_operacion_ingreso Int
   id_cuota_socio             BigInt?
-  descripcion                String         @db.VarChar(255)
+  descripcion                String  @db.VarChar(255)
   id_inscripcion             BigInt?
-  cuotas_socio               cuotas_socio?  @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_cuotas_ingresos_fk")
-  ingresos                   ingresos       @relation(fields: [column_d_operacion_ingreso], references: [column_d_operacion_ingreso], onDelete: NoAction, onUpdate: NoAction, map: "ingresos_cuotas_ingresos_fk")
-  inscripciones              inscripciones? @relation(fields: [id_inscripcion], references: [id_inscripcion], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_transacciones_ingresos_fk")
 }
 
 model categorias {
@@ -513,12 +509,12 @@ model reposiciones_caja_chica {
 
 model cliente {
   id_cliente           Int                    @id(map: "cliente_pk") @default(autoincrement())
-  id_tipo_socio        BigInt
+  id_tipo_socio        BigInt?
   parent_id_cliente    Int?
-  id_rol_usuario       Int
+  id_rol_usuario       Int?
   tipo_usuario         String?                @default(dbgenerated("1")) @db.VarChar(255)
-  nombre_usuario       String                 @db.VarChar(255)
-  contrasea            String                 @db.VarChar(255)
+  nombre_usuario       String?                @db.VarChar(255)
+  password             String?                @db.VarChar(255)
   estado_usuario       Int?                   @default(1) @db.SmallInt
   apellido             String                 @db.VarChar(255)
   nombre               String                 @db.VarChar(255)
@@ -534,11 +530,12 @@ model cliente {
   editadoen            DateTime?              @db.Date
   es_socio             Boolean?               @default(true)
   agendamiento_clase   agendamiento_clase[]
+  caja                 caja[]
   caja_chica           caja_chica[]
   cliente              cliente?               @relation("clienteTocliente", fields: [parent_id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_cliente_fk")
   other_cliente        cliente[]              @relation("clienteTocliente")
-  roles_usuario        roles_usuario          @relation(fields: [id_rol_usuario], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_socio_fk")
-  tipo_socio           tipo_socio             @relation(fields: [id_tipo_socio], references: [id_tipo_socio], onDelete: NoAction, onUpdate: NoAction, map: "tipo_socio_socio_fk")
+  roles_usuario        roles_usuario?         @relation(fields: [id_rol_usuario], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_socio_fk")
+  tipo_socio           tipo_socio?            @relation(fields: [id_tipo_socio], references: [id_tipo_socio], onDelete: NoAction, onUpdate: NoAction, map: "tipo_socio_socio_fk")
   cuotas_socio         cuotas_socio[]
   egresos              egresos[]
   ingresos             ingresos[]
@@ -546,4 +543,36 @@ model cliente {
   pases_socio          pases_socio[]
   refinanciacion_socio refinanciacion_socio[]
   reservas             reservas[]
+}
+
+model caja {
+  id_caja         Int               @id(map: "caja_pk") @default(autoincrement())
+  id_cliente      Int
+  cliente         cliente           @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_caja_fk")
+  movimiento_caja movimiento_caja[]
+}
+
+model compras {
+  id_compra       Int               @id(map: "compras_pk")
+  movimiento_caja movimiento_caja[]
+}
+
+model movimiento_caja {
+  id_movimiento_caja Int     @id(map: "movimiento_caja_pk") @default(autoincrement())
+  id_caja            Int
+  id_venta           Int
+  id_compra          Int
+  descripcion        String  @db.VarChar(255)
+  caja               caja    @relation(fields: [id_caja], references: [id_caja], onDelete: NoAction, onUpdate: NoAction, map: "caja_movimiento_caja_fk")
+  compras            compras @relation(fields: [id_compra], references: [id_compra], onDelete: NoAction, onUpdate: NoAction, map: "compras_movimiento_caja_fk")
+  ventas             ventas  @relation(fields: [id_venta], references: [id_venta], onDelete: NoAction, onUpdate: NoAction, map: "ventas_movimiento_caja_fk")
+}
+
+model ventas {
+  id_venta         Int               @id(map: "ventas_pk") @default(autoincrement())
+  id_cuota_socio   BigInt
+  id_socio_reserva Int
+  movimiento_caja  movimiento_caja[]
+  cuotas_socio     cuotas_socio      @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
+  reservas         reservas          @relation(fields: [id_socio_reserva], references: [id_socio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
 }

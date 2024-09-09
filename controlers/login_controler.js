@@ -20,12 +20,13 @@ const login = async ( req = request, res = response )=> {
         //                                                    FROM  public.Socio
         //                                                WHERE nombre_usuario = ${ usuario } AND contrasea = ${ contraseña }`;
 
-        const socio = await prisma.cliente.findFirst( { where : { 
-                                                                    AND : [
-                                                                        { nombre_usuario : usuario },
-                                                                        { contrasea : contraseña }
-                                                                    ]
-                                                                } 
+        const socio = await prisma.cliente.findFirst( { 
+                                                        where : { 
+                                                            AND : [
+                                                                { nombre_usuario : usuario },
+                                                                { pass : contraseña }
+                                                            ]
+                                                        } 
                                                     } );
 
         //console.log( socio );
