@@ -3,6 +3,9 @@ const { request, response } = require('express')
 const { PrismaClient } = require('@prisma/client');
 const { generar_fecha } = require('../helpers/generar_fecha');
 
+
+const { encriptar_password } = require( '../helpers/generar_encriptado' );
+const { sendMail } = require('../helpers/node_mailer_config');
 const prisma = new PrismaClient()
 
 
@@ -46,7 +49,7 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                 nombre_cmp : `${ nombre } ${ apellido }`,
                                                                 creadoen : fecha_creacion_socio,
                                                                 estado_socio : estados_socio.activo.id_estado,
-                                                                contrasea : contraseña,
+                                                                password : encriptar_password(contraseña),
                                                                 nombre_usuario : nombreUsuario,
                                                                 id_rol_usuario : idAcceso,
                                                                 tipo_usuario : ''
@@ -55,6 +58,13 @@ const crear_socio = async ( req = request, res = response ) => {
                                                     
                                                     } );
         let { id_cliente, nombre_cmp, correo_electronico, creadoen, estado_socio  } = nuevo_socio;
+
+        if ( correo_electronico != "" ){
+            //console.log( correo_electronico )
+            const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
+            sendMail( correo_electronico, cuerpo_mail );
+        }
+
         const direccion_socio = nuevo_socio.direccion;
         const idClienteTitular = id_cliente;
         let sociosDependientes = [];
@@ -76,9 +86,9 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                         direccion : dependientes[element].direccion,
                                                                         ruc : dependientes[element].ruc,
                                                                         nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
-                                                                        creadoen : dependientes[element].fecha_creacion_socio,
+                                                                        creadoen : new Date (),
                                                                         estado_socio : estados_socio.activo.id_estado,
-                                                                        contrasea : dependientes[element].contraseña,
+                                                                        password : encriptar_password(dependientes[element].contraseña),
                                                                         nombre_usuario : dependientes[element].nombreUsuario,
                                                                         id_rol_usuario : dependientes[element].idAcceso,
                                                                         tipo_usuario : '',
@@ -87,23 +97,13 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                     } 
                                                             
                                                             }  );
-                    let { id_cliente, nombre_cmp, correo_electronico, creadoen, estado_socio  } = dependientes[element];
-                    sociosDependientes.push( {
-                                                idCliente : id_cliente,
-                                                tipoSocio,
-                                                //nombreCmp : nombre_cmp,
-                                                numeroTel,
-                                                nombre,
-                                                apellido,
-                                                fechaNacimiento,
-                                                cedula,
-                                                //correoElectronico : correo_electronico, 
-                                                creadoEn : creadoen,
-                                                nombreUsuario,
-                                                contraseña, 
-                                                estadoSocio : estado_socio,
-                                                direccionSocio : direccion_socio
-                                            });
+                                        
+                if ( dependientes[element].correo_electronico != "" &&  dependientes[element].correo_electronico !== undefined){
+                    
+                    const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
+                    sendMail( dependientes[element].correo_electronico, cuerpo_mail );
+                }
+                                        
             }
 
         }
@@ -156,7 +156,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                                     editadoen : fecha_socio_actualizado,
                                                                     correo_electronico : correo,
                                                                     id_rol_usuario : idAcceso,
-                                                                    contrasea : contraseña,
+                                                                    password : encriptar_password (contraseña),
                                                                     nombre_usuario : nombreUsuario,
                                                                     ruc : rucNuevo,
                                                                     //tipo_socio : tipoSocio,
@@ -167,7 +167,11 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                             } );
         //console.log( socio_actualizado );
 
-
+        if ( correo_electronico !== "" && correo_electronico !== undefined ){
+            //console.log( correo_electronico )
+            const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
+            sendMail( correo_electronico, cuerpo_mail );
+        }
         //DEBERIAMOS PODER ACTUA
         let sociosDependientes = [];
 
@@ -194,7 +198,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                                             nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                                             creadoen : dependientes[element].fecha_creacion_socio,
                                                                             estado_socio : estados_socio.activo.id_estado,
-                                                                            contrasea : dependientes[element].contraseña,
+                                                                            password : encriptar_password(dependientes[element].contraseña),
                                                                             nombre_usuario : dependientes[element].nombreUsuario,
                                                                             id_rol_usuario : dependientes[element].idAcceso,
                                                                             //tipo_usuario : '',
@@ -220,7 +224,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                     nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                     creadoen : dependientes[element].fecha_creacion_socio,
                                                     estado_socio : estados_socio.activo.id_estado,
-                                                    contrasea : dependientes[element].contraseña,
+                                                    password : encriptar_password(dependientes[element].contraseña),
                                                     nombre_usuario : dependientes[element].nombreUsuario,
                                                     id_rol_usuario : dependientes[element].idAcceso,
                                                     //tipo_usuario : '',
@@ -231,49 +235,23 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                             }  );
                     
                 }
-                const { id_cliente, nombre_cmp, correo_electronico, creadoen, estado_socio, direccion  } = dependiente;
-                sociosDependientes.push( {
-                    idCliente : id_cliente,
-                    tipoSocio,
-                    //nombreCmp : nombre_cmp,
-                    numeroTel,
-                    nombre,
-                    apellido,
-                    fechaNacimiento,
-                    cedula,
-                    //correoElectronico : correo_electronico, 
-                    creadoEn : creadoen,
-                    nombreUsuario,
-                    contraseña, 
-                    estadoSocio : estado_socio,
-                    direccionSocio : direccion
-                });
+                if ( dependientes[element].correo_electronico != "" &&  dependientes[element].correo_electronico !== undefined){
+                    
+                    const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
+                    sendMail( dependientes[element].correo_electronico, cuerpo_mail );
+                }
             }
 
         }
-        const { editadoen, correo_electronico, telefono, estado_socio, nombre_cmp, creadoen } = socio_actualizado;
-        res.status( 200 ).json({
-            status : true,
-            msj : 'Socio Actualizado con exito',
-            socio : {
-                idSocio : idCliente,
-                tipoSocio,
-                //nombreCmp : nombre_cmp,
-                numeroTel,
-                nombre,
-                apellido,
-                fechaNacimiento,
-                cedula,
-                //correoElectronico : correo_electronico, 
-                creadoEn : creadoen,
-                nombreUsuario,
-                contraseña, 
-                estadoSocio : estado_socio,
-                direccionSocio : direccion,
-                sociosDependientes
-            }
 
-        });        
+        res.status( 200 ).json(
+            {
+
+                status : true,
+                msj : 'Socio Actualizado',
+                descripcion : `${ ( sociosDependientes.length === 0 ) ? `Socio Actualizado con exito ${nombre}, ${apellido}` : `Socios Actualizados con exito ${nombre}, ${apellido}, ${ sociosDependientes.reduce( (acumulador, element)=> ` ${element.nombre}, ${element.apellido} ` ) }` }`
+            }
+        );      
     } catch (error) {
         console.log( error );
         res.status( 500 ).json( {
@@ -316,22 +294,7 @@ const borrar_socio = async ( req = request, res = response ) => {
 
                 status : true,
                 msj : 'Socio Borrado',
-                socioBorrado : {
-                    idCliente : id_cliente,
-                    tipoSocio : tipoSocioConvert,
-                    //nombreCmp : nombre_cmp,
-                    numeroTel : numero_telefono,
-                    nombre,
-                    apellido,
-                    fechaNacimiento : fecha_nacimiento,
-                    cedula : cedula_convert,
-                    //correoElectronico : correo_electronico, 
-                    //creadoEn : creadoen,
-                    nombreUsuario : nombre_usuario,
-                    contraseña : contrasea, 
-                    estadoSocio : estado_socio,
-                    direccionSocio : direccion
-                }
+                descipcion : `El socio ${nombre}, ${apellido} ha sido borrado`
 
             }
 
@@ -406,7 +369,7 @@ SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio",
 
                 const { nombresocio, cedula, idsocio, nombre, apellido,
                         tipo_socio, numerotel, estadosocio, ruc, creadoen, 
-                        contrasea, nombre_usuario,
+                        password, nombre_usuario,
                         id_tipo_socio, fecha_nacimiento, direccion, correo } = element;
                 
                 

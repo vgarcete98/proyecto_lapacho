@@ -7,6 +7,7 @@ const { decode } = require('jsonwebtoken');
 const prisma = new PrismaClient();
 
 const { generar_token } = require('../helpers/generar_token');
+const { encriptar_password, desencriptar_password } = require('../helpers/generar_encriptado');
 
 
 const login = async ( req = request, res = response )=> {
@@ -19,18 +20,17 @@ const login = async ( req = request, res = response )=> {
         //                                                        tipo_usuario, nombre_usuario, contrasea 
         //                                                    FROM  public.Socio
         //                                                WHERE nombre_usuario = ${ usuario } AND contrasea = ${ contraseña }`;
-
+        //const password_encriptado = encriptar_password( contraseña );
+        //console.log( password_encriptado );
         const socio = await prisma.cliente.findFirst( { 
                                                         where : { 
                                                             AND : [
                                                                 { nombre_usuario : usuario },
-                                                                { pass : contraseña }
+                                                                //{ password : password_encriptado }
                                                             ]
                                                         } 
                                                     } );
-
-        //console.log( socio );
-        if ( socio === undefined ) { 
+        if ( socio === undefined || socio === null ) { 
             res.status( 400 ).json(
                 {
                     status : true,
@@ -41,32 +41,45 @@ const login = async ( req = request, res = response )=> {
             );
         }else {
 
-            const { id_cliente, id_rol_usuario,  } = socio;
-            
-            const idRolUsuario  = ( typeof( id_rol_usuario ) === 'bigint' )? Number( id_rol_usuario.toString() ) : id_rol_usuario;
+            if ( contraseña === desencriptar_password( socio.password ) ) { 
 
-            const idUsuario = ( typeof( id_socio ) === 'bigint' )? Number( id_socio.toString() ) : id_cliente;
-            
-            //console.log( idRolUsuario, idUsuario )
-            //console.log ( consulta_acceso );
-            
-            const { descripcion_rol } = await prisma.roles_usuario.findUnique( { where : { id_rol_usuario : idRolUsuario } } );
-            
-            //const { descripcion_acceso } = await prisma.accesos_usuario.findFirst( { where : { id_rol_usuario : idRolUsuario } } );
-            
-            const token = await generar_token( idUsuario, idRolUsuario, descripcion_rol );
-            res.status( 200 ).json(
-                {
-                    status : true,
-                    msj : 'Login OK',
-                    //usuario,
-                    token,
-                    acceso : { 
-                        tipoUsuario : descripcion_rol, 
-                        descripcionAcceso : "" 
+                const { id_cliente, id_rol_usuario,  } = socio;
+                
+                const idRolUsuario  = ( typeof( id_rol_usuario ) === 'bigint' )? Number( id_rol_usuario.toString() ) : id_rol_usuario;
+    
+                const idUsuario = ( typeof( id_socio ) === 'bigint' )? Number( id_socio.toString() ) : id_cliente;
+                
+                //console.log( idRolUsuario, idUsuario )
+                //console.log ( consulta_acceso );
+                
+                const { descripcion_rol } = await prisma.roles_usuario.findUnique( { where : { id_rol_usuario : idRolUsuario } } );
+                
+                //const { descripcion_acceso } = await prisma.accesos_usuario.findFirst( { where : { id_rol_usuario : idRolUsuario } } );
+                
+                const token = await generar_token( idUsuario, idRolUsuario, descripcion_rol );
+                res.status( 200 ).json(
+                    {
+                        status : true,
+                        msj : 'Login OK',
+                        //usuario,
+                        token,
+                        acceso : { 
+                            tipoUsuario : descripcion_rol, 
+                            descripcionAcceso : "" 
+                        }
                     }
-                }
-            );
+                );
+            }else {
+
+                res.status( 200 ).json(
+                    {
+                        status : true,
+                        msj : 'Contraseña incorrecta',
+                        descripcion : "Ingrese correctamente su contraseña"
+                    }
+                );
+            }
+
         }
     } catch ( error ) {
         //console.log ( "Ha ocurrido un error al realizar la consulta " + error );

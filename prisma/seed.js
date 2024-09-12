@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const { generar_fecha } = require( '../helpers/generar_fecha' )
+const { generar_fecha } = require( '../helpers/generar_fecha' );
+const { encriptar_password } = require('../helpers/generar_encriptado');
 
 
 async function main() {
@@ -415,7 +416,7 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                               cedula : '4365710', fecha_nacimiento : generar_fecha( '29/05/2023' ) ,
                                                               id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "Victor Garcete", numero_telefono : "0985552004",
-                                                              nombre_usuario : "v_garcete", password : "12345678", estado_usuario : 1, 
+                                                              nombre_usuario : "v_garcete", password : encriptar_password("12345678"), estado_usuario : 1, 
                                                               creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 2
                                                             },
 
@@ -424,7 +425,7 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                               cedula : '12345678', fecha_nacimiento : new Date(),
                                                               id_tipo_socio : 4, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "ADMINISTRADOR CLUB", numero_telefono : "----------",
-                                                              nombre_usuario : "ADMINISTRADOR_CLUB", password : pass_admin , estado_usuario : 1, 
+                                                              nombre_usuario : "ADMINISTRADOR_CLUB", password : encriptar_password(pass_admin) , estado_usuario : 1, 
                                                               creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 1
                                                             },
 
@@ -433,7 +434,7 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                               cedula : '1111111', fecha_nacimiento : generar_fecha( '13/05/2000' ),  
                                                               id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "Lucas Torres", numero_telefono : "------------",
-                                                              nombre_usuario : "lucas.torres", password : "12345678", estado_usuario : 2, 
+                                                              nombre_usuario : "lucas.torres", password : encriptar_password("12345678"), estado_usuario : 2, 
                                                               creadoen : new Date(), tipo_usuario : "SUSPENDIDO" , id_rol_usuario : 1 
                                                             }
                                                           ] 

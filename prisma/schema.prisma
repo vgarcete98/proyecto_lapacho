@@ -519,6 +519,7 @@ model cliente {
   apellido             String                 @db.VarChar(255)
   nombre               String                 @db.VarChar(255)
   cedula               String                 @db.VarChar(255)
+  creadoen             DateTime               @db.Timestamp(6)
   fecha_nacimiento     DateTime?              @db.Date
   nombre_cmp           String?                @default("") @db.VarChar(255)
   correo_electronico   String?                @default("") @db.VarChar(255)
@@ -526,9 +527,9 @@ model cliente {
   direccion            String?                @default("") @db.VarChar(255)
   ruc                  String?                @default("") @db.VarChar(255)
   estado_socio         Int?                   @default(1) @db.SmallInt
-  creadoen             DateTime?              @db.Date
-  editadoen            DateTime?              @db.Date
+  editadoen            DateTime?              @db.Timestamp(6)
   es_socio             Boolean?               @default(true)
+  eliminadoen          DateTime?              @db.Timestamp(6)
   agendamiento_clase   agendamiento_clase[]
   caja                 caja[]
   caja_chica           caja_chica[]
@@ -553,26 +554,29 @@ model caja {
 }
 
 model compras {
-  id_compra       Int               @id(map: "compras_pk")
-  movimiento_caja movimiento_caja[]
+  id_compra                                                   Int               @id(map: "compras_pk")
+  id_movimiento_caja                                          Int
+  movimiento_caja_compras_id_movimiento_cajaTomovimiento_caja movimiento_caja   @relation("compras_id_movimiento_cajaTomovimiento_caja", fields: [id_movimiento_caja], references: [id_movimiento_caja], onDelete: NoAction, onUpdate: NoAction, map: "movimiento_caja_compras_fk")
+  movimiento_caja                                             movimiento_caja[]
 }
 
 model movimiento_caja {
-  id_movimiento_caja Int     @id(map: "movimiento_caja_pk") @default(autoincrement())
-  id_caja            Int
-  id_venta           Int
-  id_compra          Int
-  descripcion        String  @db.VarChar(255)
-  caja               caja    @relation(fields: [id_caja], references: [id_caja], onDelete: NoAction, onUpdate: NoAction, map: "caja_movimiento_caja_fk")
-  compras            compras @relation(fields: [id_compra], references: [id_compra], onDelete: NoAction, onUpdate: NoAction, map: "compras_movimiento_caja_fk")
-  ventas             ventas  @relation(fields: [id_venta], references: [id_venta], onDelete: NoAction, onUpdate: NoAction, map: "ventas_movimiento_caja_fk")
+  id_movimiento_caja                                  Int       @id(map: "movimiento_caja_pk") @default(autoincrement())
+  id_caja                                             Int
+  id_compra                                           Int
+  descripcion                                         String    @db.VarChar(255)
+  compras_compras_id_movimiento_cajaTomovimiento_caja compras[] @relation("compras_id_movimiento_cajaTomovimiento_caja")
+  caja                                                caja      @relation(fields: [id_caja], references: [id_caja], onDelete: NoAction, onUpdate: NoAction, map: "caja_movimiento_caja_fk")
+  compras                                             compras   @relation(fields: [id_compra], references: [id_compra], onDelete: NoAction, onUpdate: NoAction, map: "compras_movimiento_caja_fk")
+  ventas                                              ventas[]
 }
 
 model ventas {
-  id_venta         Int               @id(map: "ventas_pk") @default(autoincrement())
-  id_cuota_socio   BigInt
-  id_socio_reserva Int
-  movimiento_caja  movimiento_caja[]
-  cuotas_socio     cuotas_socio      @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
-  reservas         reservas          @relation(fields: [id_socio_reserva], references: [id_socio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
+  id_venta           Int             @id(map: "ventas_pk") @default(autoincrement())
+  id_cuota_socio     BigInt
+  id_socio_reserva   Int
+  id_movimiento_caja Int
+  cuotas_socio       cuotas_socio    @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
+  movimiento_caja    movimiento_caja @relation(fields: [id_movimiento_caja], references: [id_movimiento_caja], onDelete: NoAction, onUpdate: NoAction, map: "movimiento_caja_ventas_fk")
+  reservas           reservas        @relation(fields: [id_socio_reserva], references: [id_socio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
 }

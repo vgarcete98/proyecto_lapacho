@@ -13,7 +13,15 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
         // primero la cabecera
         let clientesExistentes = [];
         const { cedula, ruc } = req.body;
-        const persona = await prisma.cliente.findFirst( { where : { cedula } } );
+        const persona = await prisma.cliente.findFirst( 
+                                                        { 
+                                                            where : { 
+                                                                    AND : [
+                                                                        { cedula },
+                                                                        { es_socio : true }
+                                                                    ]      
+                                                                    } 
+                                                        } );
         //console.log( persona );
         
         if ( persona !== null && persona !== undefined ) {
@@ -31,7 +39,17 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
             if (dependientes.lenght !== 0 ) {
                 for (let dependiente in dependientes ) {
                     const { cedula } = dependientes[dependiente];
-                    const dep = await prisma.cliente.findFirst( { where : { cedula } } );       
+                    const dep = await prisma.cliente.findFirst( { 
+                                                                    where : 
+                                                                        {
+                                                                            AND : [
+                                                                                { cedula },
+                                                                                { es_socio : true }
+                                                                            ]      
+                                                                            
+                                                                        }
+                                                                    
+                                                                } );       
                     if ( dep !== null && persona !== undefined  ){
                         const { nombre, apellido, fecha_nacimiento } =  dependientes[dependiente];
                         clientesExistentes.push( 
