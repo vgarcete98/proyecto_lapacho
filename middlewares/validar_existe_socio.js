@@ -12,7 +12,7 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
 
         // primero la cabecera
         let clientesExistentes = [];
-        const { cedula, ruc } = req.body;
+        const { cedula, ruc, dependientes } = req.body;
         const persona = await prisma.cliente.findFirst( 
                                                         { 
                                                             where : { 
@@ -22,9 +22,8 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
                                                                     ]      
                                                                     } 
                                                         } );
-        //console.log( persona );
         
-        if ( persona !== null && persona !== undefined ) {
+        if ( persona !== null ) {
             const { nombre, apellido, fecha_nacimiento } = persona;
             clientesExistentes.push( {
                 nombre, 
@@ -32,47 +31,49 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
                 fecha_nacimiento,
                 cedula
             } );
-        }else {
-                        //HAGO UNA VALIDACION MAS PARA QUE LOS DEPENDIENTES DEL SOCIO NO SE REPITAN
-            const { dependientes } = req.body;
+        }
+        if (dependientes.lenght !== 0 ) {
+            for (let dependiente in dependientes ) {
+                const { cedula } = dependientes[dependiente];
+                const dep = await prisma.cliente.findFirst( { 
+                                                                where : 
+                                                                    {
+                                                                        AND : [
+                                                                            { cedula },
+                                                                            { es_socio : true }
+                                                                        ]      
 
-            if (dependientes.lenght !== 0 ) {
-                for (let dependiente in dependientes ) {
-                    const { cedula } = dependientes[dependiente];
-                    const dep = await prisma.cliente.findFirst( { 
-                                                                    where : 
-                                                                        {
-                                                                            AND : [
-                                                                                { cedula },
-                                                                                { es_socio : true }
-                                                                            ]      
-                                                                            
-                                                                        }
-                                                                    
-                                                                } );       
-                    if ( dep !== null && persona !== undefined  ){
-                        const { nombre, apellido, fecha_nacimiento } =  dependientes[dependiente];
-                        clientesExistentes.push( 
-                            {
-                                nombre, 
-                                apellido, 
-                                fecha_nacimiento,
-                                cedula
-                            }
-                        );
-                    }
+                                                                    }
+                                                                
+                                                            } );       
+                if ( dep !== null ){
+                    const { nombre, apellido, fecha_nacimiento } =  dependientes[dependiente];
+                    clientesExistentes.push( 
+                        {
+                            nombre, 
+                            apellido, 
+                            fecha_nacimiento,
+                            cedula
+                        }
+                    );
                 }
-            
             }
+        
         }
 
         if (clientesExistentes.length !== 0 ){ 
+
+            let clientes =  ``;
+
+            for (let clave in clientesExistentes) {
+                clientes += ` ${ clientesExistentes[clave].nombre }, ${ clientesExistentes[clave].apellido };`;
+            }
 
             res.status( 400 ).json({
 
                 status : false,
                 msg : 'Ya existen estos clientes, No se pueden agregar',
-                decripcion : `Clientes Existentes : ${ clientesExistentes.forEach( ( element )=> { return `${element.nombre}, ${element.apellido}` } ) }`
+                decripcion : `Clientes Existentes : ${ clientes }`
             })
         }else {
 
@@ -80,7 +81,7 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
         }
 
     } catch (error) {
-        //console.log( error );
+        console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo verificar que haya un socio repetido',

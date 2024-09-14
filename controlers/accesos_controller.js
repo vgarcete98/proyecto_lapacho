@@ -19,15 +19,17 @@ const obtener_accesos = async ( req = request, res = response ) => {
                     descripcion_rol : true
                 }
             }
-         );
-
-        const accesosDisponibles = accesos_disponibles.map( ( element )=> { 
-                                                                            return { 
-                                                                                        id_rol_usuario : element.id_rol_usuario, 
-                                                                                        descripcionRol : element.descripcion_rol 
-                                                                                    }  
-                                                                        } 
-                                                        );
+        );
+        //console.log ( accesos_disponibles )
+        let accesosDisponibles = [];
+        accesosDisponibles = accesos_disponibles.map( ( element )=> { 
+                                                    const { id_rol_usuario, descripcion_rol } = element;
+                                                    return  { 
+                                                                idRolUsuario : id_rol_usuario, 
+                                                                descripcionRol : descripcion_rol 
+                                                            };
+                                                } 
+                                );
 
         //console.log( accesosDisponibles )
         res.status( 200 ).json(
