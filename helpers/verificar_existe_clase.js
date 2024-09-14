@@ -38,4 +38,40 @@ const verificar_existe_clase = async ( req = request, res = response, next)=> {
 }
 
 
+
+
+
+
+const verificar_solapamiento_clase = async ( req = request, res = response, next) =>{
+
+    try {
+
+        const { horaDesde, horaHasta } = req.body;
+        
+        let fecha_desde_convert = DateTime.fromISO(horaDesde);
+        let fecha_hasta_convert = DateTime.fromISO(horaHasta);
+
+
+        const clase = await prisma.agendamiento_clase.findFirst( {
+                                                                    where : {
+                                                                        AND : [
+                                                                            { horario_inicio : { gte : fecha_desde_convert } },
+                                                                            { horario_hasta : { lte : fecha_hasta_convert } }
+                                                                        ]
+                                                                    }
+                                                                } )
+
+
+
+
+        
+    } catch (error) {
+        
+    }
+
+
+
+}
+
+
 module.exports = { verificar_existe_clase };

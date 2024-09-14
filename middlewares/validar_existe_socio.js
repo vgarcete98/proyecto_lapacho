@@ -72,7 +72,7 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
 
                 status : false,
                 msg : 'Ya existen estos clientes, No se pueden agregar',
-                clientesExistentes
+                decripcion : `Clientes Existentes : ${ clientesExistentes.forEach( ( element )=> { return `${element.nombre}, ${element.apellido}` } ) }`
             })
         }else {
 
@@ -80,7 +80,7 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
         }
 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo verificar que haya un socio repetido',
@@ -98,17 +98,23 @@ const comprobar_existe_socio = async ( req = request, res = response, next ) =>{
     
     try {
         const { cedula, ruc } = req.query;
-        const persona = await prisma.persona.findFirst( { where : { cedula } } );
+        const persona = await prisma.cliente.findFirst( { 
+                                                            where : {
+                                                                         AND : [
+                                                                            { cedula : cedula },
+                                                                            { es_socio : true }
+                                                                         ] 
+                                                                    },
+                                                        } );
         //console.log( persona );
         
         if ( persona === null || persona === undefined ) {
             // QUIERE DECIR QUE NO SE ENCONTRO POR TANTO NO EXISTE
             const { nombre, apellido, fecha_nacimiento } = persona;
             res.status( 400 ).json( {
-                status : false,
-                msg : 'No existe un socio con esos datos',
-                cedula,
-                ruc
+                status : true,
+                msj : 'Ya existe un socio con esos datos',
+                descripcion : `Datos del socio existente: ${nombre}, ${ apellido } `
             } );
         }else {
             next();
