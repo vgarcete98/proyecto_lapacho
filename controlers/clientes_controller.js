@@ -49,7 +49,7 @@ const obtener_clientes = async ( req = request, res = response ) => {
 
     try {
 
-        const { nombre, apellido, cedula, pagina, cantidad } = req.query;
+        const { nombre, apellido, cedula, pagina, cantidad, es_socio } = req.query;
         const cliente = await prisma.cliente.findMany( 
                                                         {
                                                             skip : (Number(pagina) - 1) * Number(cantidad),
@@ -59,6 +59,7 @@ const obtener_clientes = async ( req = request, res = response ) => {
                                                                     nombre ? { nombre: { contains: nombre, mode: 'insensitive' } } : undefined, 
                                                                     apellido ? { apellido: { contains: apellido, mode: 'insensitive' } } : undefined,
                                                                     cedula ? { cedula: { contains: cedula, mode: 'insensitive' } } : undefined,
+                                                                    es_socio ? { es_socio : ( es_socio === "true" ) } : undefined,
                                                                 ].filter( Boolean )
                                                             }
                                                         },

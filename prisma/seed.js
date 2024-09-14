@@ -349,6 +349,10 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                           END;
                                                           $$ LANGUAGE plpgsql;`;
 
+  const trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_generar_cuotas_socio
+                                                  AFTER INSERT ON CLIENTE
+                                                  FOR EACH ROW
+                                                  EXECUTE FUNCTION generar_cuotas_socio();`
 
   const procedimiento_genera_cuotas = await prisma.$executeRaw`CREATE OR REPLACE PROCEDURE genera_cuotas_annio()
                                                                 AS $$
@@ -377,10 +381,6 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
 
                                                                 END $$ LANGUAGE plpgsql;`
 
-  const trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_generar_cuotas_socio
-                                                  AFTER INSERT ON CLIENTE
-                                                  FOR EACH ROW
-                                                  EXECUTE FUNCTION generar_cuotas_socio();`
 
 
 const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION cambia_monto_cuotas()
@@ -417,7 +417,8 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                               id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "Victor Garcete", numero_telefono : "0985552004",
                                                               nombre_usuario : "v_garcete", password : encriptar_password("12345678"), estado_usuario : 1, 
-                                                              creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 2
+                                                              creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 2,
+                                                              es_socio : true
                                                             },
 
                                                             { 
@@ -426,7 +427,8 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                               id_tipo_socio : 4, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "ADMINISTRADOR CLUB", numero_telefono : "----------",
                                                               nombre_usuario : "ADMINISTRADOR_CLUB", password : encriptar_password(pass_admin) , estado_usuario : 1, 
-                                                              creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 1
+                                                              creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 1,
+                                                              es_socio : true
                                                             },
 
                                                             {
@@ -435,7 +437,8 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                               id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
                                                               nombre_cmp : "Lucas Torres", numero_telefono : "------------",
                                                               nombre_usuario : "lucas.torres", password : encriptar_password("12345678"), estado_usuario : 2, 
-                                                              creadoen : new Date(), tipo_usuario : "SUSPENDIDO" , id_rol_usuario : 1 
+                                                              creadoen : new Date(), tipo_usuario : "SUSPENDIDO" , id_rol_usuario : 1 ,
+                                                              es_socio : true
                                                             }
                                                           ] 
                                               } );
@@ -533,124 +536,7 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
                                                                             { nombre_club_habilitado : 'VILLARRICA', esta_habilitado : true, creadoen : new Date() }
                                                                           ] 
                                                                       } );
-
-
-  const func_verifica_id_acceso_roles = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION verifica_acceso_rol(RUTA_APP INTEGER, rol VARCHAR)
-                                                                RETURNS INTEGER AS $$
-                                                                DECLARE
-                                                                    ID_ACCESO INTEGER;
-                                                                BEGIN
-                                                                  SELECT B.ID_ACCESO INTO ID_ACCESO 
-                                                                    FROM roles_usuario A JOIN accesos_usuario B on A.id_rol_usuario = B.id_rol_usuario
-                                                                  WHERE A.descripcion_rol = rol AND B.id_ruta_app = RUTA_APP;
-                                                                                                                                  
-                                                                  RETURN ID_ACCESO;
-                                                                END;
-                                                                $$ LANGUAGE plpgsql;` ;
-
-  const func_verifica_eventos_u_reservas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION verifica_eventos_u_reservas()
-                                                                    RETURNS TRIGGER AS $$
-                                                                    BEGIN
-                                                                      
-														  	                                      IF ( EXISTS  (SELECT ID_EVENTO_CALENDARIO 
-																                                      		          	FROM CALENDARIO_EVENTOS 
-																                                      		          WHERE NEW.FECHA_AGENDAMIENTO BETWEEN FECHA_DESDE_EVENTO AND FECHA_HASTA_EVENTO)) THEN 
-                                                                        
-																                                      	RAISE EXCEPTION 'No se puede agendar esa clase, hay un evento que lo impide';
-																                                      	RETURN NULL; -- Impide la operación
-                                                                        
-																                                     ELSIF ( EXISTS (SELECT ID_SOCIO_RESERVA 
-																                                      				FROM RESERVAS 
-																                                      			WHERE  (NEW.FECHA_AGENDAMIENTO = FECHA_RESERVA) 
-																                                      		   			AND (NEW.HORARIO_INICIO, NEW.HORARIO_HASTA) OVERLAPS (HORA_DESDE, HORA_HASTA) 
-																                                      		  			AND (ID_MESA = NEW.ID_MESA) )) THEN 
-																                                      	RAISE EXCEPTION 'No se puede agendar esa clase, hay una reserva que lo impide';
-    														                                      		RETURN NULL; -- Impide la operación
-																                                      ELSIF ( EXISTS (SELECT ID_AGENDAMIENTO 
-																                                              				  FROM AGENDAMIENTO_CLASE 
-																                                              			  WHERE  (NEW.FECHA_AGENDAMIENTO = FECHA_AGENDAMIENTO) 
-																                                              		   			AND (NEW.HORARIO_INICIO, NEW.HORARIO_HASTA) OVERLAPS (HORARIO_INICIO, HORARIO_HASTA) 
-																                                              		  			AND (ID_MESA = NEW.ID_MESA) )) THEN 
-                                                                            IF ( NEW.MONTO_ABONADO IS NOT NULL ) THEN 
-                                                                              RETURN NEW;
-                                                                            ELSE
-																                                              RAISE EXCEPTION 'No se puede agendar esa Clase, hay otra clase que lo impide';
-    														                                          		RETURN NULL; -- Impide la operación		
-                                                                            END IF ;																								
-																                                      ELSE 
-																                                      	RETURN NEW;
-																                                      END IF;
-                                                                          
-                                                                    END;
-                                                                    $$ LANGUAGE plpgsql;`
-
-  const trigger_func_verifica_eventos_u_reservas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_verifica_eventos_u_reservas
-                                                                                BEFORE INSERT OR UPDATE ON AGENDAMIENTO_CLASE
-                                                                                FOR EACH ROW
-                                                                                EXECUTE FUNCTION verifica_eventos_u_reservas()`;
-
-
-
-
-                                                                            
-
-
-
-  const procedimiento_crea_egresos_fijos = await prisma.$executeRaw`CREATE OR REPLACE PROCEDURE genera_gastos_fijos()
-                                                                      AS $$
-																                                      DECLARE 
-																                                      	MES VARCHAR( 50 );
-																                                      	tipo_egreso RECORD;
-                                                                      BEGIN
-
-																                                      	MES := CASE 
-																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 1 THEN 'ENERO'
-																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 2 THEN 'FEBRERO'
-																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 3 THEN 'MARZO'
-																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 4 THEN 'ABRIL'
-																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 5 THEN 'MAYO'
-																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 6 THEN 'JUNIO'
-																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 7 THEN 'JULIO'
-																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 8 THEN 'AGOSTO'
-																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 9 THEN 'SETIEMBRE'
-																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 10 THEN 'OCTUBRE'
-																                                      						WHEN EXTRACT( MONTH FROM CURRENT_DATE ) = 11 THEN  'NOVIEMBRE'
-																                                      						ELSE 
-																                                      							'DICIEMBRE'
-																                                      						END ;
-
-																                                      	FOR tipo_egreso IN (select id_tipo, descripcion,
-																                                      					   			CASE 
-																                                      					   				WHEN descripcion = 'SERVICIO_DE_AGUA' THEN 'PAGO DEL SERVICIO DE AGUA'
-																                                      					   				WHEN descripcion = 'SERVICIO_DE_LUZ' THEN 'PAGO DEL SERVICIO DE LUZ'
-																                                      					   				WHEN descripcion = 'ALQUILER_LOCAL' THEN 'PAGO DEL ALQUILER'
-																                                      					   			ELSE 
-																                                      					   				'PAGO DEL SERVICIO DE INTERNET'
-																                                      					   			END AS descripcion_egreso
-																                                      					   		from tipos_egreso where gasto_fijo = true) LOOP
-                                                                                                          	INSERT INTO egresos
-																                                      				(id_socio, 
-																                                      				 id_tipo, 
-																                                      				 nro_factura, 
-																                                      				 cargado_en, 
-																                                      				 descripcion, 
-																                                      				 monto, 
-																                                      				 borrado, 
-																                                      				 comprobante,
-																                                      				 fecha_pago, 
-																                                      				 fecha_egreso)
-																                                      			VALUES(1,  
-																                                      				   tipo_egreso.id_tipo, 
-																                                      				   '', 
-																                                      				   CURRENT_DATE, 
-																                                      				   CONCAT ( tipo_egreso.descripcion_egreso, ' ', MES ) , 
-																                                      				   0, 
-																                                      				   false,
-																                                      				   '',
-																                                      				   CURRENT_DATE, 
-																                                      				   CURRENT_DATE);
-																                                      	END LOOP;
-                                                                      END $$ LANGUAGE plpgsql;`;                                                                                  
+                                                                         
 
 }
 
