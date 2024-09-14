@@ -62,7 +62,8 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                 password : encriptar_password(contraseña),
                                                                 nombre_usuario : nombreUsuario,
                                                                 id_rol_usuario : idAcceso,
-                                                                tipo_usuario : ''
+                                                                tipo_usuario : '',
+                                                                es_socio : true
 
                                                             } 
                                                         
@@ -93,7 +94,8 @@ const crear_socio = async ( req = request, res = response ) => {
                     password : encriptar_password(contraseña),
                     nombre_usuario : nombreUsuario,
                     id_rol_usuario : idAcceso,
-                    tipo_usuario : ''
+                    tipo_usuario : '',
+                    es_socio : true
 
                 },
                 where : {
@@ -134,7 +136,8 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                         nombre_usuario : dependientes[element].nombreUsuario,
                                                                         id_rol_usuario : dependientes[element].idAcceso,
                                                                         tipo_usuario : '',
-                                                                        parent_id_cliente : idClienteTitular
+                                                                        parent_id_cliente : idClienteTitular,
+                                                                        es_socio : true
                                                                     } 
                                                             } );
                                       
@@ -163,7 +166,8 @@ const crear_socio = async ( req = request, res = response ) => {
                             nombre_usuario : dependientes[element].nombreUsuario,
                             id_rol_usuario : dependientes[element].idAcceso,
                             tipo_usuario : '',
-                            parent_id_cliente : idClienteTitular
+                            parent_id_cliente : idClienteTitular,
+                            es_socio : true
                         },
                         where : { cedula :  dependientes[element].cedula } 
                     } );
