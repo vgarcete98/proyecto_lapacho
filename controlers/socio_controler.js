@@ -77,7 +77,7 @@ const crear_socio = async ( req = request, res = response ) => {
             
         }else {
 
-            let socio_encontrado = await prisma.cliente.findFirst( { where : { cedula : cedula  } ); 
+            let socio_encontrado = await prisma.cliente.findFirst( { where : { cedula : cedula  } } ); 
             
             nuevo_socio = await prisma.cliente.update( { 
                 data : {
@@ -150,7 +150,7 @@ const crear_socio = async ( req = request, res = response ) => {
                     }
 
                 }else {
-                    let socio_encontrado = await prisma.cliente.findFirst( { where : { cedula : cedula  } ); 
+                    let socio_encontrado = await prisma.cliente.findFirst( { where : { cedula : cedula  } } ); 
                     dependiente = await prisma.cliente.update( { 
                         data : {
                             nombre : dependientes[element].nombre,
