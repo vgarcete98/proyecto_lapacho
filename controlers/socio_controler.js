@@ -101,7 +101,7 @@ const crear_socio = async ( req = request, res = response ) => {
 
                 },
                 where : {
-                    id_cliente : Number( socio_encontrado.cedula)
+                    id_cliente : Number( socio_encontrado.id_cliente)
                 }
             
             } );
