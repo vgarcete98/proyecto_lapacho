@@ -109,7 +109,7 @@ const crear_socio = async ( req = request, res = response ) => {
             if ( nuevo_socio.correo_electronico != "" ){
             //console.log( correo_electronico )
             const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
-            sendMail( correo_electronico, cuerpo_mail );
+            sendMail( nuevo_socio.correo_electronico, cuerpo_mail );
             }
 
         }
