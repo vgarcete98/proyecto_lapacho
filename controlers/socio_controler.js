@@ -101,7 +101,7 @@ const crear_socio = async ( req = request, res = response ) => {
 
                 },
                 where : {
-                    AND [ {cedula : cedula}, { es_socio : false } ]
+                    AND : [ {cedula : cedula}, { es_socio : false } ]
                 }
             
             } );
@@ -172,7 +172,7 @@ const crear_socio = async ( req = request, res = response ) => {
                             parent_id_cliente : idClienteTitular,
                             es_socio : true
                         },
-                        where : {  AND [ {cedula : dependientes[element].cedula}, { es_socio : false } } 
+                        where : {  AND : [ {cedula : dependientes[element].cedula}, { es_socio : false } } 
                     } );
 
                     if ( dependientes[element].correo_electronico != "" &&  dependientes[element].correo_electronico !== undefined){
