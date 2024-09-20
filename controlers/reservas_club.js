@@ -14,14 +14,6 @@ const instance = axios.create({
     //headers: {'X-Custom-Header': 'foobar'}
   });
 
-const extraerMensaje = (str = '') => {
-    //console.log( str )
-    const jsonStart = str.indexOf('message:');
-    const jsonEnd = str.lastIndexOf('}') + 1;
-
-    const [ mensaje1, mensaje2, ...resto ] = str.substring(jsonStart, jsonEnd).split( ',' ) ;
-    return mensaje2;
-};
 
 
 const obtener_reservas_en_club = async ( req = request, res = response ) => {
@@ -102,11 +94,11 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
 
     try {
 
-        const {  idSocio, horaDesde, horaHasta, idMesa } = req.body;
+        const {  idCliente, horaDesde, horaHasta, idMesa } = req.body;
 
 
         const nueva_reserva = await prisma.reservas.create( { data : {
-                                                                        id_socio : Number(idSocio),
+                                                                        id_cliente : Number(idCliente),
                                                                         fecha_creacion : new Date(),
                                                                         //fecha_reserva : generar_fecha( fechaAgendamiento ),
                                                                         hora_desde : generar_fecha(horaDesde),
@@ -117,26 +109,16 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
                                                                 });
         //console.log( nueva_reserva)
         const { fecha_creacion, fecha_reserva, hora_desde, 
-                hora_hasta, id_mesa, id_socio, 
-                id_socio_reserva, id_tipo_reserva, reserva_editada, reserva_eliminada } = nueva_reserva;
+                hora_hasta, id_mesa, id_cliente } = nueva_reserva;
         
         const { desc_mesa } = await prisma.mesas.findUnique(  { where : { id_mesa : Number(idMesa) } } );
-        const socio  = await prisma.socio.findUnique( { where : { id_socio : Number( idSocio ) } } );
+        const cliente  = await prisma.cliente.findUnique( { where : { id_socio : Number( id_cliente ) } } );
         //console.log( socio )
-        const { id_persona, nombre_cmp } = socio;
+        const { id_persona, nombre_cmp } = cliente;
         res.status( 200 ).json( {
             status : true,
             msg : "Reserva creada exitosamente",
-            reserva : {
-                idSocioReserva : idSocio,
-                nombreCmp : nombre_cmp,
-                //fechaAgendamiento : fecha_reserva,
-                fechaCreacion : fecha_creacion,
-                horaDesde : hora_desde,
-                horaHasta : hora_hasta,
-                descMesa : desc_mesa,
-                idMesa : Number(typeof( id_mesa ) === 'bigint' ? id_mesa.toString() : id_mesa),
-            }
+            descripcion : `Reserva creada, horarios ${ horaDesde }, ${ horaHasta } cliente : ${ nombre_cmp }`
         } );
         
     } catch (error) {
@@ -158,12 +140,13 @@ const crear_reserva_en_club_administrador = async ( req = request, res = respons
 
     try {
 
-        const {  idSocio, horaDesde, horaHasta, idMesa } = req.body;
+        const {  idCliente, horaDesde, horaHasta, idMesa } = req.body;
 
 
         const nueva_reserva = await prisma.reservas.create( { data : {
-                                                                        id_socio : Number(idSocio),
+                                                                        id_cliente : Number(idCliente),
                                                                         fecha_creacion : new Date(),
+                                                                        
                                                                         //fecha_reserva : generar_fecha( fechaAgendamiento ),
                                                                         hora_desde : generar_fecha(horaDesde),
                                                                         hora_hasta : generar_fecha(horaHasta),
@@ -183,16 +166,7 @@ const crear_reserva_en_club_administrador = async ( req = request, res = respons
         res.status( 200 ).json( {
             status : true,
             msg : "Reserva creada exitosamente",
-            reserva : {
-                idSocioReserva : idSocio,
-                nombreCmp : nombre_cmp,
-                //fechaAgendamiento : fecha_reserva,
-                fechaCreacion : fecha_creacion,
-                horaDesde : hora_desde,
-                horaHasta : hora_hasta,
-                descMesa : desc_mesa,
-                idMesa : Number(typeof( id_mesa ) === 'bigint' ? id_mesa.toString() : id_mesa),
-            }
+            descripcion : `Horario de la reserva ${ hora_desde } a ${ hora_hasta }, en mesa ${ id_mesa } `
         } );
         
     } catch (error) {

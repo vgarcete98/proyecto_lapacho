@@ -257,28 +257,17 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                               { desc_tipo_socio : tipos_de_socio.socio_admin, tipo_socio_creado_en : new Date() }
                                                                             ] 
                                                                   } );
+  const precios_de_cuotas = await prisma.precio_cuota.createMany( { data : [
+                                                                      { monto_cuota : 150000, id_tipo_socio : 1, desc_precio_cuota : "PRECIO DE CUOTA SOCIO NORMAL", porc_descuento : 0 },
+                                                                      { monto_cuota : 90000, id_tipo_socio : 2, desc_precio_cuota : "PRECIO DE CUOTA SOCIO FAMILIAR", porc_descuento : 0 },
+                                                                      { monto_cuota : 80000, id_tipo_socio : 3, desc_precio_cuota : "PRECIO DE CUOTA SOCIO MENOR", porc_descuento : 0 },
+                                                                      { monto_cuota : 0, id_tipo_socio : 4, desc_precio_cuota : "PRECIO DE CUOTA SOCIO ADMINISTRADOR", porc_descuento : 0 }
+                                                                    ] 
+                                                                  } );
+
+  const vecimiento = await prisma.vencimiento_cuotas.create( { data : { valido : true, dia_vencimiento : 5, creado_en : new Date() } } );
   //---------------------------------------------------------------------------------
 
-  // TIPOS DE CUOTA Y TIPO DE DESCUENTO QUE MANEJA LA APLICACION
-  //---------------------------------------------------------------------------------
-  const tipo_descuento = await prisma.tipo_descuento.createMany( { data : [
-                                                                            { desc_tipo_descuento : 'NINGUNO' },
-                                                                            { desc_tipo_descuento : 'DESCUENTO_FAMILIAR' },
-                                                                            { desc_tipo_descuento : 'DESCUENTO_MENOR' },
-                                                                            { desc_tipo_descuento : 'SOCIO_HONORARIO' },
-                                                                            { desc_tipo_descuento : 'VITALICIO' }
-                                                                          ] 
-                                                                } ); 
-
-  const tipo_de_cuota = await prisma.tipo_cuota.createMany( { data : [
-                                                                        { desc_tipo_cuota : 'CUOTA_NORMAL', monto_cuota : 150000, creadoen : new Date()},
-                                                                        { desc_tipo_cuota : 'CUOTA_SOCIO_MENOR', monto_cuota : 90000, creadoen : new Date() },
-                                                                        { desc_tipo_cuota : 'CUOTA_SOCIO_FAMILIAR', monto_cuota : 130000, creadoen : new Date() },
-                                                                        { desc_tipo_cuota : 'SOCIO_VITALICIO', monto_cuota : 0, creadoen : new Date() }
-                                                                      ] 
-                                                          } );  
-  //---------------------------------------------------------------------------------
-  
   // TIPOS DE EVENTOS QUE SE PUEDEN MANEJAR EN EL CLUB
   //---------------------------------------------------------------------------------
   const nuevos_tipos_evento = await prisma.eventos.createMany( { data : [
@@ -295,64 +284,76 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
 
   //AQUI VENDRIA EL TRIGGER QUE SE ENCARGA DE GENERAR LAS CUOTAS PARA LOS SOCIOS
 
-
-  const funcion_trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION generar_cuotas_socio()
-                                                          RETURNS TRIGGER AS $$
-                                                          DECLARE
-                                                              fecha_inicio DATE;
-                                                              fecha_loop DATE;
-                                                              fecha_vencimiento_cuota DATE; -- SERIA EL 5 DE CADA MES
-                                                              tipo_cuota BIGINT;
-                                                              monto_cuota_socio INTEGER;
-                                                          BEGIN
-                                                              -- Define el rango de fechas y el producto para el que deseas calcular el total de cuotas
-                                                              fecha_inicio := NOW();
-                                                              fecha_loop := DATE_TRUNC('month', fecha_inicio);
-                                                              fecha_vencimiento_cuota := fecha_loop + INTERVAL '4 days';  -- Ajustamos para que sea el 5 de cada mes
-                                                                                                                          
-                                                              IF NEW.ID_TIPO_SOCIO = 1 THEN
-                                                                  tipo_cuota := 1;				
-                                                              ELSIF NEW.ID_TIPO_SOCIO = 2 THEN -- ES UN SOCIO MENOR DE EDAD
-                                                                  tipo_cuota := 2;
-                                                              ELSE -- SERIA UN SOCIO FAMILIAR
-                                                                  tipo_cuota := 3;			
-                                                              END IF;
-                                                                                                                          
-                                                              SELECT MONTO_CUOTA INTO monto_cuota_socio FROM TIPO_CUOTA A WHERE A.ID_TIPO_CUOTA = tipo_cuota LIMIT 1;
-                                                            IF (NEW.es_socio = True ) THEN
+  const genera_cuotas_socio = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION public.generar_cuotas_socio()
+                                                            RETURNS trigger
+                                                            LANGUAGE 'plpgsql'
+                                                            COST 100
+                                                            VOLATILE NOT LEAKPROOF
+                                                        AS $BODY$
+                                                        DECLARE
+                                                            fecha_inicio DATE;
+                                                            fecha_loop DATE;
+                                                            fecha_vencimiento_cuota DATE; -- SERIA EL 5 DE CADA MES
+                                                            id_precio_cuota INTEGER;
+                                                            monto_cuota_socio INTEGER;
+                                                            meses_restantes INTEGER;
+                                                          descuento FLOAT;
+                                                        BEGIN
+                                                            -- Define la fecha de inicio y ajusta al inicio del mes
+                                                            fecha_inicio := DATE_TRUNC('month', NOW());
+                                                            fecha_loop := fecha_inicio;
+                                                            fecha_vencimiento_cuota := fecha_loop + INTERVAL '4 days';  -- Ajustamos para que sea el 5 de cada mes
                                                             
-                                                                LOOP
+                                                            -- Determina el tipo de cuota según el tipo de socio
+                                                          
+                                                          SELECT A.ID_PRECIO_CUOTA, 
+                                                              A.MONTO_CUOTA,
+                                                              A.PORC_DESCUENTO INTO id_precio_cuota, monto_cuota_socio, descuento
+                                                            FROM PRECIO_CUOTA A JOIN TIPO_SOCIO B ON A.ID_TIPO_SOCIO = B.ID_TIPO_SOCIO
+                                                          WHERE B.ID_TIPO_SOCIO = NEW.ID_TIPO_SOCIO
+                                                            AND A.VALIDO = TRUE
+                                                            LIMIT 1;
+
+                                                            IF NEW.es_socio = TRUE THEN
+                                                                -- Calcula los meses restantes hasta diciembre
+                                                                meses_restantes := 12 - EXTRACT(MONTH FROM fecha_inicio) + 1;
+
+                                                                -- Genera las cuotas mensuales desde la creación hasta diciembre
+                                                                FOR i IN 1..meses_restantes LOOP
                                                                     -- Inserta la cuota del socio
-                                                                    INSERT INTO CUOTAS_SOCIO (
-                                                                        id_cliente, id_tipo_cuota, id_tipo_descuento, 
-                                                                        fecha_vencimiento, descripcion, pago_realizado, monto_cuota
-                                                                    )
-                                                                    VALUES (
-                                                                        NEW.id_cliente, tipo_cuota, 1,
-                                                                        fecha_vencimiento_cuota, CONCAT('CUOTA : ', fecha_vencimiento_cuota), false, monto_cuota_socio
-                                                                    );
-                                                                
+                                                              INSERT INTO public.cuotas_socio(
+                                                                id_cliente, 
+                                                                id_vencimiento, 
+                                                                id_precio_cuota, 
+                                                                fecha_vencimiento, 
+                                                                descripcion, 
+                                                                descuento, 
+                                                                pago_realizado, 
+                                                                fecha_pago_realizado, 
+                                                                monto_cuota, 
+                                                                abonado)
+                                                                VALUES (
+                                                                  NEW.id_cliente, 
+                                                                  (SELECT ID_VENCIMIENTO FROM VENCIMIENTO_CUOTAS WHERE VALIDO = TRUE LIMIT 1), 
+                                                                  id_precio_cuota,
+                                                                  fecha_vencimiento_cuota, 
+                                                                  CONCAT('CUOTA : ', TO_CHAR(fecha_vencimiento_cuota, 'YYYY-MM-DD')), 
+                                                                  descuento,
+                                                                  FALSE,
+                                                                  NULL,
+                                                                  monto_cuota_socio,
+                                                                  FALSE
+                                                                );
+
                                                                     -- Incrementa el bucle en un mes
                                                                     fecha_loop := fecha_loop + INTERVAL '1 month';
                                                                     fecha_vencimiento_cuota := fecha_loop + INTERVAL '4 days'; -- Ajustamos para que sea el 5 de cada mes
-                                                                
-                                                                    -- Comprueba la condición de salida
-                                                                    IF (EXTRACT(MONTH FROM fecha_loop) = 12) THEN
-                                                                        EXIT; -- Sale del bucle después de diciembre del mismo año
-                                                                    END IF;
-                                                                END LOOP;                                                            
-                                                            
+                                                                END LOOP;                                                         
                                                             END IF;                                                        
-
-                                                                
-                                                              RETURN NEW;
-                                                          END;
-                                                          $$ LANGUAGE plpgsql;`;
-
-  const trigger_cuotas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_generar_cuotas_socio
-                                                  AFTER INSERT ON CLIENTE
-                                                  FOR EACH ROW
-                                                  EXECUTE FUNCTION generar_cuotas_socio();`
+                                                            
+                                                            RETURN NEW;
+                                                        END;
+                                                        $BODY$;`;
 
   const procedimiento_genera_cuotas = await prisma.$executeRaw`CREATE OR REPLACE PROCEDURE genera_cuotas_annio()
                                                                 AS $$
@@ -379,33 +380,12 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                 
                                                                     END LOOP;
 
-                                                                END $$ LANGUAGE plpgsql;`
+                                                                END $$ LANGUAGE plpgsql;`;
 
-
-
-const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION cambia_monto_cuotas()
-                                                          RETURNS TRIGGER AS $$
-                                                          DECLARE
-                                                          BEGIN
-                                                          	UPDATE CUOTAS_SOCIO
-                                                          		SET MONTO_CUOTA = NEW.monto_cuota
-                                                          	WHERE FECHA_PAGO_REALIZADO IS NOT NULL 
-                                                          			AND ID_SOCIO NOT IN ( SELECT ID_SOCIO FROM SOCIO 
-                                                          									WHERE tipo_usuario = 'SUSPENDIDO' OR tipo_usuario = 'ELIMINADO' OR id_tipo_socio = 5 )
-                                                          			AND ID_TIPO_CUOTA = OLD.ID_TIPO_CUOTA;
-                                                                
-                                                                
-                                                            RETURN NEW;
-                                                                
-                                                          END;
-                                                        $$ LANGUAGE plpgsql;`;
-
-
-  const trigger_actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_cambia_monto_cuotas
-                                                                  AFTER UPDATE ON TIPO_CUOTA
-                                                                  FOR EACH ROW
-                                                                  EXECUTE FUNCTION cambia_monto_cuotas();`  
-
+  const asigna_trigger_generacion_cuotas = await prisma.$executeRaw`CREATE OR REPLACE TRIGGER trigger_generar_cuotas_socio
+                                                                    AFTER INSERT OR UPDATE ON CLIENTE
+                                                                    FOR EACH ROW
+                                                                    EXECUTE FUNCTION generar_cuotas_socio();`;                                                             
 
   //---------------------------------------------------------------------------------
   const pass_admin = process.env.C0NTR4SEN1A_4DM1N; 
@@ -518,12 +498,6 @@ const actualiza_monto_cuotas = await prisma.$executeRaw`CREATE OR REPLACE FUNCTI
 
                                                           } );
 
-
-  const tipos_reserva = await prisma.tipo_reserva.createMany( {
-                                                                data : [
-                                                                  { desc_tipo_reserva : "RESERVA DE MESA" }
-                                                                ]
-                                                            } );
 
   //--------------------------------------------------------------------------------------------------------------
   

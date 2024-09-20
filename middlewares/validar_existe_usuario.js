@@ -43,7 +43,7 @@ const validar_existe_usuario_socio = async ( req = request, res = response, next
     try {
         //const { id_usuario } = req.params;
         const { nombreUsuario } = req.body;
-        const comprobar_usuario = await prisma.socio.findFirst( { where : {  nombre_usuario : nombreUsuario } } ); 
+        const comprobar_usuario = await prisma.cliente.findFirst( { where : {  nombre_usuario : nombreUsuario } } ); 
         if ( comprobar_usuario !== null || comprobar_usuario !== undefined ) {
             next();
         }else {

@@ -137,7 +137,7 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                         id_rol_usuario : dependientes[element].idAcceso,
                                                                         tipo_usuario : '',
                                                                         parent_id_cliente : idClienteTitular,
-                                                                        es_socio : true
+                                                                        es_socio : true,
                                                                     } 
                                                             } );
                                       

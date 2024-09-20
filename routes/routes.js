@@ -112,6 +112,11 @@ const rutas = {
     clientes : {
 
         ruta : "/cliente"
+    },
+
+    parametros : {
+
+        ruta : "/parametros"
     }
 
 

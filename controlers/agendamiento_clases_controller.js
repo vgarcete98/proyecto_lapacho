@@ -316,23 +316,7 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
         res.status( 200 ).json( {
             status : true,
             msg : "Clase Creada",
-            claseAgendada : {
-                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
-                nombreCmp : nombre_cmp,
-                //fechaAgendamiento : fecha_agendamiento, 
-                fechaCreacion : creadoen,
-                horaDesde : horario_inicio, 
-                horaHasta : horario_hasta,
-                descMesa : desc_mesa,
-                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
-                //----------------------------------------------------------------------------------------
-                idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                nombreProfesor : nombre_profesor,
-                idProfesor : id_profesor,
-                claseAgendada : clase_abonada,
-                montoAbonado : monto_abonado
-                //----------------------------------------------------------------------------------------
-            }
+            descripcion : "Clase Agendada"
         } );
 
     } catch (error) {

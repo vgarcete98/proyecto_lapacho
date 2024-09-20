@@ -226,50 +226,27 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
         
         const { numero_cedula, annio, nombre, apellido } = req.query;
 
+        const en_español = await prisma.$executeRawUnsafe`SET lc_time = '${"es_ES"}'`;
         const query = `SELECT CAST ( C.ID_CUOTA_SOCIO AS INTEGER ) AS idCuotaSocio ,
                                 CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocio, 
-                                CAST ( B.ID_SOCIO AS INTEGER ) AS id_socio,
-                                A.CEDULA AS CEDULA, TO_CHAR ( C.FECHA_VENCIMIENTO, 'MONTH') AS cuota_mes,
+                                A.ID_CLIENTE AS id_socio,
+                                A.CEDULA AS CEDULA, 
+                                TO_CHAR ( C.FECHA_VENCIMIENTO, 'MONTH') AS cuota_mes,
                                 TO_CHAR ( C.FECHA_VENCIMIENTO, 'MM') AS NUMERO_MES,
                                 C.FECHA_VENCIMIENTO AS fechaVencimiento,
                                 C.fecha_pago_realizado as fecha_pago,
-                                D.desc_tipo_cuota as tipo_cuota,
-                                D.monto_cuota
-                            FROM PERSONA A JOIN SOCIO B ON A.ID_PERSONA = B.ID_PERSONA
-                            JOIN CUOTAS_SOCIO C ON C.ID_SOCIO = B.ID_SOCIO
-                            JOIN TIPO_CUOTA D ON D.ID_TIPO_CUOTA = C.ID_TIPO_CUOTA
+                                C.monto_cuota
+                            FROM CLIENTE A JOIN CUOTAS_SOCIO C ON C.ID_CLIENTE = A.ID_CLIENTE
                         WHERE EXTRACT(YEAR FROM C.FECHA_VENCIMIENTO) = ${annio}
                                 AND A.CEDULA = '${numero_cedula}'
                                 ${ ( nombre === undefined || nombre === '' ) ? `` : `AND A.NOMBRE LIKE '%${nombre}%'` }
                                 ${ ( apellido === undefined || apellido === '' ) ? `` : `AND A.APELLIDO LIKE '%${nombre}%'` }`;
         console.log( query );
-        const cuotas_socio = await prisma.$queryRawUnsafe( query );
 
-        let cuotasPagadas = [];
+        await prisma.$executeRawUnsafe`RESET lc_time`;
+        const cuotas = await prisma.$queryRawUnsafe( query );
 
-        cuotasPagadas = cuotas_socio.map( ( element ) =>{
-
-            const { idcuotasocio, nombresocio, id_socio, 
-                    fechavencimiento, cedula, numero_mes,
-                    fecha_pago, tipo_cuota, monto_cuota } = element;
-            
-            const mes_español = MESES_ESPAÑOL[ Number( numero_mes ) -1 ];
-
-            return {
-                idCuotaSocio : idcuotasocio,
-                nombreSocio : nombresocio,
-                idSocio : id_socio,
-                fechaVencimiento : fechavencimiento,
-                cuotaMes : mes_español,
-                numeroMes : numero_mes,
-                cedula,
-                fechaPago : fecha_pago,
-                tipoCuota : tipo_cuota,
-                monto : monto_cuota
-            }
-
-        } );
-        if ( cuotasPagadas.length === 0 ){
+        if ( cuotas.length === 0 ){
             res.status( 200 ).json(
 
                 {
@@ -284,7 +261,7 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
                 {
                     status : true,
                     msj : 'Cuotas del socio',
-                    cuotasPagadas
+                    cuotas
                 }
             );
         } 
