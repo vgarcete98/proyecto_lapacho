@@ -43,8 +43,8 @@ const crear_socio = async ( req = request, res = response ) => {
         //OBTENER EL SOCIO INSERTADO
         //------------------------------------------------------------------------------------------
         let nuevo_socio = {};
+        const fecha_creacion_socio = new Date();
         if ( comprobar_existe_cliente(cedula) === false ) { 
-            const fecha_creacion_socio = new Date();
             nuevo_socio = await prisma.cliente.create( { 
                                                             data : {
                                                                 nombre : nombre,
