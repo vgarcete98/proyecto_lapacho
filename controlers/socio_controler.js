@@ -443,33 +443,10 @@ SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio",
 
         }else {
 
-            const sociosFormateados = socios.map( ( element ) =>{
-
-                const { nombresocio, cedula, idsocio, nombre, apellido,
-                        tipo_socio, numerotel, estadosocio, ruc, creadoen, 
-                        password, nombre_usuario,
-                        id_tipo_socio, fecha_nacimiento, direccion, correo } = element;
-                
-                
-                return {
-                    idSocio : idsocio,
-                    contraseña : contrasea,
-                    nombreUsuario : nombre_usuario,
-                    nombre,
-                    apellido,
-                    tipoSocio : id_tipo_socio,
-                    numeroTel : numerotel,
-                    creadoEn : creadoen,
-                    cedula,
-                    fechaNacimiento :fecha_nacimiento ,
-                    direccionSocio : direccion,
-                };
-              });
-
             res.status(200).json({
                 status: true,
                 msg: 'Todos los Socios del club',
-                sociosFormateados
+                socios
             });    
         }
         //console.log ( socios );
