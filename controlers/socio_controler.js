@@ -191,7 +191,7 @@ const crear_socio = async ( req = request, res = response ) => {
 
                 status : true,
                 msj : 'Socio Creado',
-                descripcion : `${ ( sociosDependientes.length === 0 ) ? `Socio Creado con exito ${nombre}, ${apellido}` : `Socios creados con exito ${nombre}, ${apellido}, ${ sociosDependientes.reduce( (acumulador, element)=> ` ${element.nombre}, ${element.apellido} ` ) }` }`
+                descripcion : `${ ( dependientes.length === 0 ) ? `Socio Creado con exito ${nombre}, ${apellido}` : `Socios creados con exito ${nombre}, ${apellido}, ${ dependientes.reduce( (acumulador, element)=> ` ${element.nombre}, ${element.apellido} ` ) }` }`
             }
         );   
 
