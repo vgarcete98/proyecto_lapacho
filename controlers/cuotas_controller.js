@@ -226,7 +226,7 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
         
         const { numero_cedula, annio, nombre, apellido } = req.query;
 
-        const en_español = await prisma.$executeRawUnsafe`SET lc_time = '${"es_ES"}'`;
+        //const en_español = await prisma.$executeRawUnsafe`SET lc_time = '${"es_ES"}'`;
         const query = `SELECT CAST ( C.ID_CUOTA_SOCIO AS INTEGER ) AS idCuotaSocio ,
                                 CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocio, 
                                 A.ID_CLIENTE AS id_socio,
@@ -241,9 +241,9 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
                                 AND A.CEDULA = '${numero_cedula}'
                                 ${ ( nombre === undefined || nombre === '' ) ? `` : `AND A.NOMBRE LIKE '%${nombre}%'` }
                                 ${ ( apellido === undefined || apellido === '' ) ? `` : `AND A.APELLIDO LIKE '%${nombre}%'` }`;
-        console.log( query );
+        //console.log( query );
 
-        await prisma.$executeRawUnsafe`RESET lc_time`;
+        //await prisma.$executeRawUnsafe`RESET lc_time`;
         const cuotas = await prisma.$queryRawUnsafe( query );
 
         if ( cuotas.length === 0 ){
