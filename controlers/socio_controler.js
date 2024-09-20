@@ -79,7 +79,7 @@ const crear_socio = async ( req = request, res = response ) => {
 
             let socio_encontrado = await prisma.cliente.findFirst( { where : { cedula : cedula  } } ); 
             
-            nuevo_socio = await prisma.cliente.update( { 
+            nuevo_socio = await prisma.cliente.updateMany( { 
                 data : {
                     nombre : nombre,
                     apellido : apellido,
@@ -101,7 +101,7 @@ const crear_socio = async ( req = request, res = response ) => {
 
                 },
                 where : {
-                    id_cliente : Number( socio_encontrado.id_cliente)
+                    cedula : cedula
                 }
             
             } );
@@ -151,7 +151,7 @@ const crear_socio = async ( req = request, res = response ) => {
 
                 }else {
                     let socio_encontrado = await prisma.cliente.findFirst( { where : { cedula : cedula  } } ); 
-                    dependiente = await prisma.cliente.update( { 
+                    dependiente = await prisma.cliente.updateMany( { 
                         data : {
                             nombre : dependientes[element].nombre,
                             apellido : dependientes[element].apellido,
@@ -172,7 +172,7 @@ const crear_socio = async ( req = request, res = response ) => {
                             parent_id_cliente : idClienteTitular,
                             es_socio : true
                         },
-                        where : { id_cliente :  Number(socio_encontrado.id_cliente) } 
+                        where : { cedula : dependientes[element].cedula } 
                     } );
 
                     if ( dependientes[element].correo_electronico != "" &&  dependientes[element].correo_electronico !== undefined){
