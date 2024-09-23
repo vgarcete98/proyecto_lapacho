@@ -26,7 +26,7 @@ const router_rol = require( '../routes/roles_routes' )
 const router_login = require( '../routes/login_routes' )
 const router_accesos = require( '../routes/accesos_routes' );
 const router_reservas_club = require( '../routes/reservas_club_routes' );
-const router_pagos = require( '../routes/pago_cuotas_routes' );
+const router_pagos = require( '../routes/pagos_routes' );
 const router_cargo_gastos = require( '../routes/gastos_club_routes' );
 const router_eventos = require( '../routes/calendario_eventos_routes' );
 const router_inscripciones = require( '../routes/inscripciones_route' );
@@ -65,7 +65,7 @@ const router_parametros = require('../routes/parametros_routes');
 // LA FUNCION QUE SE VA EJECUTAR PARA GENERARME LAS CUOTAS DEL AÑO
 //----------------------------------------------------------------------------
 const job = schedule.scheduleJob('0 1 0 1 1 *', cron_job_genera_cuotas_anio);
-const job_gastos_fijos = schedule.scheduleJob('0 0 1 * * *', cron_job_genera_gastos_fijos);
+//const job_gastos_fijos = schedule.scheduleJob('0 0 1 * * *', cron_job_genera_gastos_fijos);
 //PARA TEST DEL CRON JOB
 //const job = schedule.scheduleJob('40 * * * *', cron_job_genera_cuotas_anio);
 //const job_gastos_fijos = schedule.scheduleJob('5 * * * * *', cron_job_genera_gastos_fijos);

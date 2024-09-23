@@ -16,8 +16,9 @@ const comprobar_existe_cliente = async ( cedula = "" )=> {
                                                                 ]      
                                                             }
                                                         } )
-
-        if ( cliente === undefined || cliente === null ) {
+        //console.log( cliente );
+        if ( cliente === null ) {
+            //console.log( "retorno falso" )
             return false;
         }else {
             return true;

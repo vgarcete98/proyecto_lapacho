@@ -207,6 +207,19 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
 
   //-------------------------------------------------------------------------------------------------------------------------------------
 
+  const tipos_de_pago = await prisma.tipo_pago.createMany ( { data :  [
+                                                                        { dec_tipo_pago : 'EFECTIVO' },
+                                                                        { dec_tipo_pago : 'TRANSFERENCIA' }
+                                                                      ]
+                                                                      } );
+
+
+
+  const precio_reservas_defecto = await prisma.precio_reservas.createMany ( { data :  [
+                                                                                        { monto_reserva : 30000, creado_en : new Date(), desc_tipo_descuento : "SIN DESCUENTO", porc_descuento : 0, valido : true }
+                                                                                    ]
+                                                                            } );
+                                                                         
 
  //RUTAS ASIGNADAS A ROLES POR DEFECTO A SOCIOS
   //--------------------------------------------------------------------------------------------------------------
@@ -423,7 +436,6 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                           ] 
                                               } );
   //---------------------------------------------------------------------------------
-
   
   //---------------------------------------------------------------------------------
 
@@ -510,8 +522,18 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                             { nombre_club_habilitado : 'VILLARRICA', esta_habilitado : true, creadoen : new Date() }
                                                                           ] 
                                                                       } );
-                                                                         
 
+  //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     //VOY A CREAR UNAS CUANTAS RESERVAS PARA LAS PRUEBAS QUE HAY QUE HACER
+  const reservas = await prisma.reservas.createMany( { data : 
+                                                          [
+                                                            { creado_en : new Date(), creado_por : 1, hora_desde : new Date('2024-06-17T17:00:00.000Z'), hora_hasta : new Date('2024-06-17T18:00:00.000Z'), id_cliente : 2, id_mesa : 1, monto : 30000, id_precio_reserva : 1, fecha_reserva : new Date(), fecha_creacion : new Date()  },
+                                                            { creado_en : new Date(), creado_por : 1, hora_desde : new Date('2024-09-16T17:00:00.000Z'), hora_hasta : new Date('2024-06-17T18:00:00.000Z'), id_cliente : 1, id_mesa : 2, monto : 30000, id_precio_reserva : 1, fecha_reserva : new Date(), fecha_creacion : new Date()  },
+                                                            { creado_en : new Date(), creado_por : 1, hora_desde : new Date('2024-09-17T17:00:00.000Z'), hora_hasta : new Date('2024-09-17T19:00:00.000Z'), id_cliente : 2, id_mesa : 3, monto : 30000, id_precio_reserva : 1, fecha_reserva : new Date(), fecha_creacion : new Date()  },
+                                                          ]
+
+                                                      } );                                                                      
+  //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 }
 
 

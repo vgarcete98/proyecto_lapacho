@@ -39,7 +39,7 @@ const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response 
 
 
 
-        const query = `SELECT A.ID_SOCIO AS "idSocio", 
+        const query = `SELECT A.ID_CLIENTE AS "idSocio", 
                                 A.NOMBRE_USUARIO AS "nombreUsuario", 
                                 A.NOMBRE_CMP AS "nombreCmp",
                                 --B.ID_CUOTA_SOCIO,
@@ -52,12 +52,12 @@ const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response 
                                 'monto', B.MONTO_CUOTA
                             )
                         ) AS "cuotasPendientes"
-                            FROM SOCIO A JOIN CUOTAS_SOCIO B ON A.ID_SOCIO = B.ID_SOCIO
+                            FROM CLIENTE A JOIN CUOTAS_SOCIO B ON A.ID_CLIENTE = B.ID_CLIENTE
                             --JOIN PAGOS_SOCIO C ON C.ID_CUOTA_SOCIO = B.ID_CUOTA_SOCIO
                         WHERE  B.FECHA_VENCIMIENTO < CURRENT_DATE 
                             AND B.PAGO_REALIZADO = FALSE
                             AND FECHA_PAGO_REALIZADO IS NULL
-                        GROUP BY A.ID_SOCIO,  A.NOMBRE_USUARIO, A.NOMBRE_CMP;`
+                        GROUP BY A.ID_CLIENTE,  A.NOMBRE_USUARIO, A.NOMBRE_CMP;`
         
 
         if ( cuotasPendientes.length === 0 ){

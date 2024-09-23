@@ -102,7 +102,7 @@ const realizar_pago_socio = async ( req = request, res = response ) => {
 
 
 
-const anular_pago_socio = async ( req = request, res = response ) =>{
+const anular_pagos_cliente = async ( req = request, res = response ) =>{
 
     try {
         
@@ -158,7 +158,7 @@ const anular_pago_socio = async ( req = request, res = response ) =>{
 }
 
 
-const realizar_pago_socio_varios= async ( req = request, res = response ) => {
+const generar_venta_cuota_socio= async ( req = request, res = response ) => {
 
     try {
         
@@ -233,6 +233,76 @@ const realizar_pago_socio_varios= async ( req = request, res = response ) => {
 }
 
 
+const realizar_cobro_clases_socio = async ( req = request, res = response ) => {
+
+    try {
+
+
+
+
+
+
+        
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se finalizo el pago de cuotas ${ error }`,
+            //error
+        } );
+    }
+
+
+}
+
+
+
+const realizar_cobro_evento_socio = async ( req = request, res = response ) => {
+
+    try {
+
+
+
+
+
+
+        
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se finalizo el pago de cuotas ${ error }`,
+            //error
+        } );
+    }
+
+
+}
+
+
+const generar_mov_caja = async ( req = request, res = response ) => {
+
+    try {
+
+
+
+
+
+
+        
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se finalizo el pago de cuotas ${ error }`,
+            //error
+        } );
+    }
+
+
+}
+
+
 
 
 
@@ -241,8 +311,10 @@ const realizar_pago_socio_varios= async ( req = request, res = response ) => {
 
 module.exports = {
     realizar_pago_socio,
-    anular_pago_socio,
-    realizar_pago_socio_varios
+    realizar_cobro_clases_socio,
+    realizar_cobro_evento_socio,
+    anular_pagos_cliente,
+    generar_venta_cuota_socio
     
 }
 

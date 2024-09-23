@@ -17,7 +17,7 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
                                                         { 
                                                             where : { 
                                                                     AND : [
-                                                                        { cedula },
+                                                                        { cedula : cedula },
                                                                         { es_socio : true }
                                                                     ]      
                                                                     } 
@@ -39,7 +39,7 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
                                                                 where : 
                                                                     {
                                                                         AND : [
-                                                                            { cedula },
+                                                                            { cedula : cedula},
                                                                             { es_socio : true }
                                                                         ]      
 
@@ -81,7 +81,7 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
         }
 
     } catch (error) {
-        console.log( error );
+        //console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo verificar que haya un socio repetido',

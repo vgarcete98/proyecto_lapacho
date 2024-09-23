@@ -6,9 +6,9 @@ const prisma = new PrismaClient();
 
 const comprobar_pago_cuota_socio = async ( req = request, res = response, next )=> {
 
-    const { idCuotaSocio } = req.body;
-
+    
     try {
+        const { idCuotaSocio } = req.body;
         const pago_realizado = await prisma.pagos_socio.findFirst( { where : { id_cuota_socio : idCuotaSocio } } );
 
         
