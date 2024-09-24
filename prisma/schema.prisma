@@ -349,7 +349,7 @@ model cliente {
   estado_usuario     Int?                 @default(1) @db.SmallInt
   apellido           String               @db.VarChar(255)
   nombre             String               @db.VarChar(255)
-  cedula             String               @db.VarChar(255)
+  cedula             String               @unique(map: "cliente_cedula_index") @db.VarChar(255)
   creadoen           DateTime             @db.Timestamp(6)
   fecha_nacimiento   DateTime?            @db.Date
   nombre_cmp         String?              @default("") @db.VarChar(255)
@@ -370,6 +370,7 @@ model cliente {
   tipo_socio         tipo_socio?          @relation(fields: [id_tipo_socio], references: [id_tipo_socio], onDelete: NoAction, onUpdate: NoAction, map: "tipo_socio_socio_fk")
   cuotas_socio       cuotas_socio[]
   inscripciones      inscripciones[]
+  movimiento_caja    movimiento_caja[]
   reservas           reservas[]
   ventas             ventas[]
 }
@@ -405,34 +406,45 @@ model movimiento_caja {
   id_tipo_pago       Int
   id_venta           Int
   id_compra          Int
+  id_cliente         Int
   descripcion        String     @db.VarChar(255)
-  nro_factura        String?    @db.VarChar(255)
+  cedula             String     @db.VarChar(255)
   nro_comprobante    String     @db.VarChar(255)
+  nro_factura        String?    @db.VarChar(255)
   fecha_operacion    DateTime?  @db.Timestamp(6)
+  creado_en          DateTime   @default(now()) @db.Timestamp(6)
+  editado_en         DateTime?  @db.Timestamp(6)
+  editado_por        Int?
+  creado_por         Int
   egresos            egresos[]
   ingresos           ingresos[]
   caja               caja       @relation(fields: [id_caja], references: [id_caja], onDelete: NoAction, onUpdate: NoAction, map: "caja_movimiento_caja_fk")
+  cliente            cliente    @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_movimiento_caja_fk")
   compras            compras    @relation(fields: [id_compra], references: [id_compra], onDelete: NoAction, onUpdate: NoAction, map: "compras_movimiento_caja_fk")
   tipo_pago          tipo_pago  @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "tipo_pago_movimiento_caja_fk")
   ventas             ventas     @relation(fields: [id_venta], references: [id_venta], onDelete: NoAction, onUpdate: NoAction, map: "ventas_movimiento_caja_fk")
 }
 
 model ventas {
-  id_venta         Int               @id(map: "ventas_pk") @default(autoincrement())
-  id_cuota_socio   BigInt
-  id_socio_reserva Int
-  id_cliente       Int
-  estado           Boolean           @default(false)
-  monto            Int
-  fecha_operacion  DateTime?         @db.Timestamp(6)
-  creado_en        DateTime          @db.Timestamp(6)
-  creado_por       Int
-  editado_por      Int?
-  editado_en       DateTime?         @db.Timestamp(6)
-  movimiento_caja  movimiento_caja[]
-  cliente          cliente           @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_ventas_fk")
-  cuotas_socio     cuotas_socio      @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
-  reservas         reservas          @relation(fields: [id_socio_reserva], references: [id_socio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
+  id_venta          Int               @id(map: "ventas_pk") @default(autoincrement())
+  id_cuota_socio    BigInt
+  id_socio_reserva  Int
+  id_cliente        Int
+  estado            Boolean           @default(false)
+  monto             Int
+  fecha_operacion   DateTime?         @db.Timestamp(6)
+  creado_en         DateTime          @db.Timestamp(6)
+  creado_por        Int
+  editado_por       Int?
+  editado_en        DateTime?         @db.Timestamp(6)
+  descripcion_venta String            @db.VarChar(255)
+  cedula            String?           @db.VarChar(255)
+  movimiento_caja   movimiento_caja[]
+  cliente           cliente           @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_ventas_fk")
+  cuotas_socio      cuotas_socio      @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
+  reservas          reservas          @relation(fields: [id_socio_reserva], references: [id_socio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
+
+  @@index([cedula], map: "ventas_cedula_cliente_index")
 }
 
 model precio_cuota {

@@ -2,9 +2,9 @@ const Router = require( 'express' )
 
 
 const {
-        realizar_pago_socio, 
-        anular_pagos_cliente, 
-        generar_venta_cuota_socio
+                realizar_pago_socio, 
+                anular_pagos_cliente, 
+                generar_venta_cuota_socio
         } = require( '../controlers/clientes_pagos_controller' );
         
 const { comprobar_pago_cuota_socio, comprobar_pago_cuota_socio_varios } = require( '../helpers/comprobar_pago_cuota' );
@@ -22,7 +22,7 @@ router_pagos.post( '/socio/generar_venta_cuota_varias', [ comprobar_pago_cuota_s
 
 
 
-
+router_pagos.post( '/cliente/generar_venta_reserva', [  ],  )
 
 
 router_pagos.delete( '/cliente/anular_pagos', [ ], anular_pagos_cliente );

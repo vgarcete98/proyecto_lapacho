@@ -117,9 +117,22 @@ const rutas = {
     parametros : {
 
         ruta : "/parametros"
-    }
+    },
 
+    caja : {
 
+        ruta : "/caja"
+    },
+
+    ventas : {
+
+        ruta : "/ventas"
+    },
+
+    compras : {
+
+        ruta : "/compras"
+    },
 
 }
 

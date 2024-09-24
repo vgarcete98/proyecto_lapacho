@@ -59,6 +59,7 @@ const { cron_job_genera_cuotas_anio } = require( '../helpers/cron_job_genera_cuo
 const { cron_job_genera_gastos_fijos } = require( '../helpers/cron_job_genera_cuotas_anio' );
 const router_caja_chica = require('../routes/caja_chica_routes');
 const router_parametros = require('../routes/parametros_routes');
+const router_caja = require('../routes/caja_routes');
 //----------------------------------------------------------------------------
 
 
@@ -175,7 +176,15 @@ class Server {
         this.app.use( rutas.caja_chica.ruta, router_caja_chica );
 
         this.app.use( rutas.clientes.ruta, router_clientes );
+
         this.app.use( rutas.parametros.ruta, router_parametros );
+
+        this.app.use( rutas.caja.ruta,  router_caja); 
+        
+        this.app.use( rutas.ventas, router_pagos );
+
+        
+    
     }
 
     listar_rutas (){

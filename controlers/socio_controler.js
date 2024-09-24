@@ -40,9 +40,26 @@ const crear_socio = async ( req = request, res = response ) => {
         let nuevos_socios = [];
         const cantidad_a_insertar = 1 + dependientes.length;
 
-        if ( !(await comprobar_existe_cliente(cedula)) ) { 
-            nuevo_socio = await prisma.cliente.create( { 
-                                                            data : {
+        try {
+            nuevo_socio = await prisma.cliente.upsert( { 
+                                                            where : { cedula : cedula, es_socio : false },
+                                                            update : { nombre : nombre,
+                                                                        apellido : apellido,
+                                                                        fecha_nacimiento : generar_fecha( fechaNacimiento),
+                                                                        id_tipo_socio : tipoSocio,
+                                                                        correo_electronico : correo,
+                                                                        numero_telefono : numeroTel,
+                                                                        direccion : direccion,
+                                                                        ruc : ruc,
+                                                                        nombre_cmp : `${ nombre } ${ apellido }`,
+                                                                        creadoen : new Date(),
+                                                                        estado_socio : estados_socio.activo.id_estado,
+                                                                        password : contraseña,//encriptar_password(contraseña),
+                                                                        nombre_usuario : nombreUsuario,
+                                                                        id_rol_usuario : idAcceso,
+                                                                        tipo_usuario : '',
+                                                                        es_socio : true },
+                                                            create : { 
                                                                 nombre : nombre,
                                                                 apellido : apellido,
                                                                 cedula : cedula,
@@ -60,54 +77,18 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                 id_rol_usuario : idAcceso,
                                                                 tipo_usuario : '',
                                                                 es_socio : true
-                                                            } 
-                                                        } );
-    
+                                                            }
+                                                    } );
             if ( nuevo_socio.correo_electronico != "" ){
                 //console.log( correo_electronico )
                 const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
                 sendMail( nuevo_socio.correo_electronico, cuerpo_mail );
             }
-            
             nuevos_socios.push( { nombre, apellido } );
-        }else {
-
-            let socio_encontrado = await prisma.cliente.findFirst( { where : { cedula : cedula  } } ); 
-            //console.log( socio_encontrado );
-            nuevo_socio = await prisma.cliente.updateMany( { 
-                data : {
-                    nombre : nombre,
-                    apellido : apellido,
-                    cedula : cedula,
-                    fecha_nacimiento : generar_fecha( fechaNacimiento),
-                    id_tipo_socio : tipoSocio,
-                    correo_electronico : correo,
-                    numero_telefono : numeroTel,
-                    direccion : direccion,
-                    ruc : ruc,
-                    nombre_cmp : `${ nombre } ${ apellido }`,
-                    creadoen : new Date(),
-                    estado_socio : estados_socio.activo.id_estado,
-                    password : contraseña,//encriptar_password(contraseña),
-                    nombre_usuario : nombreUsuario,
-                    id_rol_usuario : idAcceso,
-                    tipo_usuario : '',
-                    es_socio : true
-
-                },
-                where : {
-                    AND : [ {cedula : socio_encontrado.cedula}, { es_socio : false } ]
-                }
             
-            } );
-
-            if ( socio_encontrado.correo_electronico != "" ){
-            //console.log( correo_electronico )
-            const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
-            sendMail( socio_encontrado.correo_electronico, cuerpo_mail );
-            }
-            nuevos_socios.push( { nombre, apellido } );
-
+        } catch (error3) {
+            console.log( `ocurrio un error al insertar el primer socio ${ error3}` )
+            
         }
 
         const idClienteTitular = nuevo_socio.id_cliente;
@@ -117,71 +98,56 @@ const crear_socio = async ( req = request, res = response ) => {
             try {
                 for (let element in dependientes ) {
     
-                    if ( !(await comprobar_existe_cliente( dependientes[element].cedula ) ) ){
-                        dependiente = await prisma.cliente.create( { 
-                                                                        data : {
-                                                                            nombre : dependientes[element].nombre,
-                                                                            apellido : dependientes[element].apellido,
-                                                                            cedula : dependientes[element].cedula,
-                                                                            fecha_nacimiento : generar_fecha( dependientes[element].fechaNacimiento),
-                                                                            id_tipo_socio : dependientes[element].tipoSocio,
-                                                                            correo_electronico : dependientes[element].correo,
-                                                                            numero_telefono : dependientes[element].numeroTel,
-                                                                            direccion : dependientes[element].direccion,
-                                                                            ruc : dependientes[element].ruc,
-                                                                            nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
-                                                                            creadoen : new Date (),
-                                                                            estado_socio : estados_socio.activo.id_estado,
-                                                                            password : dependientes[element].contraseña, //encriptar_password(dependientes[element].contraseña),
-                                                                            nombre_usuario : dependientes[element].nombreUsuario,
-                                                                            id_rol_usuario : dependientes[element].idAcceso,
-                                                                            tipo_usuario : '',
-                                                                            parent_id_cliente : idClienteTitular,
-                                                                            es_socio : true,
-                                                                        } 
-                                                                } );
-                                          
-                        if ( dependientes[element].correo_electronico != "" &&  dependientes[element].correo_electronico !== undefined){
-                            
-                            const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
-                            sendMail( dependientes[element].correo_electronico, cuerpo_mail );
-                        }
-                        nuevos_socios.push( { nombre : dependientes[element].nombre, apellido : dependientes[element].apellido } );
-    
-                    }else {
-                        let socio_encontrado = await prisma.cliente.findFirst( { where : { cedula : cedula  } } ); 
-                        dependiente = await prisma.cliente.updateMany( { 
-                            data : {
-                                nombre : dependientes[element].nombre,
-                                apellido : dependientes[element].apellido,
-                                cedula : dependientes[element].cedula,
-                                fecha_nacimiento : generar_fecha( dependientes[element].fechaNacimiento),
-                                id_tipo_socio : dependientes[element].tipoSocio,
-                                correo_electronico : dependientes[element].correo,
-                                numero_telefono : dependientes[element].numeroTel,
-                                direccion : dependientes[element].direccion,
-                                ruc : dependientes[element].ruc,
-                                nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
-                                creadoen : new Date (),
-                                estado_socio : estados_socio.activo.id_estado,
-                                password : dependientes[element].contraseña,//encriptar_password(dependientes[element].contraseña),
-                                nombre_usuario : dependientes[element].nombreUsuario,
-                                id_rol_usuario : dependientes[element].idAcceso,
-                                tipo_usuario : '',
-                                parent_id_cliente : idClienteTitular,
-                                es_socio : true
-                            },
-                            where : {  AND : [ {cedula : dependientes[element].cedula}, { es_socio : false } ] } 
-                        } );
-    
-                        if ( dependientes[element].correo_electronico != "" &&  dependientes[element].correo_electronico !== undefined){
-    
-                            const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
-                            sendMail( dependientes[element].correo_electronico, cuerpo_mail );
-                        }
-    
-                        nuevos_socios.push( { nombre : dependientes[element].nombre, apellido : dependientes[element].apellido } );
+                    dependiente = await prisma.cliente.upsert( {
+                                                                    where : { cedula : cedula, es_socio : false },
+                                                                    update : {
+                                                                        nombre : dependientes[element].nombre,
+                                                                        apellido : dependientes[element].apellido,
+                                                                        //cedula : dependientes[element].cedula,
+                                                                        fecha_nacimiento : generar_fecha( dependientes[element].fechaNacimiento),
+                                                                        id_tipo_socio : dependientes[element].tipoSocio,
+                                                                        correo_electronico : dependientes[element].correo,
+                                                                        numero_telefono : dependientes[element].numeroTel,
+                                                                        direccion : dependientes[element].direccion,
+                                                                        ruc : dependientes[element].ruc,
+                                                                        nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
+                                                                        creadoen : new Date (),
+                                                                        estado_socio : estados_socio.activo.id_estado,
+                                                                        password : dependientes[element].contraseña,//encriptar_password(dependientes[element].contraseña),
+                                                                        nombre_usuario : dependientes[element].nombreUsuario,
+                                                                        id_rol_usuario : dependientes[element].idAcceso,
+                                                                        tipo_usuario : '',
+                                                                        parent_id_cliente : idClienteTitular,
+                                                                        es_socio : true
+                                                                    },
+                                                                    create : { 
+                                                                        nombre : dependientes[element].nombre,
+                                                                        apellido : dependientes[element].apellido,
+                                                                        cedula : dependientes[element].cedula,
+                                                                        fecha_nacimiento : generar_fecha( dependientes[element].fechaNacimiento),
+                                                                        id_tipo_socio : dependientes[element].tipoSocio,
+                                                                        correo_electronico : dependientes[element].correo,
+                                                                        numero_telefono : dependientes[element].numeroTel,
+                                                                        direccion : dependientes[element].direccion,
+                                                                        ruc : dependientes[element].ruc,
+                                                                        nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
+                                                                        creadoen : new Date (),
+                                                                        estado_socio : estados_socio.activo.id_estado,
+                                                                        password : dependientes[element].contraseña, //encriptar_password(dependientes[element].contraseña),
+                                                                        nombre_usuario : dependientes[element].nombreUsuario,
+                                                                        id_rol_usuario : dependientes[element].idAcceso,
+                                                                        tipo_usuario : '',
+                                                                        parent_id_cliente : idClienteTitular,
+                                                                        es_socio : true,  
+                                                                    }
+                                                            } );
+
+                    if ( dependientes[element].correo_electronico != "" &&  dependientes[element].correo_electronico !== undefined){
+                    
+                        const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
+                        sendMail( dependientes[element].correo_electronico, cuerpo_mail );
                     }
+                    nuevos_socios.push( { nombre : dependientes[element].nombre, apellido : dependientes[element].apellido } );
                                             
                 }
                 
