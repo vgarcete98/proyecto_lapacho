@@ -6,6 +6,14 @@ const {
                 anular_pagos_cliente, 
                 generar_venta_cuota_socio
         } = require( '../controlers/clientes_pagos_controller' );
+
+
+const {
+        actualizar_venta_servicios,
+        eliminar_venta_servicios,
+        generar_venta_servicios,
+        obtener_venta_servicios
+} = require( '../controlers/ventas_controller' )
         
 const { comprobar_pago_cuota_socio, comprobar_pago_cuota_socio_varios } = require( '../helpers/comprobar_pago_cuota' );
 //const { validar_usuario_administrador, validar_usuario_profesor, validar_usuario_socio } = require( '../middlewares/validar_roles_usuario' )
@@ -15,14 +23,22 @@ const router_pagos = Router();
 
 router_pagos.post( '/socio/pagar_cuota', [ comprobar_pago_cuota_socio ], realizar_pago_socio );
 
+router_pagos.post( '/cliente/generar_venta_servicios', [  ], generar_venta_servicios );
 
+
+
+
+router_pagos.get( '/cliente/obtener_venta_clientes', [  ], obtener_venta_servicios );
+
+router_pagos.delete( '/cliente/cancelar_venta_servicios', [  ], eliminar_venta_servicios );
+
+router_pagos.put( '/cliente/actualizar_venta_servicios', [  ], actualizar_venta_servicios )
 
 router_pagos.post( '/socio/generar_venta_cuota_varias', [ comprobar_pago_cuota_socio_varios ], generar_venta_cuota_socio );
 
 
+router_pagos.post( '/cliente/generar_venta_reserva', [  ], generar_venta_servicios );
 
-
-router_pagos.post( '/cliente/generar_venta_reserva', [  ],  )
 
 
 router_pagos.delete( '/cliente/anular_pagos', [ ], anular_pagos_cliente );

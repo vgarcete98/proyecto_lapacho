@@ -162,43 +162,72 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
 
     try {
         
-        const { cuotas } = req.body;
+        const { idCliente, descVenta, cuotas } = req.body;
         let pagoCuotas = [];
         let venta_socio = { };
-        let ventas_de_cuotas = [ ]; 
+        let ventas_de_cuotas = 0; 
         try {
+            let cuota ;
+            let query = ``;
             for (let element in cuotas) {
                 //----------------------------------------------------------------------------------------------------------------------------
-                let { idSocio, 
-                        idCuotaSocio, 
-                        nroFactura, 
-                        numeroCedula, 
-                        descripcionPago } = cuotas[element];
-    
-                let { monto_cuota, id_tipo_cuota, descripcion } = await prisma.cuotas_socio.findUnique( { where : { id_cuota_socio : Number( idCuotaSocio ) } } )
-        
-                venta_socio  = await prisma.ventas.create( {   
-                                                            data : {  
-                                                                creado_por : 1, //PARA COLOCAR QUE FUE CREADO POR UN ADMINISTRADOR
-                                                                monto : Number( monto_cuota ),
-                                                                creado_en : new Date(),
-                                                                id_cliente : Number( idSocio ),
-                                                                estado : false,
-                                                                id_cuota_socio : Number( idCuotaSocio ),
-                                                                id_socio_reserva : null,
-                                                                fecha_operacion : new Date(),
-                                                            } 
-                                                        } );
-                ventas_de_cuotas.push( { idVenta : venta_socio.id_venta } )
-                //----------------------------------------------------------------------------------------------------------------------------
-    
+                let { idCuotaSocio, desCuota } = cuotas[element];
+                cuota = await prisma.cuotas_socio.findUnique( { 
+                                                                where : { 
+                                                                            id_cuota_socio : Number( idCuotaSocio ),
+
+                                                                        },
+                                                                include : {
+                                                                    cliente : {
+                                                                        select :{
+                                                                            cedula : true
+                                                                        }
+                                                                    },
+                                                                }
+                                                            } );
+                if ( cuota !== null ){
+                    //console.log( cuota )
+                    let { descripcion, id_cliente, id_cuota_socio, monto_cuota, cliente} = cuota;
+                    let { cedula } = cliente;
+                    query = `INSERT INTO public.ventas( id_cuota_socio, 
+                                                        id_socio_reserva, 
+                                                        id_cliente, 
+                                                        estado, 
+                                                        monto, 
+                                                        fecha_operacion, 
+                                                        creado_en, 
+                                                        descripcion_venta, 
+                                                        creado_por,
+                                                        cedula)
+                                                        VALUES(
+                                                        ${Number( idCuotaSocio )},
+                                                        ${"NULL"},
+                                                        ${ Number(id_cliente) },
+                                                        ${ "FALSE" },
+                                                        ${ monto_cuota },
+                                                        ${ "NOW()" },
+                                                        ${"NOW()"},
+                                                        '${descripcion}',
+                                                        ${ 1 },
+                                                        '${ cedula }')`;
+                    //console.log( query );
+                    venta_socio = await prisma.$executeRawUnsafe(query);
+                    if( venta_socio ) {
+
+                        ventas_de_cuotas += 1;
+                    }
+                    //----------------------------------------------------------------------------------------------------------------------------
+
+                }else {
+                    console.log( `No existe la cuota con id ${ idCuotaSocio }` );
+                }
             }
             
         } catch (error) {
             console.log( error );
         }
 
-        if ( cuotas.length === ventas_de_cuotas.length && ventas_de_cuotas.length > 0) { 
+        if ( cuotas.length === ventas_de_cuotas && ventas_de_cuotas > 0) { 
 
             res.status( 200 ).json(
                 {
@@ -212,7 +241,7 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
                 {
                     status : true,
                     msj : 'Solo algunas ventas de cuotas fueron generadas con exito',
-                    descripcion : `Cantidad de ventas de cuotas procesadas ${ ventas_de_cuotas.length }, cantidad enviada ${ cuotas.length }`
+                    descripcion : `Cantidad de ventas de cuotas procesadas ${ ventas_de_cuotas }, cantidad enviada ${ cuotas.length }`
                 }
             );
         }

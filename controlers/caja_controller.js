@@ -309,7 +309,25 @@ const crear_tipo_pago = async ( req = request, res = response ) => {
 
 }
 
+const generar_movimientos_de_caja = async ( req = request, res = response ) =>{ 
 
+    try {
+        
+        const { id_caja_chica } = req.params;
+
+
+
+
+    } catch (error) {
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'No se pudo realizar esa accion sobre la caja',
+            //error
+        } );
+        
+    }
+
+}
 
 
 
@@ -323,5 +341,6 @@ module.exports = {
     obtener_detalle_movimiento_de_caja,
     actualizar_caja,
     obtener_tipo_pagos,
-    crear_tipo_pago
+    crear_tipo_pago,
+    generar_movimientos_de_caja
 }

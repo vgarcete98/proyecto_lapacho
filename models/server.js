@@ -149,7 +149,7 @@ class Server {
 
         this.app.use( rutas.reserva_club.ruta, router_reservas_club );
 
-        this.app.use( rutas.pagos_socio.ruta, router_pagos );
+        //this.app.use( rutas.pagos_socio.ruta, router_pagos );
 
         this.app.use( rutas.Gastos_club.ruta, router_cargo_gastos );
 
@@ -181,7 +181,7 @@ class Server {
 
         this.app.use( rutas.caja.ruta,  router_caja); 
         
-        this.app.use( rutas.ventas, router_pagos );
+        this.app.use( rutas.ventas.ruta, router_pagos );
 
         
     

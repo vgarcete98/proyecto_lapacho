@@ -98,37 +98,69 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
     try {
 
 
-        const { id_cliente, pagina, cantidad } = req.query;
+        const { id_cliente, pagina, cantidad, nro_cedula } = req.query;
+        let ventas = [];
+        const ventas_dependientes = await prisma.cliente.findMany( { 
+                                                                        where : { parent_id_cliente : Number(id_cliente) },
+                                                                        select : {
+                                                                            id_cliente : true
+                                                                        } 
+                                                                } );
+        //console.log( ventas_dependientes )
+        let otros_clientes = ( ventas_dependientes.length !== 0  ) ? ventas_dependientes.map( element => element.id_cliente ) : [];
+        //console.log( otros_clientes );
+        ventas = await prisma.ventas.findMany({
+            select: {
+              id_cuota_socio: true,
+              id_socio_reserva: true,
+              estado: true,
+              fecha_operacion: true,
+              monto: true,
+              movimiento_caja: true,
+              id_venta: true,
+            },
+            where: {
+                    OR: [
+                            // Si `id_cliente` está definido, se incluye esta condición
+                            id_cliente ? { id_cliente: Number(id_cliente) } : undefined,
+                            // Se verifica si `otros_clientes` no está vacío
+                            (ventas_dependientes.length !== 0 ) ? { id_cliente: { in: otros_clientes } } : undefined,
+                    ].filter(Boolean),  // Elimina valores indefinidos dentro del OR
+                },  // Elimina valores indefinidos dentro del AND
+                skip : (Number(pagina) - 1) * Number(cantidad),
+                take : Number(cantidad),
+          });        
 
-        const ventas = await prisma.ventas.findMany( { 
-                                                        select : {
-                                                            id_cuota_socio : true,
-                                                            id_socio_reserva : true,
-                                                            estado : true,
-                                                            fecha_operacion : true,
-                                                            monto : true,
-                                                            movimiento_caja : true,
-                                                            id_venta : true,
-                                                            
+        let ventaServicios = [];
+        if ( ventas.length > 0 ) {
 
-                                                        },
-                                                        skip : (Number(pagina) - 1) * Number(cantidad),
-                                                        take : Number(cantidad),
-                                                        where : {
-                                                            AND : [
-                                                                id_cliente ? { id_cliente: Number( id_cliente ) } : undefined, 
-                                                                
-                                                            ].filter( Boolean )
-                                                        }
-                                                    } );
-        let ventaServicios = ventas.map( element =>({
-            idVenta : element.id_venta,
-            idCliente : element.id_cliente,
-            idSocioCuota : element.id_cuota_socio,
-            idReserva : element.id_socio_reserva,
+            ventaServicios = ventas.map( element =>({
+                idVenta : element.id_venta,
+                idCliente : element.id_cliente,
+                idSocioCuota : element.id_cuota_socio,
+                idReserva : element.id_socio_reserva,
+                nroCedula : element.cedula,
+                fechaOperacion : element.fecha_operacion,
+                monto : element.monto,
+                estado : element.estado,
 
-            
-        }));
+                
+            }));
+            res.status( 200 ).json( {
+                status : true,
+                msg : 'Ventas de ese cliente',
+                ventaServicios
+                //descipcion : `No existe ninguna venta generada para ese cliente`
+            } ); 
+
+
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No se lograron obtener las Ventas para ese Cliente',
+                descipcion : `No existe ninguna venta generada para ese cliente`
+            } ); 
+        }
 
         
         

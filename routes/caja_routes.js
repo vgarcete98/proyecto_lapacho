@@ -9,7 +9,8 @@ const {
     obtener_detalle_movimiento_de_caja,
     obtener_movimientos_de_caja,
     crear_tipo_pago,
-    obtener_tipo_pagos
+    obtener_tipo_pagos,
+    generar_movimientos_de_caja
 } = require( '../controlers/caja_controller' );
 
 
@@ -17,7 +18,13 @@ const router_caja = Router();
 
 router_caja.get( '/obtener_movimientos_caja', [  ],  obtener_movimientos_de_caja);
 
+router_caja.post( '/generar_movimientos_de_caja', [  ], generar_movimientos_de_caja );
+
+
+
 router_caja.get( '/obtener_movimientos_caja/detalle_movimiento', [  ],  obtener_detalle_movimiento_de_caja);
+
+
 
 router_caja.post( '/crear_caja', [  ],  crear_caja);
 

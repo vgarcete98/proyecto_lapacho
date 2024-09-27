@@ -67,7 +67,7 @@ model clubes_habilitados {
 }
 
 model cuotas_socio {
-  id_cuota_socio       BigInt             @id(map: "cuotas_socio_pk") @default(autoincrement())
+  id_cuota_socio       Int                @id(map: "cuotas_socio_pk") @default(autoincrement())
   id_cliente           Int
   id_vencimiento       Int
   id_precio_cuota      Int?
@@ -427,22 +427,22 @@ model movimiento_caja {
 
 model ventas {
   id_venta          Int               @id(map: "ventas_pk") @default(autoincrement())
-  id_cuota_socio    BigInt
-  id_socio_reserva  Int
+  id_cuota_socio    Int?
+  id_socio_reserva  Int?
   id_cliente        Int
   estado            Boolean           @default(false)
   monto             Int
   fecha_operacion   DateTime?         @db.Timestamp(6)
   creado_en         DateTime          @db.Timestamp(6)
+  descripcion_venta String            @db.VarChar(255)
   creado_por        Int
   editado_por       Int?
   editado_en        DateTime?         @db.Timestamp(6)
-  descripcion_venta String            @db.VarChar(255)
   cedula            String?           @db.VarChar(255)
   movimiento_caja   movimiento_caja[]
   cliente           cliente           @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_ventas_fk")
-  cuotas_socio      cuotas_socio      @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
-  reservas          reservas          @relation(fields: [id_socio_reserva], references: [id_socio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
+  cuotas_socio      cuotas_socio?     @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
+  reservas          reservas?         @relation(fields: [id_socio_reserva], references: [id_socio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
 
   @@index([cedula], map: "ventas_cedula_cliente_index")
 }
