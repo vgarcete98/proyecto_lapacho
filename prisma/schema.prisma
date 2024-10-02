@@ -303,6 +303,8 @@ model caja {
 model compras {
   id_compra       Int               @id(map: "compras_pk")
   id_cliente      Int
+  id_insumo       Int?
+  descripcion     String            @db.VarChar(200)
   estado          Boolean           @default(false)
   creado_en       DateTime          @db.Timestamp(6)
   creado_por      Int
@@ -311,7 +313,9 @@ model compras {
   fecha_operacion DateTime?         @db.Timestamp(6)
   monto           Int
   cedula          String?           @db.VarChar(255)
+  proveedor       String?           @db.VarChar(120)
   cliente         cliente           @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_compras_fk")
+  insumos         insumos?          @relation(fields: [id_insumo], references: [id_insumo], onDelete: NoAction, onUpdate: NoAction, map: "insumos_compras_fk")
   movimiento_caja movimiento_caja[]
 }
 
@@ -412,6 +416,7 @@ model insumos {
   creado_por  Int
   costo       Int
   editado_en  DateTime? @db.Timestamp(6)
+  compras     compras[]
   eventos     eventos   @relation(fields: [id_evento], references: [id_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_insumos_fk")
 }
 
