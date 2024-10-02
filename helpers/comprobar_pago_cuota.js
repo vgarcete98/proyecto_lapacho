@@ -56,8 +56,8 @@ const comprobar_pago_cuota_socio_varios = async ( req = request, res = response,
 
 
             try {
-                const { idCuotaSocio } = cuotas[element];
-                const pago_realizado = await prisma.cuotas_socio.findFirst( { where : { id_cuota_socio : Number(idCuotaSocio) } } );
+                const { idSocioCuota } = cuotas[element];
+                const pago_realizado = await prisma.cuotas_socio.findFirst( { where : { id_cuota_socio : Number(idSocioCuota) } } );
                 if( pago_realizado !== null ){
                     //console.log( pago_realizado );
                     const { fecha_pago_realizado, monto_cuota, abonado, descripcion } = pago_realizado;

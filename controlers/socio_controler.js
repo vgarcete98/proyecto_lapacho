@@ -394,8 +394,7 @@ const obtener_socios = async ( req = request, res = response ) => {
 
         let socios;
         //console.log( cantidad, omitir, nombre, apellido )
-        const query = `
-SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
+        const query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
                                 --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
                                 A.CEDULA AS "cedula",
                                 A.CORREO_ELECTRONICO AS "correoElectronico", 
@@ -411,7 +410,7 @@ SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio",
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_SOCIO AS "estadoSocio" 
                             FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
-                        ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
+                        ${ ( nombre !== undefined && nombre !== '' )? `AND UPPER( CONCAT (A.NOMBRE, ' ', A.APELLIDO) ) LIKE '%${nombre.toUpperCase()}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
         //console.log( query );
@@ -522,7 +521,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
                                 A.ID_CLIENTE AS "idCliente", 
                                 A.RUC AS "ruc" ,
                                 A.CREADOEN AS "creadoEn", 
-                                A.CONTRASEA AS "contrasea",
+                                A.PASSWORD AS "contrasea",
                                 A.NOMBRE_USUARIO AS "nombreUsuario",
                                 A.FECHA_NACIMIENTO AS "fechaNacimiento",
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
@@ -531,7 +530,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
                                 A.ESTADO_SOCIO AS "estadoSocio" 
                             FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         WHERE A.ESTADO_SOCIO = ${ estados_socio.activo.id_estado }
-                        ${ ( cedula !== undefined && cedula !== '' )? `AND A.CEDULA = '${ cedula }'` : `` }
+                        ${ ( cedula !== undefined && cedula !== '' )? `AND A.CEDULA LIKE '%${ cedula }%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
 

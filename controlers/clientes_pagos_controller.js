@@ -162,19 +162,19 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
 
     try {
         
-        const { idCliente, descVenta, cuotas } = req.body;
+        const { cuotas } = req.body;
         let pagoCuotas = [];
         let venta_socio = { };
         let ventas_de_cuotas = 0; 
+        let query = ``;
         try {
             let cuota ;
-            let query = ``;
             for (let element in cuotas) {
                 //----------------------------------------------------------------------------------------------------------------------------
-                let { idCuotaSocio, desCuota } = cuotas[element];
+                let { idSocioCuota } = cuotas[element];
                 cuota = await prisma.cuotas_socio.findUnique( { 
                                                                 where : { 
-                                                                            id_cuota_socio : Number( idCuotaSocio ),
+                                                                            id_cuota_socio : Number( idSocioCuota ),
 
                                                                         },
                                                                 include : {
@@ -200,7 +200,7 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
                                                         creado_por,
                                                         cedula)
                                                         VALUES(
-                                                        ${Number( idCuotaSocio )},
+                                                        ${Number( id_cuota_socio )},
                                                         ${"NULL"},
                                                         ${ Number(id_cliente) },
                                                         ${ "FALSE" },

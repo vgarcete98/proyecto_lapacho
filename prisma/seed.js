@@ -283,7 +283,7 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
 
   // TIPOS DE EVENTOS QUE SE PUEDEN MANEJAR EN EL CLUB
   //---------------------------------------------------------------------------------
-  const nuevos_tipos_evento = await prisma.eventos.createMany( { data : [
+  const nuevos_tipos_evento = await prisma.tipos_evento.createMany( { data : [
                                                                             { desc_tipo_evento : eventos_club.aniversario_club, color_evento : "#FF0000" },
                                                                             { desc_tipo_evento : eventos_club.cena_fin_anio, color_evento : "#FFA500" },
                                                                             { desc_tipo_evento : eventos_club.liga_interna, color_evento : "#87CEEB" },
@@ -294,6 +294,26 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
   
   //---------------------------------------------------------------------------------
 
+  const f_genera_mes_espanol = await prisma.$executeRaw`CREATE OR REPLACE FUNCTION mes_en_espanol(mes_ingles TEXT)
+                                                        RETURNS TEXT AS $$
+                                                        BEGIN
+                                                            RETURN CASE LOWER(trim(mes_ingles))
+                                                                WHEN 'january' THEN 'enero'
+                                                                WHEN 'february' THEN 'febrero'
+                                                                WHEN 'march' THEN 'marzo'
+                                                                WHEN 'april' THEN 'abril'
+                                                                WHEN 'may' THEN 'mayo'
+                                                                WHEN 'june' THEN 'junio'
+                                                                WHEN 'july' THEN 'julio'
+                                                                WHEN 'august' THEN 'agosto'
+                                                                WHEN 'september' THEN 'septiembre'
+                                                                WHEN 'october' THEN 'octubre'
+                                                                WHEN 'november' THEN 'noviembre'
+                                                                WHEN 'december' THEN 'diciembre'
+                                                                ELSE 'Mes inválido'
+                                                            END;
+                                                        END;
+                                                        $$ LANGUAGE plpgsql;`
 
   //AQUI VENDRIA EL TRIGGER QUE SE ENCARGA DE GENERAR LAS CUOTAS PARA LOS SOCIOS
 
@@ -511,19 +531,6 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                           } );
 
 
-  //--------------------------------------------------------------------------------------------------------------
-  
-  const clubes_para_pases = await prisma.clubes_habilitados.createMany( { 
-                                                                          data : [  
-                                                                            { nombre_club_habilitado : 'SPIN', esta_habilitado : true, creadoen : new Date() },
-                                                                            { nombre_club_habilitado : 'SALESIANO', esta_habilitado : true, creadoen : new Date() },
-                                                                            { nombre_club_habilitado : 'SAJONIA', esta_habilitado : true, creadoen : new Date() },
-                                                                            { nombre_club_habilitado : 'ENCARNACION', esta_habilitado : true, creadoen : new Date() },
-                                                                            { nombre_club_habilitado : 'VILLARRICA', esta_habilitado : true, creadoen : new Date() }
-                                                                          ] 
-                                                                      } );
-
-  //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
      //VOY A CREAR UNAS CUANTAS RESERVAS PARA LAS PRUEBAS QUE HAY QUE HACER
   const reservas = await prisma.reservas.createMany( { data : 
                                                           [

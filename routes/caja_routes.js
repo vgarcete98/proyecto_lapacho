@@ -10,23 +10,27 @@ const {
     obtener_movimientos_de_caja,
     crear_tipo_pago,
     obtener_tipo_pagos,
-    generar_movimientos_de_caja
+    generar_movimientos_de_caja,
+    generar_movimientos_de_caja_ventas,
+    generar_movimientos_de_caja_compras,
+    obtener_detalles_caja
 } = require( '../controlers/caja_controller' );
+const { verificar_existe_caja_abierta, verificar_existe_caja_vigente } = require('../middlewares/verificar_existe_caja_abierta');
 
 
 const router_caja = Router();
 
 router_caja.get( '/obtener_movimientos_caja', [  ],  obtener_movimientos_de_caja);
 
-router_caja.post( '/generar_movimientos_de_caja', [  ], generar_movimientos_de_caja );
+router_caja.post( '/generar_movimientos_de_caja/ventas', [ verificar_existe_caja_abierta ], generar_movimientos_de_caja_ventas );
 
-
+router_caja.post( '/generar_movimientos_de_caja/compras', [ verificar_existe_caja_abierta ], generar_movimientos_de_caja_compras );
 
 router_caja.get( '/obtener_movimientos_caja/detalle_movimiento', [  ],  obtener_detalle_movimiento_de_caja);
 
 
 
-router_caja.post( '/crear_caja', [  ],  crear_caja);
+router_caja.post( '/crear_caja', [ verificar_existe_caja_vigente ],  crear_caja);
 
 router_caja.put( '/actualizar_caja', [  ],  actualizar_caja);
 
@@ -38,7 +42,7 @@ router_caja.get( '/obtener_tipos_pago', [], obtener_tipo_pagos );
 
 router_caja.post( '/crear_tipo_pago', [ ], crear_tipo_pago );
 
-
+router_caja.get( 'obtener_detalles_caja', [  ], obtener_detalles_caja )
 
 module.exports = router_caja;
 

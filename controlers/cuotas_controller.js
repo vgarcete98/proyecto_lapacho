@@ -227,15 +227,16 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
         const { numero_cedula, annio, nombre, apellido } = req.query;
 
         //const en_español = await prisma.$executeRawUnsafe`SET lc_time = '${"es_ES"}'`;
-        const query = `SELECT CAST ( C.ID_CUOTA_SOCIO AS INTEGER ) AS idCuotaSocio ,
+        const query = `SELECT CAST ( C.ID_CUOTA_SOCIO AS INTEGER ) AS "idCuotaSocio" ,
                                 CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocio, 
-                                A.ID_CLIENTE AS id_socio,
+                                A.ID_CLIENTE AS idSocio,
                                 A.CEDULA AS CEDULA, 
-                                TO_CHAR ( C.FECHA_VENCIMIENTO, 'MONTH') AS cuota_mes,
-                                TO_CHAR ( C.FECHA_VENCIMIENTO, 'MM') AS NUMERO_MES,
-                                C.FECHA_VENCIMIENTO AS fechaVencimiento,
-                                C.fecha_pago_realizado as fecha_pago,
-                                C.monto_cuota
+                                INITCAP(mes_en_espanol (TO_CHAR ( C.FECHA_VENCIMIENTO, 'MONTH'))) AS "cuotaMes",
+                                --TO_CHAR ( C.FECHA_VENCIMIENTO, 'MONTH'),
+                                TO_CHAR ( C.FECHA_VENCIMIENTO, 'MM') AS "numeroMEs",
+                                C.FECHA_VENCIMIENTO AS "fechaVencimiento",
+                                C.fecha_pago_realizado as "fechaPago",
+                                C.monto_cuota AS "montoCuota"
                             FROM CLIENTE A JOIN CUOTAS_SOCIO C ON C.ID_CLIENTE = A.ID_CLIENTE
                         WHERE EXTRACT(YEAR FROM C.FECHA_VENCIMIENTO) = ${annio}
                                 AND A.CEDULA = '${numero_cedula}'
