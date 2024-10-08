@@ -10,17 +10,21 @@ const comprobar_disponibilidad_evento = async ( req = request, res = response, n
 
     try {
         const { horaDesde, horaHasta } = req.body;
-        const evento = await prisma.calendario_eventos.findFirst( { 
+
+        const fecha_desde_convertido = new Date( horaDesde );
+        const fecha_hasta_convertido = new Date( horaHasta );
+        console.log( fecha_desde_convertido, fecha_hasta_convertido );
+        const evento = await prisma.eventos.findFirst( { 
                                                                     where : {  
                                                                         fecha_desde_evento : {
-                                                                            gte : new Date( horaDesde )
+                                                                            gte : fecha_desde_convertido
                                                                         },
                                                                         fecha_hasta_evento : {
-                                                                            lte : new Date( horaHasta )
+                                                                            lte : fecha_hasta_convertido
                                                                         }
                                                                     } 
                                                                 } );
-        if ( evento === null || evento === undefined ){
+        if ( evento === null  ){
             next();
         }else {
 
@@ -28,15 +32,16 @@ const comprobar_disponibilidad_evento = async ( req = request, res = response, n
             res.status( 400 ).json( {
                 status : true,
                 msg : 'Esa fecha para ese evento no se encuentra libre',
+                descripcion :  'Elija otra fecha para el evento ya que la misma se encuentra ocupada'
             } );
         }
     } catch (error) {
 
-        //console.log( error );
+        console.log( error );
         
         res.status( 500 ).json( {
             status : false,
-            msg : `Ha ocurrido un error al buscar fecha libre  ${ error }`,
+            msg : `Ha ocurrido un error al buscar fecha libre`,
             //error
         } );
     }

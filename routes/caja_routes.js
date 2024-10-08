@@ -17,18 +17,24 @@ const {
 } = require( '../controlers/caja_controller' );
 const { verificar_existe_caja_abierta, verificar_existe_caja_vigente } = require('../middlewares/verificar_existe_caja_abierta');
 
+const {  
+    verificar_compras_a_caja,
+    verificar_ventas_a_caja,
+    verificar_ventas_procesadas,
+    verificar_compras_procesadas
+} = require( '../middlewares/comprobar_tipos_movimientos_caja' ); 
+const { verifica_ventas_existentes, verifica_compras_existentes } = require('../middlewares/verificar_movimientos_existentes');
+
 
 const router_caja = Router();
 
 router_caja.get( '/obtener_movimientos_caja', [  ],  obtener_movimientos_de_caja);
 
-router_caja.post( '/generar_movimientos_de_caja/ventas', [ verificar_existe_caja_abierta ], generar_movimientos_de_caja_ventas );
+router_caja.post( '/generar_movimientos_de_caja/ventas', [ verificar_existe_caja_abierta, verifica_ventas_existentes, verificar_ventas_a_caja, verificar_ventas_procesadas ], generar_movimientos_de_caja_ventas );
 
-router_caja.post( '/generar_movimientos_de_caja/compras', [ verificar_existe_caja_abierta ], generar_movimientos_de_caja_compras );
+router_caja.post( '/generar_movimientos_de_caja/compras', [ verificar_existe_caja_abierta, verifica_compras_existentes, verificar_compras_a_caja, verificar_compras_procesadas ], generar_movimientos_de_caja_compras );
 
 router_caja.get( '/obtener_movimientos_caja/detalle_movimiento', [  ],  obtener_detalle_movimiento_de_caja);
-
-
 
 router_caja.post( '/crear_caja', [ verificar_existe_caja_vigente ],  crear_caja);
 

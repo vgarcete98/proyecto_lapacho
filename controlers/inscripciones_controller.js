@@ -7,94 +7,88 @@ const prisma = new PrismaClient();
 
 
 
-/*
-    id_inscripcion AS "idInscripcion", 
-    id_socio AS "idSocio", 
-    id_evento_calendario AS "idEventoCalendario", 
-    desc_inscripcion AS "descInscripcion", 
-    fecha_inscripcion AS "fechaInscripcion", 
-    abonado AS "abonado", 
-    inscripcioncreadoen AS "inscripcionCreadoEn", 
-    estadoinscripcion AS "estadoInscripcion", 
-    inscripcioneditadoen AS "inscripcionEditadoEn"
-*/
-
-
 const inscribirse_a_evento = async ( req = request, res = response ) =>{
     
     try {
         
         // NECESITO REGISTRAR UNA INSCRIPCION 
         // Voy a manejar que se abona entero por la inscripcion y no por partes como sucede con las clases particulares
-        const { idSocio, idEvento, categorias } = req.body;
+        const { idCliente, idEvento, categorias } = req.body;
 
         let cat = [];
-        let nuevaInscripcion = [];
-        
+        let inscripciones_registradas = 0;
+
+        const cliente = await prisma.cliente.findUnique( { where : { id_cliente : Number( idCliente ) } } );
         for (const element of categorias) {
             
-            const { idCategoria, idEventoCalendario, montoAbonado, descInscripcion } = element;
-            //console.log( req.body );
-            const { abonado, desc_inscripcion, estadoinscripcion, 
-                    fecha_inscripcion, id_evento_calendario, id_inscripcion,
-                    id_socio, inscripcioncreadoen, inscripcioneditadoen, id_categoria } = await prisma.inscripciones.create( { 
-                                                                                                                                data : {
-                                                                                                                                    id_socio : idSocio,
-                                                                                                                                    id_evento_calendario : idEvento,
-                                                                                                                                    abonado : montoAbonado,
-                                                                                                                                    inscripcioncreadoen : new Date(),
-                                                                                                                                    id_categoria : Number( idCategoria ),
-                                                                                                                                    abonado : montoAbonado,
-                                                                                                                                    fecha_inscripcion : new Date(),
-                                                                                                                                    desc_inscripcion : descInscripcion
-                                                                                                                                } 
-                                                                                                                            } );
-                                                                
-            const { nombre_cmp, nombre, apellido } = await prisma.socio.findUnique( 
-                                                                    {
-    
-                                                                        where : { id_socio : Number( idSocio ) } ,
-                                                                        include : {  
-                                                                            persona : {
-                                                                                select : {
-                                                                                    apellido : true ,
-                                                                                    nombre : true
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                );
-            const { nombre_categoria   } = await prisma.categorias.findUnique( { where : { id_categoria  :  Number(idCategoria)} } );
+            try {
 
-            nuevaInscripcion.push( {
-                "idInscripcion" :  (typeof id_inscripcion === 'bigint' ? Number(id_inscripcion.toString()) : id_inscripcion), 
-                "idSocio" :  (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio), 
-                "idEventoCalendario" : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario), 
-                "descInscripcion" : desc_inscripcion , 
-                "fechaInscripcion" :fecha_inscripcion , 
-                "abonado" : abonado , 
-                "inscripcionCreadoEn" : inscripcioncreadoen, 
-                "estadoInscripcion" : estadoinscripcion, 
-                "inscripcionEditadoEn" : inscripcioneditadoen,
-                "nombreSocio" : nombre_cmp,
-                categoria : { 
-                    idCategoria,
-                    nombreCategoria : nombre_categoria
+
+                let { idCategoria, idEventoCalendario, montoAbonado, descInscripcion } = element;
+                //console.log( req.body );
+                let categoria = await prisma.categorias.findUnique( { where : { id_categoria : Number( idCategoria ) } } );
+
+                console.log( categoria );
+                
+                let inscripcion  = await prisma.inscripciones.create( { 
+                                                                        data : {
+                                                                            id_cliente : Number(idCliente),
+                                                                            id_evento : Number(idEvento),
+                                                                            abonado : montoAbonado,
+                                                                            inscripcioncreadoen : new Date(),
+                                                                            id_categoria : Number( categoria.id_categoria ),
+                                                                            abonado : montoAbonado,
+                                                                            fecha_inscripcion : new Date(),
+                                                                            desc_inscripcion : descInscripcion,
+                                                                            costo_inscripcion : Number( categoria.costo )
+                                                                        } 
+                                                                    } );
+                let nueva_venta = null;
+                if ( inscripcion !== null ){
+
+                    nueva_venta = await prisma.ventas.create( {
+                                                                data : {
+                                                                    creado_en : new Date(),
+                                                                    creado_por : 1,
+                                                                    descripcion_venta : `INSCRIPCION CATEGORIA ${ categoria.nombre_categoria }, ${cliente.nombre_cmp} `,
+                                                                    monto : Number( inscripcion.costo_inscripcion ),
+                                                                    estado : false,
+                                                                    fecha_operacion : new Date(),
+                                                                    cedula : cliente.cedula,
+                                                                    id_cliente : cliente.id_cliente,
+                                                                    id_inscripcion : inscripcion.id_inscripcion,
+                                                                    id_cuota_socio : null,
+                                                                    id_socio_reserva : null
+                                                                }
+                                                            } );
+                    ( nueva_venta !== null )? console.log( 'Venta registrada con exito' ) : console.log( 'No se registro la venta' );
+
+                    inscripciones_registradas += 1;
+
                 }
-
-            } )
+                
+            } catch (error) {
+                console.log( error );
+            }
+                                                                
         }
 
-
-
-
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Inscripcion registrada",
-            nuevaInscripcion 
-        } );        
-        
-
+        if ( inscripciones_registradas === categorias.length && categorias.length > 0 ){
+            
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Inscripcion registrada",
+                descripcion : "Se ha registrado la inscripcion con exito" 
+            } );        
+        }else {
+            res.status( 400 ).json({
+                
+                    status : true,
+                    msj : 'No se lograron registrar todas las inscripciones a las categorias',
+                    descripcion : `Solo se procesaron ${ inscripciones_registradas } de ${ categorias.length } inscripciones`
+                }
+            ); 
+        }
 
     } catch (error) {
         console.log( error );
@@ -273,11 +267,11 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
     try {
         const { id_evento, id_categoria } = req.query;
         //console.log( req.query )
-        const query = `SELECT   CAST ( A.id_inscripcion AS INTEGER )AS "idInscripcion",
+        const query = `SELECT   A.id_inscripcion AS "idInscripcion",
 								C.id_categoria AS "idCategoria",
 								C.nombre_categoria AS "nombreCategoria",
-                                CAST ( A.id_socio AS INTEGER ) AS "idSocio", 
-                                CAST ( A.id_evento_calendario AS INTEGER ) AS "idEventoCalendario", 
+                                A.id_cliente AS "idSocio", 
+                                A.id_evento AS "idEventoCalendario", 
                                 A.desc_inscripcion AS "descInscripcion", 
                                 A.fecha_inscripcion AS "fechaInscripcion", 
                                 A.abonado AS "abonado", 
@@ -287,9 +281,9 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
                                 B.nombre_cmp as "nombreSocio"--,
                                 --CONCAT( B.nombre, ' ', B.apellido ) as "nombreCmp",
 								--B.nombrecmp AS "nombreCmp"
-                            FROM inscripciones A JOIN SOCIO B ON A.id_socio = B.id_socio
+                            FROM inscripciones A JOIN CLIENTE B ON A.id_cliente = B.id_cliente
 							JOIN CATEGORIAS C on A.id_categoria = c.id_categoria
-                        WHERE A.id_evento_calendario = ${ id_evento }
+                        WHERE ${ ( id_evento !== undefined ) ? `A.id_evento = ${ id_evento }` : `` }
                             ${ ( id_categoria !== undefined ) ? `AND C.id_categoria = ${ id_categoria }` : `` }`
         const inscripciones = await prisma.$queryRawUnsafe( query )
         const cantInscripciones = inscripciones.length;

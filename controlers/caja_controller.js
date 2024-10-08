@@ -165,27 +165,54 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
                                                                                         fecha_operacion : true,
                                                                                         estado : true
                                                                                     }
-                                                                                }
+                                                                                },
+                                                                                cliente : {
+                                                                                    select :{
+                                                                                        nombre : true,
+                                                                                        apellido : true
+                                                                                    }
+                                                                                },
                                                                             }
                                                                         } );
-        const movimientosDeCaja = movimientos_de_caja.map( element =>({
-            idCaja : element.id_caja,
-            idTipoPago : element.id_tipo_pago,
-            descripcion : element.descripcion,
-            tipoMovimiento : ( element.id_venta === null ) ? 'VENTA' : 'COMPRA',
-            nroFactura : element.nro_factura,
-            nroComprobante : element.nro_comprobante,
+
+        //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
+
+        if ( movimientos_de_caja.length === 0  ){
+
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No se obtuvo ningun movimiento entre esas fechas',
+                descipcion : `No hay ningun movimientos para esas fechas`
+            } ); 
+
+
+        }else {
+            const movimientosDeCaja = movimientos_de_caja.map( element =>({
+                idCaja : element.id_caja,
+                idTipoPago : element.id_tipo_pago,
+                descripcion : element.descripcion,
+                tipoMovimiento : ( element.id_venta === null ) ? 'COMPRA' : 'VENTA',
+                idCompra : element.id_compra,
+                idVenta : element.id_venta,
+                nroFactura : element.nro_factura,
+                nroComprobante : element.nro_comprobante,
+                fechaOperacion : element.fecha_operacion,
+                cedulaCliente : element.cedula,
+                cliente : ` ${ element.cliente.nombre }, ${ element.cliente.apellido }`
+
+                
+            }));
+
             
-        }));
+            res.status( 200 ).json( {
+                status : true,
+                msg : 'movimientos de caja',
+                movimientosDeCaja
+                //descipcion : `No existe ninguna venta generada para ese cliente`
+            } ); 
+        }
 
 
-
-        res.status( 200 ).json( {
-            status : true,
-            msg : 'movimientos de caja',
-            movimientosDeCaja
-            //descipcion : `No existe ninguna venta generada para ese cliente`
-        } ); 
 
         
     } catch (error) {

@@ -60,6 +60,7 @@ const { cron_job_genera_gastos_fijos } = require( '../helpers/cron_job_genera_cu
 const router_caja_chica = require('../routes/caja_chica_routes');
 const router_parametros = require('../routes/parametros_routes');
 const router_caja = require('../routes/caja_routes');
+const { router_compras } = require('../routes/compras_routes');
 //----------------------------------------------------------------------------
 
 
@@ -183,7 +184,7 @@ class Server {
         
         this.app.use( rutas.ventas.ruta, router_pagos );
 
-        
+        this.app.use( rutas.compras.ruta, router_compras );        
     
     }
 

@@ -58,10 +58,10 @@ model cuotas_socio {
 model eventos {
   id_evento          Int             @id(map: "eventos_pk") @default(autoincrement())
   id_tipo_evento     Int
-  fecha_desde_evento DateTime        @db.Timestamp(6)
+  fecha_desde_evento DateTime        @unique(map: "eventos_idx1") @db.Timestamp(6)
   eventocreadoen     DateTime?       @db.Date
   eventoeditadoen    DateTime?       @db.Date
-  fecha_hasta_evento DateTime        @db.Timestamp(6)
+  fecha_hasta_evento DateTime        @unique(map: "eventos_idx2") @db.Timestamp(6)
   estadoevento       String?         @db.VarChar(20)
   decripcion_evento  String?         @db.VarChar(255)
   nombre_evento      String?         @db.VarChar(255)
@@ -72,22 +72,26 @@ model eventos {
   tipos_evento       tipos_evento    @relation(fields: [id_tipo_evento], references: [id_tipo_evento], onDelete: NoAction, onUpdate: NoAction, map: "tipos_evento_eventos_fk")
   inscripciones      inscripciones[]
   insumos            insumos[]
+
+  @@index([fecha_desde_evento], map: "eventos_idx")
 }
 
 model inscripciones {
-  id_inscripcion       BigInt     @id(map: "inscripciones_pk")
+  id_inscripcion       Int        @id(map: "inscripciones_pk") @default(autoincrement())
   id_cliente           Int
   id_categoria         Int
+  id_evento            Int
   desc_inscripcion     String?    @db.VarChar(255)
   fecha_inscripcion    DateTime   @db.Date
   abonado              Boolean
   inscripcioncreadoen  DateTime?  @db.Date
   estadoinscripcion    Int?       @db.SmallInt
   inscripcioneditadoen DateTime?  @db.Date
-  id_evento            Int
+  costo_inscripcion    Int?
   categorias           categorias @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "categorias_inscripciones_fk")
   eventos              eventos    @relation(fields: [id_evento], references: [id_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_inscripciones_fk")
   cliente              cliente    @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_inscripciones_fk")
+  ventas               ventas[]
 }
 
 model mesas {
@@ -212,7 +216,6 @@ model categorias {
   eventos          eventos         @relation(fields: [id_evento], references: [id_evento], onDelete: NoAction, onUpdate: NoAction, map: "eventos_categorias_fk")
   inscripciones    inscripciones[]
   reglas_evento    reglas_evento[]
-  ventas           ventas[]
 }
 
 model caja_chica {
@@ -349,7 +352,7 @@ model ventas {
   id_cliente        Int
   id_cuota_socio    Int?
   id_socio_reserva  Int?
-  id_categoria      Int?
+  id_inscripcion    Int?
   estado            Boolean           @default(false)
   monto             Int
   fecha_operacion   DateTime?         @db.Timestamp(6)
@@ -360,9 +363,9 @@ model ventas {
   editado_en        DateTime?         @db.Timestamp(6)
   cedula            String?           @db.VarChar(255)
   movimiento_caja   movimiento_caja[]
-  categorias        categorias?       @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "categorias_ventas_fk")
   cliente           cliente           @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_ventas_fk")
   cuotas_socio      cuotas_socio?     @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
+  inscripciones     inscripciones?    @relation(fields: [id_inscripcion], references: [id_inscripcion], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_ventas_fk")
   reservas          reservas?         @relation(fields: [id_socio_reserva], references: [id_socio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
 
   @@index([cedula], map: "ventas_cedula_cliente_index")

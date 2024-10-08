@@ -19,21 +19,52 @@ const obtener_compras_club = async ( req = request, res = response ) =>{
                                                                     estado : true,
                                                                     fecha_operacion : true,
 
+                                                                },
+                                                                skip : (Number(pagina) - 1) * Number(cantidad),
+                                                                take : Number(cantidad),
+                                                                where : {
+                                                                    estado : false //que aun no se completo el circuito de compras
                                                                 }
+
                                                             } );
 
+        if ( compras_club.length > 0 ) {
+
+            const compras = compras_club.map(element =>({
+                idCompra : element.id_compra,
+                fechaGeneracion : element.fecha_operacion,
+    
+                
+            }) );
+    
+            res.status( 200 ).json( {
+                status : true,
+                msg : 'Ventas de ese cliente',
+                compras
+                //descipcion : `No existe ninguna venta generada para ese cliente`
+            } ); 
 
 
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No se lograron obtener las Compras del club',
+                descipcion : `No existe ninguna compra generada por el club`
+            } ); 
+        }
+
+        
         
     } catch (error) {
 
-        console.log( error );
+        //console.log( error );
+        res.status( 500 ).json( { 
+            status : false,
+            msg : `No se pudo obtener las compras generadas por el club`,
+            //error
+        } );
         
     }
-
-
-
-
 
 }
 
@@ -80,7 +111,7 @@ const generar_compras_club = async ( req = request, res = response ) =>{
         console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : 'Ha ocurrido un error al comprobar el pago'
+            msg : 'Ha ocurrido un error al comprobar las compras del club'
         } );
     }
 

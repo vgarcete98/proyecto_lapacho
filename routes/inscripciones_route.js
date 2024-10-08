@@ -1,5 +1,5 @@
 const Router = require( 'express' )
-
+const { request, response } = require('express')
 
 // VALIDADORES 
 //------------------------------------------------------------------------
@@ -16,6 +16,9 @@ const {
         obtener_ganancias_gastos_x_evento,
         ver_todas_las_inscripciones_x_evento} = require( '../controlers/inscripciones_controller' );
 const { obtener_data_socio } = require('../helpers/verficar_socio_carga');
+const { verificar_requerimientos_usuario } = require('../middlewares/verficar_requerimientos_usuario');
+const { verificar_existencia_evento } = require('../middlewares/verificar_existencia_evento');
+const { verificar_inscripcion_a_evento } = require('../middlewares/verficar_inscripcion_a_evento');
 
 
 
@@ -37,7 +40,19 @@ router_inscripciones.put( '/editar_inscripcion',[ obtener_data_socio ], editar_i
 
 router_inscripciones.put( '/abonar_x_inscripcion',[ obtener_data_socio  ], abonar_x_inscripcion );
 
-router_inscripciones.post( '/inscribirse_a_evento',[ obtener_data_socio ], inscribirse_a_evento );
+router_inscripciones.post( '/inscribirse_a_evento',
+                                [ verificar_existencia_evento, obtener_data_socio, verificar_requerimientos_usuario, verificar_inscripcion_a_evento  ], 
+                                ( req = request, res = response ) => {
+
+                                        const { acceso } = req.body;
+                                        if ( acceso === 'ADMINISTRADOR' ) { 
+                                                return inscribirse_a_evento( req , res )
+                                        }else {
+                                                return res.status( 200 ).json({
+                                                        msg : 'El usuario no es admin'
+                                                })
+                                        }
+                                } );
 
 router_inscripciones.get( '/ver_todas_inscripciones_x_evento',[  ], ver_todas_las_inscripciones_x_evento );
 

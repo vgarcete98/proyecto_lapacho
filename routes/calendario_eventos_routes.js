@@ -33,7 +33,7 @@ router_eventos.get( '/eventos_annio', [ ], obtener_eventos_calendario );
 
 router_eventos.get( '/', [ ], obtener_eventos_x_fecha_calendario );
 
-router_eventos.get ( '/eventos_mes', [ ], obtener_eventos_del_mes );
+router_eventos.get ( '/eventos_con_categoria', [ ], obtener_eventos_del_mes );
 
 router_eventos.post ( '/eventos_mes_todos', [ verificar_vista_usuario ], obtener_todos_los_eventos_calendario );
 

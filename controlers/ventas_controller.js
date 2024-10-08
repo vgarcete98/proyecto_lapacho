@@ -84,6 +84,77 @@ const eliminar_venta_servicios = async (  req = request, res = response  ) =>{
 
     try {
         
+        const { ventas } = req.body;
+
+        let ventas_anuladas = 0;
+        let servicios_cancelados = 0;
+        let query_cancela_servicio = ``;
+        for (const element of ventas) {
+            try {
+                
+
+                //VAMOS A ANULAR SOLAMENTE LA VENTA POR EL MOMENTO 
+                // A VER SI ES QUE INCLUIMOS LA ANULACION 
+
+                let { idVenta, idSocioCuota, idReserva, idInscripcion } = element;
+                let venta_anulada = await prisma.ventas.update( { 
+                                                                    data : {
+                                                                        estado : false
+                                                                    }, 
+                                                                    where : {
+                                                                        id_venta : Number( idVenta )
+                                                                    } 
+                                                            } );
+                
+                if ( venta_anulada !== null ){
+
+                    
+                    query_cancela_servicio = `UPDATE 
+                                                    ${ (idSocioCuota !== null ) ? `` :  `` }
+                                                    ${ (idReserva !== null ) ? `RESERVAS` :  `` }
+                                                    ${ (idInscripcion !== null ) ? `INSCRIPCIONES` :  `` }
+                                                SET ABONADO = FALSE,
+                                                CANCELADO = TRUE
+                                                WHERE ${ (idSocioCuota !== null ) ? `` :  `` }
+                                                ${ (idReserva !== null ) ? `ID_SOCIO_RESERVA = ${idReserva}` :  `` }
+                                                ${ (idInscripcion !== null ) ? `ID_INSCRIPCION = ${ idInscripcion }` :  `` }`;
+                    
+                    let cancelacion = await prisma.$executeRawUnsafe( query );
+                    ventas_anuladas += 1;
+
+                    ( cancelacion > 0 ) ? servicios_cancelados += 1 : console.log( `No se cancelo el servicio` );
+
+                }
+
+
+
+                if ( ventas_anuladas === ventas.length && servicios_cancelados === ventas.length ){
+
+                    res.status( 200 ).json( {
+                        status : true,
+                        msg : 'Se han anulado la totalidad de ventas de ese cliente',
+                        descripcion : 'Todas las ventas fueron anuladas exitosamente '
+                        //descipcion : `No existe ninguna venta generada para ese cliente`
+                    } ); 
+        
+        
+                }else {
+                    res.status( 400 ).json( {
+                        status : false,
+                        msg : 'Se han anulado la totalidad de ventas de ese cliente',
+                        descripcion : 'Todas las ventas fueron anuladas exitosamente '
+                        //descipcion : `No existe ninguna venta generada para ese cliente`
+                    } ); 
+                }
+                
+
+
+            } catch (error) {
+                
+            }
+        }
+
+
     } catch (error) {
         
     }
@@ -113,6 +184,7 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
             select: {
               id_cuota_socio: true,
               id_socio_reserva: true,
+              id_inscripcion : true,
               estado: true,
               fecha_operacion: true,
               monto: true,
@@ -123,9 +195,14 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
                     OR: [
                             // Si `id_cliente` está definido, se incluye esta condición
                             id_cliente ? { id_cliente: Number(id_cliente) } : undefined,
+                            nro_cedula ? { cedula : nro_cedula } : undefined,
                             // Se verifica si `otros_clientes` no está vacío
                             (ventas_dependientes.length !== 0 ) ? { id_cliente: { in: otros_clientes } } : undefined,
                     ].filter(Boolean),  // Elimina valores indefinidos dentro del OR
+
+                    AND : [
+                        { estado : false }//que todavia no se pago o algo asi
+                    ]
                 },  // Elimina valores indefinidos dentro del AND
                 skip : (Number(pagina) - 1) * Number(cantidad),
                 take : Number(cantidad),
@@ -139,12 +216,11 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
                 idCliente : element.id_cliente,
                 idSocioCuota : element.id_cuota_socio,
                 idReserva : element.id_socio_reserva,
+                idInscripcion : element.id_inscripcion,
                 nroCedula : element.cedula,
                 fechaOperacion : element.fecha_operacion,
                 monto : element.monto,
                 estado : element.estado,
-
-                
             }));
             res.status( 200 ).json( {
                 status : true,
