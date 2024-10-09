@@ -190,7 +190,8 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
                     let { descripcion, id_cliente, id_cuota_socio, monto_cuota, cliente} = cuota;
                     let { cedula } = cliente;
                     query = `INSERT INTO public.ventas( id_cuota_socio, 
-                                                        id_socio_reserva, 
+                                                        id_cliente_reserva,
+                                                        id_inscripcion, 
                                                         id_cliente, 
                                                         estado, 
                                                         monto, 
@@ -202,8 +203,9 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
                                                         VALUES(
                                                         ${Number( id_cuota_socio )},
                                                         ${"NULL"},
+                                                        ${"NULL"},
                                                         ${ Number(id_cliente) },
-                                                        ${ "FALSE" },
+                                                        '${ "PENDIENTE" }',
                                                         ${ monto_cuota },
                                                         ${ "NOW()" },
                                                         ${"NOW()"},

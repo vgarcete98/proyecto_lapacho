@@ -183,8 +183,9 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
         ventas = await prisma.ventas.findMany({
             select: {
               id_cuota_socio: true,
-              id_socio_reserva: true,
+              id_cliente_reserva: true,
               id_inscripcion : true,
+              descripcion_venta : true,
               estado: true,
               fecha_operacion: true,
               monto: true,
@@ -201,7 +202,7 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
                     ].filter(Boolean),  // Elimina valores indefinidos dentro del OR
 
                     AND : [
-                        { estado : false }//que todavia no se pago o algo asi
+                        { estado : { in : [ 'PENDIENTE', 'PENDIENTE DE PAGO' ] } }//que todavia no se pago o algo asi
                     ]
                 },  // Elimina valores indefinidos dentro del AND
                 skip : (Number(pagina) - 1) * Number(cantidad),
@@ -215,6 +216,7 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
                 idVenta : element.id_venta,
                 idCliente : element.id_cliente,
                 idSocioCuota : element.id_cuota_socio,
+                descripcionVenta : element.descripcion_venta,
                 idReserva : element.id_socio_reserva,
                 idInscripcion : element.id_inscripcion,
                 nroCedula : element.cedula,

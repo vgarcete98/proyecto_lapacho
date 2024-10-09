@@ -5,9 +5,6 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient();
 
 
-
-
-
 const verificar_existe_caja_abierta = async ( req = request, res = response, next )=>{
 
     try {

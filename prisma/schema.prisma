@@ -48,7 +48,7 @@ model cuotas_socio {
   pago_realizado       Boolean?           @default(false)
   fecha_pago_realizado DateTime?          @db.Date
   monto_cuota          Int
-  abonado              Boolean?
+  estado               String             @db.VarChar(50)
   precio_cuota         precio_cuota?      @relation(fields: [id_precio_cuota], references: [id_precio_cuota], onDelete: NoAction, onUpdate: NoAction, map: "precio_cuota_cuotas_socio_fk")
   cliente              cliente            @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_cuotas_socio_fk")
   vencimiento_cuotas   vencimiento_cuotas @relation(fields: [id_vencimiento], references: [id_vencimiento], onDelete: NoAction, onUpdate: NoAction, map: "vencimiento_cuotas_cuotas_socio_fk")
@@ -83,9 +83,8 @@ model inscripciones {
   id_evento            Int
   desc_inscripcion     String?    @db.VarChar(255)
   fecha_inscripcion    DateTime   @db.Date
-  abonado              Boolean
+  estado               String     @db.VarChar(50)
   inscripcioncreadoen  DateTime?  @db.Date
-  estadoinscripcion    Int?       @db.SmallInt
   inscripcioneditadoen DateTime?  @db.Date
   costo_inscripcion    Int?
   categorias           categorias @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "categorias_inscripciones_fk")
@@ -102,22 +101,23 @@ model mesas {
 }
 
 model reservas {
-  id_socio_reserva  Int              @id(map: "reservas_pk") @default(autoincrement())
-  id_cliente        Int
-  id_mesa           BigInt
-  id_precio_reserva Int?
-  monto             Int
-  fecha_reserva     DateTime?        @db.Timestamp(6)
-  reserva_editada   DateTime?        @db.Date
-  creado_por        Int
-  creado_en         DateTime         @db.Timestamp(6)
-  fecha_creacion    DateTime         @db.Date
-  hora_desde        DateTime         @db.Timestamp(6)
-  hora_hasta        DateTime         @db.Timestamp(6)
-  mesas             mesas            @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reservas_fk")
-  precio_reservas   precio_reservas? @relation(fields: [id_precio_reserva], references: [id_precio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "precio_reservas_reservas_fk")
-  cliente           cliente          @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_socio_reservas_fk")
-  ventas            ventas[]
+  id_cliente_reserva Int              @id(map: "reservas_pk") @default(autoincrement())
+  id_cliente         Int
+  id_mesa            BigInt
+  id_precio_reserva  Int?
+  monto              Int
+  fecha_reserva      DateTime?        @db.Timestamp(6)
+  reserva_editada    DateTime?        @db.Date
+  creado_por         Int
+  creado_en          DateTime         @db.Timestamp(6)
+  fecha_creacion     DateTime         @db.Date
+  hora_desde         DateTime         @db.Timestamp(6)
+  hora_hasta         DateTime         @db.Timestamp(6)
+  estado             String           @db.VarChar(50)
+  mesas              mesas            @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reservas_fk")
+  precio_reservas    precio_reservas? @relation(fields: [id_precio_reserva], references: [id_precio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "precio_reservas_reservas_fk")
+  cliente            cliente          @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_socio_reservas_fk")
+  ventas             ventas[]
 }
 
 model roles_usuario {
@@ -255,10 +255,8 @@ model cliente {
   id_tipo_socio      Int?
   parent_id_cliente  Int?
   id_rol_usuario     Int?
-  tipo_usuario       String?              @default(dbgenerated("1")) @db.VarChar(255)
-  nombre_usuario     String?              @db.VarChar(255)
   password           String?              @db.VarChar(255)
-  estado_usuario     Int?                 @default(1) @db.SmallInt
+  estado_usuario     String?              @db.VarChar(50)
   apellido           String               @db.VarChar(255)
   nombre             String               @db.VarChar(255)
   cedula             String               @unique(map: "cliente_cedula_index") @db.VarChar(255)
@@ -269,10 +267,10 @@ model cliente {
   numero_telefono    String?              @db.VarChar(255)
   direccion          String?              @default("") @db.VarChar(255)
   ruc                String?              @default("") @db.VarChar(255)
-  estado_socio       Int?                 @default(1) @db.SmallInt
   editadoen          DateTime?            @db.Timestamp(6)
   es_socio           Boolean?             @default(true)
   eliminadoen        DateTime?            @db.Timestamp(6)
+  nombre_usuario     String?              @db.VarChar(50)
   agendamiento_clase agendamiento_clase[]
   caja               caja[]
   caja_chica         caja_chica[]
@@ -308,7 +306,7 @@ model compras {
   id_cliente      Int
   id_insumo       Int?
   descripcion     String            @db.VarChar(200)
-  estado          Boolean           @default(false)
+  estado          String            @db.VarChar(50)
   creado_en       DateTime          @db.Timestamp(6)
   creado_por      Int
   editado_en      DateTime?         @db.Timestamp(6)
@@ -348,25 +346,25 @@ model movimiento_caja {
 }
 
 model ventas {
-  id_venta          Int               @id(map: "ventas_pk") @default(autoincrement())
-  id_cliente        Int
-  id_cuota_socio    Int?
-  id_socio_reserva  Int?
-  id_inscripcion    Int?
-  estado            Boolean           @default(false)
-  monto             Int
-  fecha_operacion   DateTime?         @db.Timestamp(6)
-  creado_en         DateTime          @db.Timestamp(6)
-  descripcion_venta String            @db.VarChar(255)
-  creado_por        Int
-  editado_por       Int?
-  editado_en        DateTime?         @db.Timestamp(6)
-  cedula            String?           @db.VarChar(255)
-  movimiento_caja   movimiento_caja[]
-  cliente           cliente           @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_ventas_fk")
-  cuotas_socio      cuotas_socio?     @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
-  inscripciones     inscripciones?    @relation(fields: [id_inscripcion], references: [id_inscripcion], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_ventas_fk")
-  reservas          reservas?         @relation(fields: [id_socio_reserva], references: [id_socio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
+  id_venta           Int               @id(map: "ventas_pk") @default(autoincrement())
+  id_cliente         Int
+  id_cuota_socio     Int?
+  id_cliente_reserva Int?
+  id_inscripcion     Int?
+  estado             String            @db.VarChar(50)
+  monto              Int
+  fecha_operacion    DateTime?         @db.Timestamp(6)
+  creado_en          DateTime          @db.Timestamp(6)
+  descripcion_venta  String            @db.VarChar(255)
+  creado_por         Int
+  editado_por        Int?
+  editado_en         DateTime?         @db.Timestamp(6)
+  cedula             String?           @db.VarChar(255)
+  movimiento_caja    movimiento_caja[]
+  cliente            cliente           @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_ventas_fk")
+  cuotas_socio       cuotas_socio?     @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
+  inscripciones      inscripciones?    @relation(fields: [id_inscripcion], references: [id_inscripcion], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_ventas_fk")
+  reservas           reservas?         @relation(fields: [id_cliente_reserva], references: [id_cliente_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
 
   @@index([cedula], map: "ventas_cedula_cliente_index")
 }

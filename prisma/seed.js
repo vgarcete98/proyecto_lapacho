@@ -364,7 +364,7 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                 pago_realizado, 
                                                                 fecha_pago_realizado, 
                                                                 monto_cuota, 
-                                                                abonado)
+                                                                estado)
                                                                 VALUES (
                                                                   NEW.id_cliente, 
                                                                   (SELECT ID_VENCIMIENTO FROM VENCIMIENTO_CUOTAS WHERE VALIDO = TRUE LIMIT 1), 
@@ -375,7 +375,7 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                   FALSE,
                                                                   NULL,
                                                                   monto_cuota_socio,
-                                                                  FALSE
+                                                                  'PENDIENTE'
                                                                 );
 
                                                                     -- Incrementa el bucle en un mes
@@ -427,30 +427,30 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                             { 
                                                               nombre : "Victor", apellido : "Garcete", 
                                                               cedula : '4365710', fecha_nacimiento : generar_fecha( '29/05/2023' ) ,
-                                                              id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
+                                                              id_tipo_socio : 1, creadoen : new Date(), estado_usuario : 'ACTIVO',
                                                               nombre_cmp : "Victor Garcete", numero_telefono : "0985552004",
-                                                              nombre_usuario : "v_garcete", password : encriptar_password("12345678"), estado_usuario : 1, 
-                                                              creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 2,
+                                                              nombre_usuario : "v_garcete", password : encriptar_password("12345678"), 
+                                                              creadoen : new Date(), id_rol_usuario : 2,
                                                               es_socio : true
                                                             },
 
                                                             { 
                                                               nombre : "ADMINISTRADOR_CLUB", apellido : "----------------", 
                                                               cedula : '12345678', fecha_nacimiento : new Date(),
-                                                              id_tipo_socio : 4, creadoen : new Date(), estado_socio : 1,
+                                                              id_tipo_socio : 4, creadoen : new Date(), estado_usuario : 'ACTIVO',
                                                               nombre_cmp : "ADMINISTRADOR CLUB", numero_telefono : "----------",
-                                                              nombre_usuario : "ADMINISTRADOR_CLUB", password : encriptar_password(pass_admin) , estado_usuario : 1, 
-                                                              creadoen : new Date(), tipo_usuario : "ACTIVO", id_rol_usuario : 1,
+                                                              nombre_usuario : "ADMINISTRADOR_CLUB", password : encriptar_password(pass_admin) , 
+                                                              creadoen : new Date(), id_rol_usuario : 1,
                                                               es_socio : true
                                                             },
 
                                                             {
                                                               nombre : "Lucas", apellido : "Torres", 
                                                               cedula : '1111111', fecha_nacimiento : generar_fecha( '13/05/2000' ),  
-                                                              id_tipo_socio : 1, creadoen : new Date(), estado_socio : 1,
+                                                              id_tipo_socio : 1, creadoen : new Date(), estado_usuario : "SUSPENDIDO",
                                                               nombre_cmp : "Lucas Torres", numero_telefono : "------------",
-                                                              nombre_usuario : "lucas.torres", password : encriptar_password("12345678"), estado_usuario : 2, 
-                                                              creadoen : new Date(), tipo_usuario : "SUSPENDIDO" , id_rol_usuario : 1 ,
+                                                              nombre_usuario : "lucas.torres", password : encriptar_password("12345678"),
+                                                              creadoen : new Date(), id_rol_usuario : 1 ,
                                                               es_socio : true
                                                             }
                                                           ] 
@@ -531,15 +531,16 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                           } );
 
 
-     //VOY A CREAR UNAS CUANTAS RESERVAS PARA LAS PRUEBAS QUE HAY QUE HACER
-  const reservas = await prisma.reservas.createMany( { data : 
-                                                          [
-                                                            { creado_en : new Date(), creado_por : 1, hora_desde : new Date('2024-06-17T17:00:00.000Z'), hora_hasta : new Date('2024-06-17T18:00:00.000Z'), id_cliente : 2, id_mesa : 1, monto : 30000, id_precio_reserva : 1, fecha_reserva : new Date(), fecha_creacion : new Date()  },
-                                                            { creado_en : new Date(), creado_por : 1, hora_desde : new Date('2024-09-16T17:00:00.000Z'), hora_hasta : new Date('2024-06-17T18:00:00.000Z'), id_cliente : 1, id_mesa : 2, monto : 30000, id_precio_reserva : 1, fecha_reserva : new Date(), fecha_creacion : new Date()  },
-                                                            { creado_en : new Date(), creado_por : 1, hora_desde : new Date('2024-09-17T17:00:00.000Z'), hora_hasta : new Date('2024-09-17T19:00:00.000Z'), id_cliente : 2, id_mesa : 3, monto : 30000, id_precio_reserva : 1, fecha_reserva : new Date(), fecha_creacion : new Date()  },
-                                                          ]
-
-                                                      } );                                                                      
+  const precio_reserva = await prisma.precio_reservas.create( { data : { monto_reserva : 30000, creado_en : new Date(), valido : true,  } } )
+  //VOY A CREAR UNAS CUANTAS RESERVAS PARA LAS PRUEBAS QUE HAY QUE HACER
+  //const reservas = await prisma.reservas.createMany( { data : 
+  //                                                        [
+  //                                                          { creado_en : new Date(), creado_por : 1, hora_desde : new Date('2024-06-17T17:00:00.000Z'), hora_hasta : new Date('2024-06-17T18:00:00.000Z'), id_cliente : 2, id_mesa : 1, monto : 30000, id_precio_reserva : 1, fecha_reserva : new Date(), fecha_creacion : new Date()  },
+  //                                                          { creado_en : new Date(), creado_por : 1, hora_desde : new Date('2024-09-16T17:00:00.000Z'), hora_hasta : new Date('2024-06-17T18:00:00.000Z'), id_cliente : 1, id_mesa : 2, monto : 30000, id_precio_reserva : 1, fecha_reserva : new Date(), fecha_creacion : new Date()  },
+  //                                                          { creado_en : new Date(), creado_por : 1, hora_desde : new Date('2024-09-17T17:00:00.000Z'), hora_hasta : new Date('2024-09-17T19:00:00.000Z'), id_cliente : 2, id_mesa : 3, monto : 30000, id_precio_reserva : 1, fecha_reserva : new Date(), fecha_creacion : new Date()  },
+  //                                                        ]
+  //
+  //                                                    } );                                                                      
   //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 }
 

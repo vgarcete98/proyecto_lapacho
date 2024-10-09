@@ -436,10 +436,10 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                     //OK ACTUALIZO EL ESTADO DE LA VENTA A PAGADO
                     let actualiza_venta = await prisma.ventas.update( { 
                                                                         data : { 
-                                                                                    estado : true, 
+                                                                                    estado : 'PAGADO', 
                                                                                     editado_en : new Date( ),
                                                                                     editado_por : 1, //ESTO HAY QUE CAMBIAR LUEGO
-    
+                                                                                    
                                                                                 }, 
                                                                         where : { id_venta : Number( idVenta ) } 
                                                                     } );
