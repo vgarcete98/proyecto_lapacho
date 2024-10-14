@@ -57,7 +57,6 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                         password : contraseña,//encriptar_password(contraseña),
                                                                         nombre_usuario : nombreUsuario,
                                                                         id_rol_usuario : idAcceso,
-                                                                        tipo_usuario : '',
                                                                         es_socio : true },
                                                             create : { 
                                                                 nombre : nombre,
@@ -71,11 +70,10 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                 ruc : ruc,
                                                                 nombre_cmp : `${ nombre } ${ apellido }`,
                                                                 creadoen : new Date(),
-                                                                estado_socio : estados_socio.activo.descripcion,
+                                                                estado_usuario : estados_socio.activo.descripcion,
                                                                 password : contraseña,//encriptar_password(contraseña),
                                                                 nombre_usuario : nombreUsuario,
                                                                 id_rol_usuario : idAcceso,
-                                                                tipo_usuario : '',
                                                                 es_socio : true
                                                             }
                                                     } );
@@ -112,11 +110,10 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                         ruc : dependientes[element].ruc,
                                                                         nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                                         creadoen : new Date (),
-                                                                        estado_socio : estados_socio.activo.descripcion,
+                                                                        estado_usuario : estados_socio.activo.descripcion,
                                                                         password : dependientes[element].contraseña,//encriptar_password(dependientes[element].contraseña),
                                                                         nombre_usuario : dependientes[element].nombreUsuario,
                                                                         id_rol_usuario : dependientes[element].idAcceso,
-                                                                        tipo_usuario : '',
                                                                         parent_id_cliente : idClienteTitular,
                                                                         es_socio : true
                                                                     },
@@ -132,11 +129,10 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                         ruc : dependientes[element].ruc,
                                                                         nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                                         creadoen : new Date (),
-                                                                        estado_socio : estados_socio.activo.descripcion,
+                                                                        estado_usuario : estados_socio.activo.descripcion,
                                                                         password : dependientes[element].contraseña, //encriptar_password(dependientes[element].contraseña),
                                                                         nombre_usuario : dependientes[element].nombreUsuario,
                                                                         id_rol_usuario : dependientes[element].idAcceso,
-                                                                        tipo_usuario : '',
                                                                         parent_id_cliente : idClienteTitular,
                                                                         es_socio : true,  
                                                                     }
@@ -223,7 +219,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                                     ruc : rucNuevo,
                                                                     //tipo_socio : tipoSocio,
                                                                     numero_telefono : numeroTel,
-                                                                    estado_socio : estadoSocio,
+                                                                    estado_usuario : estadoSocio,
                                                                     direccion : direccion
                                                                 }
                                                             } );
@@ -259,7 +255,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                                             ruc : dependientes[element].ruc,
                                                                             nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                                             creadoen : dependientes[element].fecha_creacion_socio,
-                                                                            estado_socio : estados_socio.activo.descripcion,
+                                                                            estado_usuario : estados_socio.activo.descripcion,
                                                                             password : encriptar_password(dependientes[element].contraseña),
                                                                             nombre_usuario : dependientes[element].nombreUsuario,
                                                                             id_rol_usuario : dependientes[element].idAcceso,
@@ -285,7 +281,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                     ruc : dependientes[element].ruc,
                                                     nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                     creadoen : dependientes[element].fecha_creacion_socio,
-                                                    estado_socio : estados_socio.activo.descripcion,
+                                                    estado_usuario : estados_socio.activo.descripcion,
                                                     password : encriptar_password(dependientes[element].contraseña),
                                                     nombre_usuario : dependientes[element].nombreUsuario,
                                                     id_rol_usuario : dependientes[element].idAcceso,
@@ -339,14 +335,14 @@ const borrar_socio = async ( req = request, res = response ) => {
         const fecha_edicion = new Date();
         const socio_actualizado = await prisma.cliente.update( { 
                                                                 data : {
-                                                                    estado_socio : estados_socio.eliminado.id_estado,
+                                                                    estado_usuario : estados_socio.eliminado.descripcion,
                                                                     editadoen : fecha_edicion
                                                                 },
                                                                 where : { id_cliente : Number(idCliente) }
                                                             } );
         const { editadoen, direccion, correo_electronico, 
-                numero_telefono, estado_socio, ruc,
-                nombre_cmp, id_cliente, id_tipo_socio, nombre_usuario, contrasea } = socio_actualizado;
+                numero_telefono, estado_usuario, ruc,
+                nombre_cmp, id_cliente, id_tipo_socio, nombre_usuario, password } = socio_actualizado;
 
         const [ nombre, apellido ] = nombre_cmp.split( ' ' );
        
@@ -467,7 +463,7 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
                                 A.ID_CLIENTE AS "idCliente", 
                                 A.RUC AS "ruc" ,
                                 A.CREADOEN AS "creadoEn", 
-                                A.CONTRASEA AS "contrasea",
+                                A.PASSWORD AS "contrasea",
                                 A.NOMBRE_USUARIO AS "nombreUsuario",
                                 A.FECHA_NACIMIENTO AS "fechaNacimiento",
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
@@ -475,11 +471,11 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
-                        WHERE A.ESTADO_SOCIO = ${ estados_socio.activo.id_estado }
+                        WHERE A.ESTADO_USUARIO = '${ estados_socio.activo.descripcion }'
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
-
+        console.log( query )
         let sociosFormateados = await prisma.$queryRawUnsafe( query ); 
         res.status(200).json({
             status: true,
@@ -529,7 +525,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
-                        WHERE A.ESTADO_SOCIO = ${ estados_socio.activo.id_estado }
+                        WHERE A.ESTADO_USUARIO = '${ estados_socio.activo.descripcion }'
                         ${ ( cedula !== undefined && cedula !== '' )? `AND A.CEDULA LIKE '%${ cedula }%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
@@ -577,7 +573,7 @@ const obtener_socio = async ( req = request, res = response ) => {
                                 A.ID_CLIENTE AS "idCliente", 
                                 A.RUC AS "ruc" ,
                                 A.CREADOEN AS "creadoEn", 
-                                A.CONTRASEA AS "contrasea",
+                                A.PASSWORD AS "contrasea",
                                 A.NOMBRE_USUARIO AS "nombreUsuario",
                                 A.FECHA_NACIMIENTO AS "fechaNacimiento",
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
