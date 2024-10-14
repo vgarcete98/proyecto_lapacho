@@ -509,34 +509,55 @@ const obtener_mesas_disponibles_x_horario = async ( req = request, res = respons
                                                                     where : {  
                                                                         horario_inicio : { gte : new Date( horaDesde ) },
                                                                         horario_hasta : { lte : new Date( horaHasta ) }
-                                                                    }
+                                                                    },
+                                                                    select : {
+                                                                        id_mesa : true
+                                                                    },
+                                                                    distinct : ['id_mesa']
                                                             } );
         
         let mesasDisponibles = [];
-        
-        const mesas = await prisma.mesas.findMany( );
+        let mesas = [];
+        if ( clases !== null && clases !== undefined && clases.length !== 0 ){
 
-        clases.forEach( ( element ) =>{
+            
+            mesas = await prisma.mesas.findMany( { 
+                                            where : { 
+                                                id_mesa : { notIn : clases.map(element => element.id_mesa) }
+                                            } 
+                                        } );
 
-            const { id_mesa } = element;
+            mesasDisponibles = mesas.map( element =>({
+                idMesa : element.id_mesa,
+                descMesa : element.desc_mesa
+            }));
 
-            mesas.forEach( ( element, index ) => { 
-                if ( element.id_mesa !== id_mesa ){
-                    mesasDisponibles.push( {
-                                                idMesa : (typeof(mesas[ index ].id_mesa) === 'bigint') ? Number( mesas[ index ].id_mesa.toString() ) : mesas[ index ].id_mesa,
-                                                descMesa : mesas[ index ].desc_mesa
-                                            } );
+    
+        }else {
+            mesas = await prisma.mesas.findMany( );
+            
+            mesasDisponibles = mesas.map( element =>({
+                idMesa : element.id_mesa,
+                descMesa : element.desc_mesa
+            }));
+            
+        }
 
-                }
+
+        if ( mesasDisponibles.length > 0  ) {
+
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Mesas disponibles en horario seleccionado",
+                mesasDisponibles
             } );
-        } );
-
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Mesas disponibles en horario seleccionado",
-            mesasDisponibles
-        } );
-
+        }else {
+            res.status( 400 ).json( {
+                status : true,
+                msg : "No se encuentran mesas disponibles para ese horario",
+                descripcion : "Ninguna mesa se encuentra libre, intentelo en otro horario"
+            } );
+        }
         
     } catch (error) {
         res.status( 500 ).json( {

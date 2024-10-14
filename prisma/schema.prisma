@@ -24,7 +24,7 @@ model agendamiento_clase {
   id_agendamiento    BigInt     @id(map: "agendamiento_clase_pk") @default(autoincrement())
   id_cliente         Int
   id_profesor        Int
-  id_mesa            BigInt
+  id_mesa            Int
   fecha_agendamiento DateTime?  @db.Date
   horario_inicio     DateTime   @db.Timestamp(6)
   horario_hasta      DateTime   @db.Timestamp(6)
@@ -94,7 +94,7 @@ model inscripciones {
 }
 
 model mesas {
-  id_mesa            BigInt               @id(map: "mesas_pk") @default(autoincrement())
+  id_mesa            Int                  @id(map: "mesas_pk") @default(autoincrement())
   desc_mesa          String               @db.VarChar(255)
   agendamiento_clase agendamiento_clase[]
   reservas           reservas[]
@@ -103,7 +103,7 @@ model mesas {
 model reservas {
   id_cliente_reserva Int              @id(map: "reservas_pk") @default(autoincrement())
   id_cliente         Int
-  id_mesa            BigInt
+  id_mesa            Int
   id_precio_reserva  Int?
   monto              Int
   fecha_reserva      DateTime?        @db.Timestamp(6)

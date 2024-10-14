@@ -53,7 +53,7 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                         ruc : ruc,
                                                                         nombre_cmp : `${ nombre } ${ apellido }`,
                                                                         creadoen : new Date(),
-                                                                        estado_socio : estados_socio.activo.id_estado,
+                                                                        estado_usuario : estados_socio.activo.descripcion,
                                                                         password : contraseña,//encriptar_password(contraseña),
                                                                         nombre_usuario : nombreUsuario,
                                                                         id_rol_usuario : idAcceso,
@@ -71,7 +71,7 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                 ruc : ruc,
                                                                 nombre_cmp : `${ nombre } ${ apellido }`,
                                                                 creadoen : new Date(),
-                                                                estado_socio : estados_socio.activo.id_estado,
+                                                                estado_socio : estados_socio.activo.descripcion,
                                                                 password : contraseña,//encriptar_password(contraseña),
                                                                 nombre_usuario : nombreUsuario,
                                                                 id_rol_usuario : idAcceso,
@@ -112,7 +112,7 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                         ruc : dependientes[element].ruc,
                                                                         nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                                         creadoen : new Date (),
-                                                                        estado_socio : estados_socio.activo.id_estado,
+                                                                        estado_socio : estados_socio.activo.descripcion,
                                                                         password : dependientes[element].contraseña,//encriptar_password(dependientes[element].contraseña),
                                                                         nombre_usuario : dependientes[element].nombreUsuario,
                                                                         id_rol_usuario : dependientes[element].idAcceso,
@@ -132,7 +132,7 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                         ruc : dependientes[element].ruc,
                                                                         nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                                         creadoen : new Date (),
-                                                                        estado_socio : estados_socio.activo.id_estado,
+                                                                        estado_socio : estados_socio.activo.descripcion,
                                                                         password : dependientes[element].contraseña, //encriptar_password(dependientes[element].contraseña),
                                                                         nombre_usuario : dependientes[element].nombreUsuario,
                                                                         id_rol_usuario : dependientes[element].idAcceso,
@@ -259,7 +259,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                                             ruc : dependientes[element].ruc,
                                                                             nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                                             creadoen : dependientes[element].fecha_creacion_socio,
-                                                                            estado_socio : estados_socio.activo.id_estado,
+                                                                            estado_socio : estados_socio.activo.descripcion,
                                                                             password : encriptar_password(dependientes[element].contraseña),
                                                                             nombre_usuario : dependientes[element].nombreUsuario,
                                                                             id_rol_usuario : dependientes[element].idAcceso,
@@ -285,7 +285,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                     ruc : dependientes[element].ruc,
                                                     nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                     creadoen : dependientes[element].fecha_creacion_socio,
-                                                    estado_socio : estados_socio.activo.id_estado,
+                                                    estado_socio : estados_socio.activo.descripcion,
                                                     password : encriptar_password(dependientes[element].contraseña),
                                                     nombre_usuario : dependientes[element].nombreUsuario,
                                                     id_rol_usuario : dependientes[element].idAcceso,
@@ -408,7 +408,7 @@ const obtener_socios = async ( req = request, res = response ) => {
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
                                 C.DESC_TIPO_SOCIO AS "descTipoSocio", 
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
-                                A.ESTADO_SOCIO AS "estadoSocio" 
+                                A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         ${ ( nombre !== undefined && nombre !== '' )? `AND UPPER( CONCAT (A.NOMBRE, ' ', A.APELLIDO) ) LIKE '%${nombre.toUpperCase()}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
@@ -473,7 +473,7 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
                                 C.DESC_TIPO_SOCIO AS "descTipoSocio", 
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
-                                A.ESTADO_SOCIO AS "estadoSocio" 
+                                A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         WHERE A.ESTADO_SOCIO = ${ estados_socio.activo.id_estado }
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
@@ -527,7 +527,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
                                 C.DESC_TIPO_SOCIO AS "descTipoSocio", 
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
-                                A.ESTADO_SOCIO AS "estadoSocio" 
+                                A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         WHERE A.ESTADO_SOCIO = ${ estados_socio.activo.id_estado }
                         ${ ( cedula !== undefined && cedula !== '' )? `AND A.CEDULA LIKE '%${ cedula }%'` : `` }
@@ -583,7 +583,7 @@ const obtener_socio = async ( req = request, res = response ) => {
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
                                 C.DESC_TIPO_SOCIO AS "descTipoSocio", 
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
-                                A.ESTADO_SOCIO AS "estadoSocio" 
+                                A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         ${ ( nombre !== undefined ) && (apellido === undefined )? `AND A.NOMBRE LIKE '%${nombre}%'` : `` }
                         ${ ( nombre === undefined ) && (apellido !== undefined )? `AND A.APELLIDO LIKE '%${apellido}%'` : `` }
@@ -621,14 +621,6 @@ const obtener_socio = async ( req = request, res = response ) => {
   
 
 }
-
-
-
-
-
-
-
-
 
 
 

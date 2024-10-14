@@ -34,34 +34,16 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
                                                                         data : {
                                                                             id_cliente : Number(idCliente),
                                                                             id_evento : Number(idEvento),
-                                                                            abonado : montoAbonado,
                                                                             inscripcioncreadoen : new Date(),
                                                                             id_categoria : Number( categoria.id_categoria ),
-                                                                            abonado : montoAbonado,
                                                                             fecha_inscripcion : new Date(),
                                                                             desc_inscripcion : descInscripcion,
-                                                                            costo_inscripcion : Number( categoria.costo )
+                                                                            costo_inscripcion : Number( categoria.costo ),
+                                                                            estado : 'AGREGAR A VENTA'
                                                                         } 
                                                                     } );
                 let nueva_venta = null;
                 if ( inscripcion !== null ){
-
-                    nueva_venta = await prisma.ventas.create( {
-                                                                data : {
-                                                                    creado_en : new Date(),
-                                                                    creado_por : 1,
-                                                                    descripcion_venta : `INSCRIPCION CATEGORIA ${ categoria.nombre_categoria }, ${cliente.nombre_cmp} `,
-                                                                    monto : Number( inscripcion.costo_inscripcion ),
-                                                                    estado : false,
-                                                                    fecha_operacion : new Date(),
-                                                                    cedula : cliente.cedula,
-                                                                    id_cliente : cliente.id_cliente,
-                                                                    id_inscripcion : inscripcion.id_inscripcion,
-                                                                    id_cuota_socio : null,
-                                                                    id_socio_reserva : null
-                                                                }
-                                                            } );
-                    ( nueva_venta !== null )? console.log( 'Venta registrada con exito' ) : console.log( 'No se registro la venta' );
 
                     inscripciones_registradas += 1;
 
@@ -274,9 +256,8 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
                                 A.id_evento AS "idEventoCalendario", 
                                 A.desc_inscripcion AS "descInscripcion", 
                                 A.fecha_inscripcion AS "fechaInscripcion", 
-                                A.abonado AS "abonado", 
                                 A.inscripcioncreadoen AS "inscripcionCreadoEn", 
-                                A.estadoinscripcion AS "estadoInscripcion", 
+                                A.estado AS "estadoInscripcion", 
                                 A.inscripcioneditadoen AS "inscripcionEditadoEn",
                                 B.nombre_cmp as "nombreSocio"--,
                                 --CONCAT( B.nombre, ' ', B.apellido ) as "nombreCmp",
@@ -602,6 +583,88 @@ const borrar_inscripcion_socio = async ( req = request, res = response ) =>{
 }
 
 
+
+
+const agregar_inscripciones_a_venta = async ( req = request, res = response ) =>{
+
+
+    try {
+        
+        const { inscripciones } = req.body;
+        
+        let inscripciones_añadidas = 0;
+
+
+        for (const element of inscripciones) {
+            
+            try {
+                let { idInscripcion } = element;
+                
+                let inscripcion = await prisma.inscripciones.findUnique( { where : { id_inscripcion : Number( idInscripcion ) } } );
+                let  { id_inscripcion, id_cliente, costo_inscripcion, fecha_inscripcion } = inscripcion;
+                let cliente = await prisma.cliente.findUnique( { where : { id_cliente : id_cliente } } );
+                let categoria = await prisma.categorias.findUnique( { where : { id_categoria : inscripcion.id_categoria } } )
+                if ( inscripcion !== null  ) { 
+
+                    let nueva_venta = await prisma.ventas.create( {
+                        data : {
+                            creado_en : new Date(),
+                            creado_por : 1,
+                            descripcion_venta : `INSCRIPCION CATEGORIA ${ categoria.nombre_categoria }, ${cliente.nombre_cmp} `,
+                            monto : Number( inscripcion.costo_inscripcion ),
+                            estado : 'PENDIENTE DE PAGO',
+                            fecha_operacion : new Date(),
+                            cedula : cliente.cedula,
+                            id_cliente : cliente.id_cliente,
+                            id_inscripcion : inscripcion.id_inscripcion,
+                            id_cuota_socio : null,
+                            id_cliente_reserva : null
+                        }
+                    } );
+                    ( nueva_venta !== null )? console.log( 'Venta registrada con exito' ) : console.log( 'No se registro la venta' );
+                    inscripciones_añadidas += 1;
+                }
+            } catch (error) {
+                console.log ( error )
+            }
+
+        }
+
+        if ( inscripciones_añadidas > 0 && inscripciones_añadidas ===  inscripciones.length){
+
+            res.status( 200 ).json(
+                {
+    
+                    status : true,
+                    msj : 'Ventas Creadas',
+                    descripcion : `Todas las Ventas fueron generadas con exito`
+                }
+            );   
+        }else {
+            res.status( 400 ).json(
+                {
+    
+                    status : true,
+                    msj : 'No se lograron crear todas las ventas que se adjunto',
+                    descripcion : `Ventas que fueron generadas con exito ${ inscripciones_añadidas }, Ventas fallidas ${ inscripciones.length - inscripciones_añadidas }`
+                }
+            ); 
+        }
+        
+        
+    } catch (error) {
+        //console.log ( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al generar la venta : ${ error }`,
+            //error
+        } );
+
+    }
+
+}
+
+
 module.exports = {
 
     abonar_x_inscripcion,
@@ -614,4 +677,5 @@ module.exports = {
     obtener_ganancias_gastos_x_evento,
     obtner_todas_inscripciones_x_evento,
     borrar_inscripcion_socio,
+    agregar_inscripciones_a_venta
 }

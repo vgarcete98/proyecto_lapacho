@@ -187,7 +187,7 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
 
 
         }else {
-            const movimientosDeCaja = movimientos_de_caja.map( element =>({
+            const movimientosDeCaja = movimientos_de_caja.map((element) =>({
                 idCaja : element.id_caja,
                 idTipoPago : element.id_tipo_pago,
                 descripcion : element.descripcion,
