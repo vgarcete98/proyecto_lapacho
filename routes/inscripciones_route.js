@@ -15,7 +15,10 @@ const {
         obtener_grafico_inscriptos_x_evento_categoria,
         obtener_ganancias_gastos_x_evento,
         ver_todas_las_inscripciones_x_evento,
-        agregar_inscripciones_a_venta} = require( '../controlers/inscripciones_controller' );
+        agregar_inscripciones_a_venta,
+        cerrar_inscripciones_de_evento} = require( '../controlers/inscripciones_controller' );
+
+const { verificar_edad, verificar_nivel, verificar_sexo } = require('../middlewares/reglas_para_eventos')
 const { obtener_data_socio } = require('../helpers/verficar_socio_carga');
 const { verificar_requerimientos_usuario } = require('../middlewares/verficar_requerimientos_usuario');
 const { verificar_existencia_evento } = require('../middlewares/verificar_existencia_evento');
@@ -45,7 +48,15 @@ router_inscripciones.put( '/editar_inscripcion',[ obtener_data_socio ], editar_i
 router_inscripciones.put( '/abonar_x_inscripcion',[ obtener_data_socio  ], abonar_x_inscripcion );
 
 router_inscripciones.post( '/inscribirse_a_evento',
-                                [ verificar_existencia_evento, obtener_data_socio, verificar_requerimientos_usuario, verificar_inscripcion_a_evento  ], 
+                                [ 
+                                        verificar_existencia_evento, 
+                                        obtener_data_socio, 
+                                        verificar_requerimientos_usuario, 
+                                        verificar_inscripcion_a_evento,
+                                        verificar_edad, 
+                                        verificar_nivel, 
+                                        verificar_sexo  
+                                ], 
                                 ( req = request, res = response ) => {
 
                                         const { acceso } = req.body;
@@ -59,6 +70,9 @@ router_inscripciones.post( '/inscribirse_a_evento',
                                 } );
 
 router_inscripciones.get( '/ver_todas_inscripciones_x_evento',[  ], ver_todas_las_inscripciones_x_evento );
+
+
+router_inscripciones.put( '/cerrar_inscripciones', [  ], cerrar_inscripciones_de_evento);
 
 
 

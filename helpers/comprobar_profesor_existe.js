@@ -6,8 +6,8 @@ const prisma = new PrismaClient();
 
 const comprobar_profesor_existe = async ( req = request, res = response, next )=> {
 
-    const { numeroCedula } = req.body;
     try {
+        const { numeroCedula } = req.body;
         const existe = await prisma.profesores.findFirst( { where : { cedula : numeroCedula } } );
         if ( existe === undefined || existe === null ) {
             console.log ( existe );

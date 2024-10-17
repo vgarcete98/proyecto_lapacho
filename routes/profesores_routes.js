@@ -22,9 +22,9 @@ router_profesores.get( '/:id_profesor_cons', [ ], obtener_profesor );
 router_profesores.get( '/cedula/nombre', [ ], obtener_profesor_cedula_nombre );
 
 
-router_profesores.put( '/:id_profesor_update', [], actualizar_profesor );
+router_profesores.put( '/', [], actualizar_profesor );
 
 
-router_profesores.delete( '/:id_profesor_delete', [ ], eliminar_profesor );
+router_profesores.delete( '/', [ ], eliminar_profesor );
 
 module.exports = router_profesores;

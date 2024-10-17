@@ -9,24 +9,27 @@ const comprobar_horario_profesor = async ( req = request, res = response, next)=
 
     try {
         
-        const { idSocio, idProfesor, inicio, fin, idMesa, idAgendamiento } = req.body;
+        const { idCliente, idProfesor, inicio, fin, idMesa, idAgendamiento } = req.body;
         
         //const [ dia, mes, annio ] = fechaAgendamiento.split( '/' );
 
         //const fecha_agendamiento = `${annio}-${mes}-${dia}`; 
         
         
-        const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
-                                                        		D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
-                                                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado
-                                                        	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
-                                                        	JOIN mesas C ON C.id_mesa = A.id_mesa
-                                                        	JOIN socio D ON D.id_socio = A.id_socio
-                                                        WHERE  A.horario_inicio = TIMESTAMP '${inicio}' 
-                                                                AND A.horario_hasta = TIMESTAMP '${fin}'
-                                                                AND B.id_profesor = ${ Number( idProfesor ) }
-                                                                AND C.id_mesa = ${ Number( idMesa ) }
-                                                        ORDER BY A.fecha_agendamiento DESC`
+        const query = `SELECT A.id_agendamiento, 
+                                B.id_profesor, 
+                                B.nombre_profesor, 
+                                D.id_cliente, 
+                                D.nombre_cmp, A.fecha_agendamiento, C.id_mesa, C.desc_mesa, 
+                                A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado
+                                	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
+                                	JOIN mesas C ON C.id_mesa = A.id_mesa
+                                	JOIN cliente D ON D.id_cliente = A.id_cliente
+                                WHERE  A.horario_inicio = TIMESTAMP '${inicio}' 
+                                        AND A.horario_hasta = TIMESTAMP '${fin}'
+                                        AND B.id_profesor = ${ Number( idProfesor ) }
+                                        AND C.id_mesa = ${ Number( idMesa ) }
+                                ORDER BY A.fecha_agendamiento DESC`;
         //console.log ( query )
         const clases_del_dia = await prisma.$queryRawUnsafe( query );
         

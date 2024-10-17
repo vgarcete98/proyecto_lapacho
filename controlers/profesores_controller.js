@@ -215,75 +215,96 @@ const crear_profesor = async ( req = request, res = response ) =>{
 
     try {
 
-        const { nombreProfe, precioXHora, contactoProfesor, numeroCedula } = req.body;
+        const { nombreProfe, precioXHora, contactoProfesor, 
+                numeroCedula, crearUsuario, nombreUsuario, password } = req.body;
         const fecha_creacion = new Date();
-        if( typeof( precioXHora ) !== Number ){ precio = Number( precioXHora ) };
 
-        // OPCIONAL SERIA EL PRECIO X HORA
-        let nuevo_profesor;
-        if ( precioXHora === undefined ){
-            //----------------------------------------------------------------------------------------------------------------------------------
-            /*nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
-                                                        creadoen, estado_profesor, nombre_profesor, 
-                                                        costo_x_hora, contacto_profesor, cedula)
-                                                    VALUES ( ${ fecha_creacion } ,  ${ estado_profesor.activo } ,  
-                                                            ${ nombreProfe } ,  ${ 0 } ,  ${ contactoProfesor }, ${ numeroCedula } );`*/
-            nuevo_profesor = await prisma.profesores.create( { 
-                                                                data : {
-                                                                    cedula : numeroCedula,
-                                                                    creadoen : fecha_creacion,
-                                                                    nombre_profesor : nombreProfe,
-                                                                    contacto_profesor : contactoProfesor,
-                                                                    costo_x_hora : 0,
-                                                                    estado_profesor : estado_profesor.activo
-                                                                } 
-                                                            } );
-            //----------------------------------------------------------------------------------------------------------------------------------
 
-        }else {
+        //CREO AL PROFESOR
+        let nuevo_profesor = await prisma.profesores.create( { 
+                                                            data : {
+                                                                cedula : numeroCedula,
+                                                                creadoen : fecha_creacion,
+                                                                nombre_profesor : nombreProfe,
+                                                                contacto_profesor : contactoProfesor,
+                                                                costo_x_hora : Number( precioXHora ),
+                                                                estado_profesor : estadosProfesor.activo
+                                                            } 
+                                                        } );
 
-            //----------------------------------------------------------------------------------------------------------------------------------    
-            /*nuevo_profesor = await prisma.$executeRaw`INSERT INTO public.profesores(
-                                                        creadoen, estado_profesor, nombre_profesor, 
-                                                        costo_x_hora, contacto_profesor, cedula)
-                                                    VALUES ( ${ fecha_creacion } ,  ${ estado_profesor.activo } ,  
-                                                            ${ nombreProfe } ,  ${ precio } ,  ${ contactoProfesor }, ${ numeroCedula } );`*/
-            //----------------------------------------------------------------------------------------------------------------------------------
-            nuevo_profesor = await prisma.profesores.create( { 
-                data : {
-                    cedula : numeroCedula,
-                    creadoen : fecha_creacion,
-                    nombre_profesor : nombreProfe,
-                    contacto_profesor : contactoProfesor,
-                    costo_x_hora : precio,
-                    estado_profesor : estadosProfesor.activo
-                } 
-            } );        
-
-        }
-
-        const { cedula, contacto_profesor, costo_x_hora, 
-                creadoen, id_profesor, nombre_profesor } = nuevo_profesor;
-        const nuevoProfesorFormateado = {
-            cedula,
-            contactoProfesor : contacto_profesor,
-            costoXHora : costo_x_hora,
-            creadoEn : creadoen,
-            idProfesor : id_profesor,
-            nombreProfe : nombre_profesor
-        }
         
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Profesor creado con exito",
-            nuevoProfesorFormateado
-        } );
+        if ( nuevo_profesor !== null ) {
 
+            // OPCIONAL SERIA EL PRECIO X HORA
+            let precio_profesor = await prisma.precio_clase.create(  { 
+                                                                        data : {  
+                                                                            precio : Number( precioXHora ),
+                                                                            creado_en : new Date(),
+                                                                            id_profesor : nuevo_profesor.id_profesor,
+                                                                            porc_descuento : 0,
+                                                                            valido : true 
+                                                                        } 
+                                                                    });
+            //AHORA VAMOS A CREAR AL USUARIO DE ESE PROFESOR
+
+            if ( crearUsuario !== null && crearUsuario !== undefined ){
+
+                const rol_profesor = await prisma.roles_usuario.findFirst( { 
+                                                                                select : {
+                                                                                    id_rol_usuario : true,
+                                                                                },
+                                                                                where : {
+                                                                                    AND :[ 
+                                                                                        { descripcion_rol : 'PROFESOR' },
+                                                                                        { estado_rol_usuario : 'ACTIVO' }
+                                                                                    ]
+                                                                                }
+                                                                        } );
+                let nuevo_usuario = await prisma.cliente.create( { 
+                                                                    data : {
+                                                                        apellido : nombreProfe,
+                                                                        nombre : nombreProfe,
+                                                                        nombre_cmp : nombreProfe,
+                                                                        nombre_usuario : nombreUsuario,
+                                                                        cedula : numeroCedula,
+                                                                        password : password,
+                                                                        creadoen : new Date(),
+                                                                        es_socio : false,
+                                                                        id_rol_usuario : rol_profesor.id_rol_usuario
+                                                                    } 
+                                                                } );
+
+                if( nuevo_usuario !== null ) { 
+                    res.status( 200 ).json( {
+                        status : true,
+                        msg : "Profesor creado con exito",
+                        descripcion : "El profesor ha sido creado junto con su respectivo usuario"
+                    } );
+                }else {                    
+                    res.status( 400 ).json( {
+                        status : true,
+                        msg : "Profesor creado con exito",
+                        descripcion : "El profesor ha sido creado, pero no asi su usuario"
+                    } );
+                }
+
+            }else {
+                res.status( 200 ).json( {
+                    status : true,
+                    msg : "Profesor creado con exito",
+                    descripcion : "El profesor ha sido creado"
+                } );
+            }
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : "El profesor no logro ser creado",
+                descripcion : "No se ha creado al profesor, favor intente de nuevo"
+            } );
+        }
 
     } catch (error) {
-
-        console.log( error );
-
+        //console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : "Ha ocurrido un error al crear un profesor",
@@ -296,15 +317,15 @@ const crear_profesor = async ( req = request, res = response ) =>{
 const actualizar_profesor = async ( req = request, res = response ) =>{
 
     // SERIA MEJOR METER EL ID DEL PROFESOR EN EL QUERY PARAM Y EN EL BODY LOS DATOS NUEVOS
-    const { id_profesor_update } = req.params;
-    const { numeroCedula, precioXHora, contactoProfesor, nombreProfe } = req.body;
-    const fecha_edicion = new Date();
     
     try {
-
+        const { idProfesor, nombreProfe, precioXHora, contactoProfesor, 
+                numeroCedula, crearUsuario, nombreUsuario, password } = req.body;
+        const fecha_edicion = new Date();
+        
         const profesor_editado = await prisma.profesores.update( {
             where : {
-                id_profesor : Number(id_profesor_update)
+                id_profesor : Number(idProfesor)
             },
 
             data : {
@@ -316,32 +337,97 @@ const actualizar_profesor = async ( req = request, res = response ) =>{
             }
         } );
 
-        const { cedula, contacto_profesor, costo_x_hora, creadoen, editadoen, 
-                estado_profesor, id_profesor, nombre_profesor } = profesor_editado;
+        if (profesor_editado !== null ){ 
+            // OPCIONAL SERIA EL PRECIO X HORA
 
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Profesor actualizado correctamente",
-            profesorEditado : {
-                nombreProfe : nombre_profesor, 
-                precioXHora : costo_x_hora, 
-                contactoProfesor : contacto_profesor, 
-                numeroCedula : cedula,
-                creadoEn : creadoen,
-                editadoEn : editadoen,
-                idProfesor : id_profesor,
-                estadoProfesor : estado_profesor
+            //---------------------------------------------------------------------------
+            let anular_precio_anterior = await prisma.precio_clase.updateMany( { 
+                                                                                data : { valido : false }, 
+                                                                                where : { 
+                                                                                    AND : [
+                                                                                        { valido : true },
+                                                                                        { id_profesor : profesor_editado.id_profesor } 
+                                                                                    ]
+                                                                                } 
+                                                                            } )
+            let precio_profesor = await prisma.precio_clase.create(  { 
+                data : {  
+                    precio : Number( precioXHora ),
+                    creado_en : new Date(),
+                    id_profesor : profesor_editado.id_profesor,
+                    porc_descuento : 0,
+                    valido : true 
+                } 
+            });
+            //---------------------------------------------------------------------------
+
+            if (crearUsuario !== null && crearUsuario !== undefined) {
+                const rol_profesor = await prisma.roles_usuario.findFirst( { 
+                                                                                select : {
+                                                                                    id_rol_usuario : true,
+                                                                                },
+                                                                                where : {
+                                                                                    AND :[ 
+                                                                                        { descripcion_rol : 'PROFESOR' },
+                                                                                        { estado_rol_usuario : 'ACTIVO' }
+                                                                                    ]
+                                                                                }
+                                                                        } );
+                let nuevo_usuario = await prisma.cliente.upsert( { 
+                                                                    where :{ cedula : numeroCedula },
+                                                                    update : {
+                                                                        apellido : nombreProfe,
+                                                                        nombre : nombreProfe,
+                                                                        nombre_cmp : nombreProfe,
+                                                                        nombre_usuario : nombreUsuario,
+                                                                        cedula : numeroCedula,
+                                                                        password : password,
+                                                                        creadoen : new Date(),
+                                                                        es_socio : false,
+                                                                        id_rol_usuario : rol_profesor.id_rol_usuario
+                                                                    },
+                                                                    create : {
+                                                                        apellido : nombreProfe,
+                                                                        nombre : nombreProfe,
+                                                                        nombre_cmp : nombreProfe,
+                                                                        nombre_usuario : nombreUsuario,
+                                                                        cedula : numeroCedula,
+                                                                        password : password,
+                                                                        creadoen : new Date(),
+                                                                        es_socio : false,
+                                                                        id_rol_usuario : rol_profesor.id_rol_usuario
+                                                                    },
+
+                                                                } );
+
+                if( nuevo_usuario !== null ) { 
+                    res.status( 200 ).json( {
+                        status : true,
+                        msg : "Profesor actualizado con exito",
+                        descripcion : "El profesor ha sido actualizado junto con su respectivo usuario"
+                    } );
+                }else {
+                    res.status( 400 ).json( {
+                        status : true,
+                        msg : "Profesor actualizado con exito",
+                        descripcion : "El profesor ha sido actualizado, pero no asi su usuario"
+                    } );
+                }
+            }else {
+                res.status( 200 ).json( {
+                    status : true,
+                    msg : "Profesor actualizado correctamente",
+                    descripcion : 'Se ha actualizado al profesor'
+                } );
             }
-        } );
+        }
+
 
     } catch ( error ) {
         console.log( error );
         res.status( 400 ).json( {
             status : true,
             msg : "El profesor no se pudo actualizar correctamente",
-            //mensaje_error : "Id de profesor no existe",
-            error,
-            id_profesor_update
         } );
 
     }

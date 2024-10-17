@@ -665,6 +665,106 @@ const agregar_inscripciones_a_venta = async ( req = request, res = response ) =>
 }
 
 
+
+const cerrar_inscripciones_de_evento = async ( req = request, res = response  ) =>{
+
+    try {
+        const { id_evento } = req.query;
+
+
+        const cierre_evento = await prisma.eventos.update( { 
+                                                                data : { 
+                                                                    cierre_inscripciones : new Date()
+                                                                },
+                                                                where : { 
+                                                                    id_evento : Number( id_evento )
+                                                                } 
+                                                            } );
+        if ( cierre_evento !== null && cierre_evento !== undefined && cierre_evento){
+            res.status( 200 ).json(
+                {
+    
+                    status : true,
+                    msj : 'Cierre del evento realizado con exito',
+                    descripcion : `Se cerro el evento, cualquier inscripcion no sera registrada`
+                }
+            );
+        }else {
+            res.status( 400 ).json(
+                {
+    
+                    status : false,
+                    msj : 'No se logro realizar el cierre del evento',
+                    descripcion : `No se logro concretar el cierre del evento, favor intente de vuelta`
+                }
+            );
+        }
+
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al cerrar el evento : ${ error }`,
+            //error
+        } );
+    }
+
+
+}
+
+const cerrar_inscripciones_de_categoria = async ( req = request, res = response  ) =>{
+
+    try {
+        const { id_evento, id_categoria } = req.query;
+
+
+        const cierre_evento = await prisma.categorias.update( { 
+                                                                data : { 
+                                                                    cierre_inscripciones : new Date()
+                                                                },
+                                                                where : { 
+                                                                    AND : [
+
+                                                                        { id_evento : Number( id_evento ) },
+                                                                        { id_categoria : Number( id_categoria ) }
+                                                                    ]
+                                                                } 
+                                                            } );
+        if ( cierre_evento !== null && cierre_evento !== undefined && cierre_evento){
+            res.status( 200 ).json(
+                {
+    
+                    status : true,
+                    msj : 'Cierre del evento realizado con exito',
+                    descripcion : `Se cerro el evento, cualquier inscripcion no sera registrada`
+                }
+            );
+        }else {
+            res.status( 400 ).json(
+                {
+    
+                    status : false,
+                    msj : 'No se logro realizar el cierre del evento',
+                    descripcion : `No se logro concretar el cierre del evento, favor intente de vuelta`
+                }
+            );
+        }
+
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al cerrar el evento : ${ error }`,
+            //error
+        } );
+    }
+
+
+}
+
+
+
+
 module.exports = {
 
     abonar_x_inscripcion,
@@ -677,5 +777,7 @@ module.exports = {
     obtener_ganancias_gastos_x_evento,
     obtner_todas_inscripciones_x_evento,
     borrar_inscripcion_socio,
-    agregar_inscripciones_a_venta
+    agregar_inscripciones_a_venta,
+    cerrar_inscripciones_de_evento,
+    cerrar_inscripciones_de_categoria
 }

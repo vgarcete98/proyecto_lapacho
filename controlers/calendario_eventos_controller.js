@@ -123,16 +123,25 @@ const obtener_categorias_x_evento = async ( req = request, res = response ) =>{
 
 
         categorias.forEach( ( element ) =>{
-            const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = element;
+            const { descripcion, id_categoria, nombre_categoria, 
+                    id_evento_calendario, edad_maxima, edad_minima, 
+                    cierre_inscripciones, nivel_maximo, nivel_minimo, sexo, costo } = element;
 
             categoriasEvento.push( {
                 descripcion, 
                 idCategoria : id_categoria, 
                 nombreCategoria : nombre_categoria, 
-                idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario) 
+                idEventoCalendario : id_evento_calendario,
+                edadMinima : edad_minima,
+                edadMaxima : edad_maxima,
+                cierreInscripciones : cierre_inscripciones,
+                nivelMaximo : nivel_maximo,
+                nivel_minimo : nivel_minimo,
+                sexoPermitido : sexo,
+                costo : costo
             } )
         } )
-        console.log( categoriasEvento )
+        //console.log( categoriasEvento )
         
         res.status( 200 ).json( {
             status : true,
@@ -162,33 +171,51 @@ const crear_categorias_x_evento = async ( req = request, res = response ) =>{
 
         //VOY A AGREGAR LA POSIBILIDAD DE CREAR VARIAS CATEGORIAS POR EVENTO
         
-        const { categorias }  = req.body;
+        const { idEvento, categorias }  = req.body;
 
+        let categorias_creadas = 0;
         for (const element of categorias) {
 
             try {
-                const { descripcionCategoria, nombreCategoria, idEventoCalendario, costoCategoria   } = element;
-                const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.create( {
-                                                                                                                                data : { 
-                                                                                                                                    descripcion : descripcionCategoria,  
-                                                                                                                                    nombre_categoria : nombreCategoria, 
-                                                                                                                                    id_evento : idEventoCalendario,
-                                                                                                                                    costo : Number( costoCategoria )
-                                                                                                                                } 
-                                                                                                                            } );
-                
+                let { descripcionCategoria, nombreCategoria, idEventoCalendario, 
+                        costoCategoria, edadMaxima, edadMinima, nivelMaximo, nivelMinimo, sexoPermitido   } = element;
+                let categoria = await prisma.categorias.create( {
+                                                                data : { 
+                                                                    descripcion : descripcionCategoria,  
+                                                                    nombre_categoria : nombreCategoria, 
+                                                                    id_evento : Number(idEvento),
+                                                                    costo : Number( costoCategoria ),
+                                                                    edad_maxima : Number( edadMaxima),
+                                                                    edad_minima : Number( edadMinima ),
+                                                                    nivelMaximo : Number( nivelMaximo ),
+                                                                    nivelMinimo : Number( nivelMinimo )
+                                                                } 
+                                                            } );
+                if (categoria !== null){
+                    categorias_creadas += 1;
+                }
             } catch (error) {
                 console.log( error );
             }
             
         }
-                            
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Categorias creada con exito",
-            descripcion : "Categorias agregadas al evento con exito"
+                          
+        if ( categorias_creadas === categorias.length && categorias.length > 0 ) {
 
-        } );
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Categorias creada con exito",
+                descripcion : "Categorias agregadas al evento con exito"
+    
+            } );
+        }else {
+            res.status( 200 ).json( {
+                status : true,
+                msg : "No todas las categorias fueron creadas con exito",
+                descripcion : `Categorias agregadas al evento con exito ${ categorias_creadas }`
+    
+            } ); 
+        }
 
 
     } catch (error) {
@@ -205,32 +232,55 @@ const crear_categorias_x_evento = async ( req = request, res = response ) =>{
 
 const editar_categorias_x_evento = async ( req = request, res = response ) =>{
     try {
+        //VOY A AGREGAR LA POSIBILIDAD DE CREAR VARIAS CATEGORIAS POR EVENTO
         
-        const { descripcionCategoria, idCategoria, nombreCategoria, idEventoCalendario  } = req.body;
-        const { descripcion, id_categoria, nombre_categoria, id_evento_calendario } = await prisma.categorias.update( {
-                                                                                                                        data : { 
-                                                                                                                            descripcion : descripcionCategoria, 
-                                                                                                                            id_categoria : idCategoria, 
-                                                                                                                            nombre_categoria : nombreCategoria, 
-                                                                                                                            id_evento_calendario : idEventoCalendario
-                                                                                                                        },
-                                                                                                                        where : { 
-                                                                                                                            id_categoria : Number( idCategoria )
-                                                                                                                        }
-                                                                                                                    } );
+        const { idEvento, categorias }  = req.body;
 
-        let categoriaEvento = { descripcion, 
-                                    idCategoria : id_categoria, 
-                                    nombreCategoria : nombre_categoria, 
-                                    idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
-                            };
-                            
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Categoria editada con exito",
-            categoriaEvento
+        let categorias_editadas = 0;
+        for (const element of categorias) {
 
-        } );
+            try {
+                let { descripcionCategoria, nombreCategoria, 
+                        costoCategoria, edadMaxima, edadMinima, nivelMaximo, nivelMinimo, sexoPermitido   } = element;
+                let categoria = await prisma.categorias.update( {
+                                                                data : { 
+                                                                    descripcion : descripcionCategoria,  
+                                                                    nombre_categoria : nombreCategoria, 
+                                                                    id_evento : Number(idEvento),
+                                                                    costo : Number( costoCategoria ),
+                                                                    edad_maxima : Number( edadMaxima),
+                                                                    edad_minima : Number( edadMinima ),
+                                                                    nivelMaximo : Number( nivelMaximo ),
+                                                                    nivelMinimo : Number( nivelMinimo ),
+                                                                    sexo : sexoPermitido
+                                                                }, 
+                                                                where : { id_evento : Number(idEvento) }
+                                                            } );
+                if (categoria !== null){
+                    categorias_editadas += 1;
+                }
+            } catch (error) {
+                console.log( error );
+            }
+            
+        }
+                          
+        if ( categorias_editadas === categorias.length && categorias.length > 0 ) {
+
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Categorias actualizadas con exito",
+                descripcion : "Categorias editadas al evento con exito"
+    
+            } );
+        }else {
+            res.status( 200 ).json( {
+                status : true,
+                msg : "No todas las categorias fueron creadas con exito",
+                descripcion : `Categorias agregadas al evento con exito ${ categorias_creadas }`
+    
+            } ); 
+        }
 
 
     } catch (error) {
@@ -339,14 +389,20 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
     
                     try {
                         
-                        let { descripcion, nombreCategoria, costoCategoria } = element;
+                        let {  descripcionCategoria, nombreCategoria, idEventoCalendario, 
+                            costoCategoria, edadMaxima, edadMinima, nivelMaximo, nivelMinimo, sexoPermitido } = element;
                         //reque.push( { descripcion, cantidad,  } )
                         let nuevo_categoria  = await prisma.categorias.create( { 
                                                                                             data : { 
                                                                                                 descripcion,
                                                                                                 nombre_categoria : nombreCategoria,
                                                                                                 id_evento : id_evento,
-                                                                                                costo : costoCategoria
+                                                                                                costo : costoCategoria,
+                                                                                                edad_minima : ( edadMinima !== null && edadMinima !== undefined ) ? Number( edadMinima ) : null,
+                                                                                                edad_maxima : ( edadMaxima !== null && edadMaxima !== undefined ) ? Number( edadMaxima ) : null,
+                                                                                                nivel_maximo : ( nivelMaximo !== null && nivelMaximo !== undefined ) ? Number( nivelMaximo ) : null,
+                                                                                                nivel_minimo : ( nivelMinimo !== null && nivelMinimo !== undefined ) ? Number( nivelMinimo ) : null,
+                                                                                                sexo : ( sexoPermitido !== null && sexoPermitido !== undefined ) ? sexoPermitido : null,
                                                                                             } 
                                                                                         } );
                         if ( nuevo_categoria !== null ){

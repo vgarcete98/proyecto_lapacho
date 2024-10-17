@@ -39,9 +39,10 @@ async function main() {
 // PRIMER ROL CREADO
 //--------------------------------------------------------------------------------------------------------------
 const rol_usuario = await prisma.roles_usuario.createMany( { data : [
-                                                                      { descripcion_rol : 'ADMINISTRADOR' },
-                                                                      { descripcion_rol :  'SOCIO' },
-                                                                      { descripcion_rol :  'SOCIO_PROFESOR' }
+                                                                      { descripcion_rol : 'ADMINISTRADOR', estado_rol_usuario : 'ACTIVO', id_usuario_crea_rol : 1, rol__creado_en : new Date() },
+                                                                      { descripcion_rol : 'SOCIO', estado_rol_usuario : 'ACTIVO', id_usuario_crea_rol : 1, rol__creado_en : new Date() },
+                                                                      { descripcion_rol : 'SOCIO_PROFESOR', estado_rol_usuario : 'ACTIVO', id_usuario_crea_rol : 1, rol__creado_en : new Date() },
+                                                                      { descripcion_rol : 'PROFESOR', estado_rol_usuario : 'ACTIVO', id_usuario_crea_rol : 1, rol__creado_en : new Date() }
                                                                     ] 
                                                         } );
 //--------------------------------------------------------------------------------------------------------------
@@ -532,6 +533,7 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
 
 
   const precio_reserva = await prisma.precio_reservas.create( { data : { monto_reserva : 30000, creado_en : new Date(), valido : true,  } } )
+  const precio_clases = await prisma.precio_clase.create( { data : { precio : 60000, id_profesor : 1, porc_descuento : 0, valido : true, creado_en : new Date () } } )
   //VOY A CREAR UNAS CUANTAS RESERVAS PARA LAS PRUEBAS QUE HAY QUE HACER
   //const reservas = await prisma.reservas.createMany( { data : 
   //                                                        [
