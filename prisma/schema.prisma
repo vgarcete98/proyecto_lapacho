@@ -30,7 +30,7 @@ model agendamiento_clase {
   horario_inicio     DateTime     @db.Timestamp(6)
   horario_hasta      DateTime     @db.Timestamp(6)
   creadoen           DateTime     @db.Timestamp(6)
-  editadoen          DateTime     @db.Timestamp(6)
+  editadoen          DateTime?    @db.Timestamp(6)
   clase_abonada      Boolean?
   monto_abonado      Int?
   mesas              mesas        @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_agendamiento_clase_fk")
@@ -111,9 +111,11 @@ model reservas {
   id_precio_reserva  Int?
   monto              Int
   fecha_reserva      DateTime?        @db.Timestamp(6)
-  reserva_editada    DateTime?        @db.Date
+  reserva_editada    DateTime?        @db.Timestamp(6)
   creado_por         Int
   creado_en          DateTime         @db.Timestamp(6)
+  editado_por        Int?
+  editado_en         DateTime?        @db.Timestamp(6)
   fecha_creacion     DateTime         @db.Date
   hora_desde         DateTime         @db.Timestamp(6)
   hora_hasta         DateTime         @db.Timestamp(6)
@@ -169,7 +171,7 @@ model rutas_app {
 
 model egresos {
   is_operacion_egreso Int             @id(map: "egresos_pk") @default(autoincrement())
-  id_tipo             Int
+  id_tipo_egreso      Int
   nro_factura         String          @db.VarChar(255)
   cargado_en          DateTime        @db.Date
   editado_en          DateTime?       @db.Date
@@ -181,12 +183,12 @@ model egresos {
   fecha_egreso        DateTime        @db.Date
   id_movimiento_caja  Int
   movimiento_caja     movimiento_caja @relation(fields: [id_movimiento_caja], references: [id_movimiento_caja], onDelete: NoAction, onUpdate: NoAction, map: "movimiento_caja_egresos_fk")
-  tipos_egreso        tipos_egreso    @relation(fields: [id_tipo], references: [id_tipo], onDelete: NoAction, onUpdate: NoAction, map: "tipos_egreso_egresos_fk")
+  tipos_egreso        tipos_egreso    @relation(fields: [id_tipo_egreso], references: [id_tipo_egreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_egreso_egresos_fk")
 }
 
 model ingresos {
   column_d_operacion_ingreso Int             @id(map: "ingresos_pk") @default(autoincrement())
-  id_tipo                    Int
+  id_tipo_ingreso            Int
   id_movimiento_caja         Int
   nro_factura                String?         @db.VarChar(255)
   cargado_en                 DateTime        @db.Date
@@ -196,20 +198,33 @@ model ingresos {
   borrado                    Boolean         @default(false)
   fecha_ingreso              DateTime        @db.Date
   movimiento_caja            movimiento_caja @relation(fields: [id_movimiento_caja], references: [id_movimiento_caja], onDelete: NoAction, onUpdate: NoAction, map: "movimiento_caja_ingresos_fk")
-  tipos_ingreso              tipos_ingreso   @relation(fields: [id_tipo], references: [id_tipo], onDelete: NoAction, onUpdate: NoAction, map: "tipos_ingreso_ingresos_fk")
+  tipos_ingreso              tipos_ingreso   @relation(fields: [id_tipo_ingreso], references: [id_tipo_ingreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_ingreso_ingresos_fk")
 }
 
 model tipos_egreso {
-  id_tipo     Int       @id(map: "tipos_egreso_pk") @default(autoincrement())
-  descripcion String    @db.VarChar
-  gasto_fijo  Boolean?
-  egresos     egresos[]
+  id_tipo_egreso  Int               @id(map: "tipos_egreso_pk") @default(autoincrement())
+  descripcion     String            @db.VarChar
+  creado_en       DateTime          @db.Timestamp(6)
+  editado_en      DateTime?         @db.Timestamp(6)
+  creado_por      Int
+  editado_por     Int?
+  gasto_fijo      Boolean?
+  compras         compras[]
+  egresos         egresos[]
+  gastos_fijos    gastos_fijos[]
+  movimiento_caja movimiento_caja[]
 }
 
 model tipos_ingreso {
-  id_tipo     Int        @id(map: "tipos_ingreso_pk") @default(autoincrement())
-  descripcion String     @db.VarChar
-  ingresos    ingresos[]
+  id_tipo_ingreso Int               @id(map: "tipos_ingreso_pk") @default(autoincrement())
+  creado_en       DateTime          @db.Timestamp(6)
+  editado_en      DateTime?         @db.Timestamp(6)
+  creado_por      Int
+  editado_por     Int?
+  descripcion     String            @db.VarChar
+  ingresos        ingresos[]
+  movimiento_caja movimiento_caja[]
+  ventas          ventas[]
 }
 
 model categorias {
@@ -317,9 +332,10 @@ model caja {
 }
 
 model compras {
-  id_compra       Int               @id(map: "compras_pk")
+  id_compra       Int               @id(map: "compras_pk") @default(autoincrement())
   id_cliente      Int
   id_insumo       Int?
+  id_gasto_fijo   Int?
   descripcion     String            @db.VarChar(200)
   estado          String            @db.VarChar(50)
   creado_en       DateTime          @db.Timestamp(6)
@@ -330,34 +346,41 @@ model compras {
   monto           Int
   cedula          String?           @db.VarChar(255)
   proveedor       String?           @db.VarChar(120)
+  id_tipo_egreso  Int?
   cliente         cliente           @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_compras_fk")
+  gastos_fijos    gastos_fijos?     @relation(fields: [id_gasto_fijo], references: [id_gasto_fijo], onDelete: NoAction, onUpdate: NoAction, map: "gastos_fijos_compras_fk")
   insumos         insumos?          @relation(fields: [id_insumo], references: [id_insumo], onDelete: NoAction, onUpdate: NoAction, map: "insumos_compras_fk")
+  tipos_egreso    tipos_egreso?     @relation(fields: [id_tipo_egreso], references: [id_tipo_egreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_egreso_compras_fk")
   movimiento_caja movimiento_caja[]
 }
 
 model movimiento_caja {
-  id_movimiento_caja Int        @id(map: "movimiento_caja_pk") @default(autoincrement())
+  id_movimiento_caja Int            @id(map: "movimiento_caja_pk") @default(autoincrement())
   id_caja            Int
   id_tipo_pago       Int
   id_venta           Int?
   id_compra          Int?
+  id_tipo_ingreso    Int?
   id_cliente         Int
-  descripcion        String     @db.VarChar(255)
-  cedula             String     @db.VarChar(255)
-  nro_comprobante    String?    @db.VarChar(255)
-  nro_factura        String?    @db.VarChar(255)
-  fecha_operacion    DateTime?  @db.Timestamp(6)
-  creado_en          DateTime   @default(now()) @db.Timestamp(6)
-  editado_en         DateTime?  @db.Timestamp(6)
+  id_tipo_egreso     Int?
+  descripcion        String         @db.VarChar(255)
+  cedula             String         @db.VarChar(255)
+  nro_comprobante    String?        @db.VarChar(255)
+  nro_factura        String?        @db.VarChar(255)
+  fecha_operacion    DateTime?      @db.Timestamp(6)
+  creado_en          DateTime       @default(now()) @db.Timestamp(6)
+  editado_en         DateTime?      @db.Timestamp(6)
   editado_por        Int?
   creado_por         Int
   egresos            egresos[]
   ingresos           ingresos[]
-  caja               caja       @relation(fields: [id_caja], references: [id_caja], onDelete: NoAction, onUpdate: NoAction, map: "caja_movimiento_caja_fk")
-  cliente            cliente    @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_movimiento_caja_fk")
-  compras            compras?   @relation(fields: [id_compra], references: [id_compra], onDelete: NoAction, onUpdate: NoAction, map: "compras_movimiento_caja_fk")
-  tipo_pago          tipo_pago  @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "tipo_pago_movimiento_caja_fk")
-  ventas             ventas?    @relation(fields: [id_venta], references: [id_venta], onDelete: NoAction, onUpdate: NoAction, map: "ventas_movimiento_caja_fk")
+  caja               caja           @relation(fields: [id_caja], references: [id_caja], onDelete: NoAction, onUpdate: NoAction, map: "caja_movimiento_caja_fk")
+  cliente            cliente        @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_movimiento_caja_fk")
+  compras            compras?       @relation(fields: [id_compra], references: [id_compra], onDelete: NoAction, onUpdate: NoAction, map: "compras_movimiento_caja_fk")
+  tipo_pago          tipo_pago      @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "tipo_pago_movimiento_caja_fk")
+  tipos_egreso       tipos_egreso?  @relation(fields: [id_tipo_egreso], references: [id_tipo_egreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_egreso_movimiento_caja_fk")
+  tipos_ingreso      tipos_ingreso? @relation(fields: [id_tipo_ingreso], references: [id_tipo_ingreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_ingreso_movimiento_caja_fk")
+  ventas             ventas?        @relation(fields: [id_venta], references: [id_venta], onDelete: NoAction, onUpdate: NoAction, map: "ventas_movimiento_caja_fk")
 }
 
 model ventas {
@@ -366,6 +389,7 @@ model ventas {
   id_cuota_socio     Int?
   id_cliente_reserva Int?
   id_agendamiento    Int?
+  id_tipo_ingreso    Int?
   id_inscripcion     Int?
   estado             String              @db.VarChar(50)
   monto              Int
@@ -382,6 +406,7 @@ model ventas {
   cuotas_socio       cuotas_socio?       @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
   inscripciones      inscripciones?      @relation(fields: [id_inscripcion], references: [id_inscripcion], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_ventas_fk")
   reservas           reservas?           @relation(fields: [id_cliente_reserva], references: [id_cliente_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
+  tipos_ingreso      tipos_ingreso?      @relation(fields: [id_tipo_ingreso], references: [id_tipo_ingreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_ingreso_ventas_fk")
 
   @@index([cedula], map: "ventas_cedula_cliente_index")
 }
@@ -392,6 +417,7 @@ model precio_cuota {
   monto_cuota         Int
   desc_tipo_descuento String?        @default("DESCUENTO APLICADO") @db.VarChar
   desc_precio_cuota   String?        @db.VarChar(255)
+  fecha_precio        DateTime?      @db.Timestamp(6)
   porc_descuento      Float?         @db.Real
   valido              Boolean        @default(true)
   creado_en           DateTime?      @default(now()) @db.Timestamp(6)
@@ -415,6 +441,7 @@ model precio_reservas {
   porc_descuento      Float?     @db.Real
   valido              Boolean    @default(true)
   creado_en           DateTime?  @default(now()) @db.Timestamp(6)
+  fecha_precio        DateTime?  @db.Timestamp(6)
   reservas            reservas[]
 }
 
@@ -466,6 +493,7 @@ model costo_categorias {
   id_costo_categoria Int          @id(map: "costo_categorias_pk") @default(autoincrement())
   costo_categoria    Int
   valido             Boolean      @default(true)
+  fecha_precio       DateTime?    @db.Timestamp(6)
   porc_descuento     Float?       @db.Real
   creado_en          DateTime?    @db.Timestamp(6)
   categorias         categorias[]
@@ -477,7 +505,22 @@ model precio_clase {
   porc_descuento     Float?               @db.Real
   creado_en          DateTime?            @default(now()) @db.Timestamp(6)
   valido             Boolean              @default(true)
+  fecha_precio       DateTime?            @db.Timestamp(6)
   precio             Int
   agendamiento_clase agendamiento_clase[]
   profesores         profesores           @relation(fields: [id_profesor], references: [id_profesor], onDelete: NoAction, onUpdate: NoAction, map: "profesores_precio_clase_fk")
+}
+
+model gastos_fijos {
+  id_gasto_fijo          Int          @id(map: "gastos_fijos_pk") @default(autoincrement())
+  id_tipo_egreso         Int
+  creado_en              DateTime     @db.Timestamp(6)
+  editado_en             DateTime?    @db.Timestamp(6)
+  creado_por             Int
+  editado_por            Int?
+  monto                  Int
+  descripcion_gasto_fijo String?      @db.VarChar(200)
+  fecha_vencimiento      DateTime     @db.Date
+  compras                compras[]
+  tipos_egreso           tipos_egreso @relation(fields: [id_tipo_egreso], references: [id_tipo_egreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_egreso_gastos_fijos_fk")
 }

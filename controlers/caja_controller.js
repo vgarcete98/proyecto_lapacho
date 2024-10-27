@@ -137,43 +137,22 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
 
 
         const { id_caja, cantidad, pagina, fecha_desde, fecha_hasta } = req.query;
-
-        const movimientos_de_caja = await prisma.movimiento_caja.findMany( {                                                             
-                                                                            skip : (Number(pagina) - 1) * Number(cantidad),
-                                                                            take : Number(cantidad),
-                                                                            where : {
-
-                                                                                AND : [
-
-                                                                                    id_caja? { id_caja :  Number( id_caja ) } : undefined,
-                                                                                    fecha_desde? { fecha_operacion : { gte : generar_fecha( fecha_desde ) }  } : undefined,
-                                                                                    fecha_hasta? { fecha_operacion : { lte : generar_fecha( fecha_hasta ) }  } : undefined,
-                                                                                ].filter( Boolean )
-                                                                                
-                                                                                
-                                                                            },
-                                                                            include : {
-                                                                                ventas : {
-                                                                                    select : {
-                                                                                        cedula : true, 
-                                                                                        descripcion_venta : true,
-                                                                                        monto : true
-                                                                                    }
-                                                                                },
-                                                                                compras : {
-                                                                                    select :{
-                                                                                        fecha_operacion : true,
-                                                                                        estado : true
-                                                                                    }
-                                                                                },
-                                                                                cliente : {
-                                                                                    select :{
-                                                                                        nombre : true,
-                                                                                        apellido : true
-                                                                                    }
-                                                                                },
-                                                                            }
-                                                                        } );
+        //ESTO ES PARA REALIZARLO DE UNA FORMA MAS RESUMIDA
+        const query = `SELECT X.nro_comprobante AS "nroComprobante", 
+                                X.tipo_comprobante AS "tipoComprobante",
+                                X.tipo_operacion AS "tipoOperacion",
+                                SUM(X.monto) AS "monto"
+                                            FROM (SELECT CASE WHEN A.NRO_FACTURA IS NULL THEN A.NRO_COMPROBANTE ELSE A.NRO_FACTURA END AS "nro_comprobante",
+                                                        CASE WHEN A.NRO_FACTURA IS NULL THEN 'FACTURA' ELSE 'COMPROBANTE' END AS "tipo_comprobante",
+                                                        CASE WHEN (A.ID_COMPRA IS NULL) THEN 'VENTA' ELSE 'COMPRA' END AS "tipo_operacion",
+                                                        CASE WHEN A.ID_COMPRA IS NULL THEN F.MONTO ELSE D.MONTO END AS "monto"
+                                                    FROM MOVIMIENTO_CAJA A JOIN CAJA B ON A.ID_CAJA = B.ID_CAJA
+                                                    JOIN CLIENTE C ON C.ID_CLIENTE = A.ID_CLIENTE
+                                                    JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
+                                                    JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
+                                                WHERE A.fecha_operacion BETWEEN CURRENT_DATE - INTERVAL '5 DAYS' AND CURRENT_DATE - INTERVAL '10 DAYS') AS X
+                        GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion`;
+        const movimientos_de_caja = await prisma.$queryRawUnsafe(query)
 
         //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
 
@@ -187,23 +166,7 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
 
 
         }else {
-            const movimientosDeCaja = movimientos_de_caja.map((element) =>({
-                idCaja : element.id_caja,
-                idTipoPago : element.id_tipo_pago,
-                descripcion : element.descripcion,
-                tipoMovimiento : ( element.id_venta === null ) ? 'COMPRA' : 'VENTA',
-                idCompra : element.id_compra,
-                idVenta : element.id_venta,
-                nroFactura : element.nro_factura,
-                nroComprobante : element.nro_comprobante,
-                fechaOperacion : element.fecha_operacion,
-                cedulaCliente : element.cedula,
-                cliente : ` ${ element.cliente.nombre }, ${ element.cliente.apellido }`
 
-                
-            }));
-
-            
             res.status( 200 ).json( {
                 status : true,
                 msg : 'movimientos de caja',
@@ -230,33 +193,39 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
 const obtener_detalle_movimiento_de_caja = async ( req = request, res = response ) =>{ 
     try {
       
-        const { nro_factura, nro_cedula, fecha_movimiento, pagina, cantidad } = req.query;
+        const { nro_factura, comprobante } = req.query;
+        const query = `SELECT A.ID_MOVIMIENTO_CAJA AS "idMovimientoCaja",
+                        		A.ID_CAJA AS "idCaja",
+                        		A.ID_CLIENTE AS "idCliente",
+                        		C.CEDULA AS "cedula",
+                        		CONCAT( C.NOMBRE, ' ', C.APELLIDO ) AS "nombreCliente",
+                        		CASE WHEN (A.ID_COMPRA IS NULL) THEN 'VENTA' ELSE 'COMPRA' END AS "tipoOperacion",
+                        		CASE WHEN A.NRO_FACTURA IS NULL THEN A.NRO_COMPROBANTE ELSE A.NRO_FACTURA END AS "nroComprobante",
+                        		CASE WHEN A.NRO_FACTURA IS NULL THEN 'FACTURA' ELSE 'COMPROBANTE' END AS "tipoComprobante",
+                        		CASE WHEN A.ID_COMPRA IS NULL THEN F.MONTO ELSE D.MONTO END AS "monto"
+                        	FROM MOVIMIENTO_CAJA A JOIN CAJA B ON A.ID_CAJA = B.ID_CAJA
+                        	JOIN CLIENTE C ON C.ID_CLIENTE = A.ID_CLIENTE
+                        	JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
+                        	JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
+                        WHERE ${ ( nro_factura !== undefined ) ? `A.NRO_FACTURA = ${ nro_factura }` : `A.COMPROBANTE = ${ comprobante }` }`;
+        const movimientos_de_caja = await prisma.$queryRawUnsafe(query)
+        if ( movimientos_de_caja.length === 0  ){
 
-        const fecha_db = generar_fecha( fecha_movimiento );
-        const movimientos_de_caja = await prisma.movimiento_caja.findMany( {
-                                                                                skip : (Number(pagina) - 1) * Number(cantidad),
-                                                                                take : Number(cantidad),
-                                                                                where : {
-                                                                                    AND : [
-                                                                                        nro_factura ? { nro_factura : { contains: nro_factura, mode: 'insensitive' } } : undefined, 
-                                                                                        fecha_movimiento ? { fecha_operacion : fecha_db } : undefined,
-                                                                                        cedula ? { cedula: { contains: nro_cedula, mode: 'insensitive' } } : undefined,
-                                                                                        //es_socio ? { es_socio : ( es_socio === "true" ) } : undefined,
-                                                                                    ]
-                                                                                }
-                                                                            } );
-        let movimientosDeCaja = [];
-        if ( movimientos_de_caja.length > 0  ){
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No se obtuvo ningun movimiento entre esas fechas',
+                descipcion : `No hay ningun movimientos para esas fechas`
+            } ); 
 
-            movimientosDeCaja = movimientos_de_caja.map( element =>({
-                idCaja : element.id_caja,
-                idTipoPago : element.id_tipo_pago,
-                descipcion : element.descripcion,
-                nroFactura : element.nro_factura,
-                nroComprobante : element.nro_comprobante,
-                fechaOperacion : element.fecha_operacion,
-                idCliente : element
-            }));
+
+        }else {
+
+            res.status( 200 ).json( {
+                status : true,
+                msg : 'movimientos de caja',
+                movimientos_de_caja
+                //descipcion : `No existe ninguna venta generada para ese cliente`
+            } ); 
         }
 
         
@@ -381,7 +350,7 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
 
     try {
         
-        const { nroFactura, idCliente, cedula, tipoPago, nroComprobante, ventas, compras } = req.body;
+        const { nroFactura, idCliente, cedula, tipoPago, nroComprobante, ventas } = req.body;
         
         const venta_socio = [];
 
@@ -496,6 +465,7 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
     }
 
     } catch (error) {
+        console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo realizar esa accion sobre la caja',

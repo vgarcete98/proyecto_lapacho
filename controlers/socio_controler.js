@@ -336,37 +336,43 @@ const borrar_socio = async ( req = request, res = response ) => {
         const socio_actualizado = await prisma.cliente.update( { 
                                                                 data : {
                                                                     estado_usuario : estados_socio.eliminado.descripcion,
-                                                                    editadoen : fecha_edicion
+                                                                    editadoen : fecha_edicion,
+                                                                    es_socio : false
                                                                 },
                                                                 where : { id_cliente : Number(idCliente) }
                                                             } );
-        const { editadoen, direccion, correo_electronico, 
-                numero_telefono, estado_usuario, ruc,
-                nombre_cmp, id_cliente, id_tipo_socio, nombre_usuario, password } = socio_actualizado;
+                                                            
+        if ( socio_actualizado !== null ) { 
+            const { nombre, apellido } = socio_actualizado;
+            res.status( 200 ).json(
+                {
+    
+                    status : true,
+                    msj : 'Socio Borrado',
+                    descipcion : `El socio ${nombre}, ${apellido} ha sido borrado`
+    
+                }
+    
+            );        
 
-        const [ nombre, apellido ] = nombre_cmp.split( ' ' );
-       
+        }else {
+            res.status( 400 ).json(
+                {
+    
+                    status : false,
+                    msj : 'Socio Borrado',
+                    descipcion : `No se pudo borrar al socio, intente de nuevo`
+                }   
+            ); 
+        }
 
-        res.status( 200 ).json(
-            {
-
-                status : true,
-                msj : 'Socio Borrado',
-                descipcion : `El socio ${nombre}, ${apellido} ha sido borrado`
-
-            }
-
-        );        
     } catch (error) {
         console.log( error );
         res.status( 500 ).json(
-
             {
-
                 status : false,
-                msj : `No se logro borrar al socio  ${ error }`,
+                msj : `No se logro borrar al socio, Ocurrio un error ${ error }`,
                 //error
-
             }
 
         );
@@ -398,7 +404,7 @@ const obtener_socios = async ( req = request, res = response ) => {
                                 A.ID_CLIENTE AS "idCliente", 
                                 A.RUC AS "ruc" ,
                                 A.CREADOEN AS "creadoEn", 
-                                A.PASSWORD AS "contrasea",
+                                --A.PASSWORD AS "contrasea",
                                 A.NOMBRE_USUARIO AS "nombreUsuario",
                                 A.FECHA_NACIMIENTO AS "fechaNacimiento",
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
@@ -463,7 +469,7 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
                                 A.ID_CLIENTE AS "idCliente", 
                                 A.RUC AS "ruc" ,
                                 A.CREADOEN AS "creadoEn", 
-                                A.PASSWORD AS "contrasea",
+                                --A.PASSWORD AS "contrasea",
                                 A.NOMBRE_USUARIO AS "nombreUsuario",
                                 A.FECHA_NACIMIENTO AS "fechaNacimiento",
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
@@ -517,7 +523,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
                                 A.ID_CLIENTE AS "idCliente", 
                                 A.RUC AS "ruc" ,
                                 A.CREADOEN AS "creadoEn", 
-                                A.PASSWORD AS "contrasea",
+                                --A.PASSWORD AS "contrasea",
                                 A.NOMBRE_USUARIO AS "nombreUsuario",
                                 A.FECHA_NACIMIENTO AS "fechaNacimiento",
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
@@ -573,7 +579,7 @@ const obtener_socio = async ( req = request, res = response ) => {
                                 A.ID_CLIENTE AS "idCliente", 
                                 A.RUC AS "ruc" ,
                                 A.CREADOEN AS "creadoEn", 
-                                A.PASSWORD AS "contrasea",
+                                --A.PASSWORD AS "contrasea",
                                 A.NOMBRE_USUARIO AS "nombreUsuario",
                                 A.FECHA_NACIMIENTO AS "fechaNacimiento",
                                 CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",

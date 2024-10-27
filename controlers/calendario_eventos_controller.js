@@ -16,14 +16,15 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
 
         //ENDPOINT QUE DEVUELVE TODO, EVENTOSS, RESERVAS Y CLASES DEL MES
         const { fechaDesde, fechaHasta, pagina, idUsuario } = req.body;
-
+        //console.log( fechaDesde, fechaHasta );
         const fecha_desde_format = new Date ( fechaDesde );
 
         const fecha_hasta_format = new Date ( fechaHasta );   
-
+        
+        //console.log( "query de eventos" );
         //console.log( format( fecha_desde_format, 'yyyy-MM-dd' ), format( fecha_hasta_format, 'yyyy-MM-dd' ) )
-        const query_eventos = `SELECT CAST(A.id_evento_calendario AS INTEGER) AS "idEventoCalendario", 
-                                        CAST(B.id_tipo_evento AS INTEGER) AS "idTipoEvento", 
+        const query_eventos = `SELECT A.id_evento AS "idEvento", 
+                                        B.id_tipo_evento AS "idTipoEvento", 
                                         A.fecha_desde_evento AS "horaDesde", 
                                         A.eventocreadoen AS "fechaCreacion", 
                                         A.fecha_hasta_evento AS "horaHasta", 
@@ -32,78 +33,79 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
                                         A.nombre_evento AS "nombreCmp", 
                                         A.todo_el_dia AS "todoEldia", 
                                         --A.fechaagendamiento AS "fechaAgendamiento",
-                                        B.desc_tipo_evento AS "descTipoEvento"
+                                        B.nombre_evento AS "descTipoEvento"
                                     FROM eventos A JOIN EVENTOS B ON A.id_tipo_evento = B.id_tipo_evento
                                     WHERE A.fecha_desde_evento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
                                                                         AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }';`
         const eventosMes =  await prisma.$queryRawUnsafe( query_eventos );  
 
 
-
-        const query = `SELECT  CAST(A.id_agendamiento AS INTEGER) AS "idAgendamiento", 
+        console.log( "query de clases" );
+        const query = `SELECT  A.id_agendamiento AS "idAgendamiento", 
                                 B.id_profesor AS "idProfesor", 
                                 B.nombre_profesor AS "nombreProfesor", 
-                                CAST(A.id_socio AS INTEGER) AS "idSocio", 
+                                D.id_cliente AS "idCliente", 
                         		D.nombre_cmp AS "nombreCmp", 
                                 --A.fecha_agendamiento AS "fechaAgendamiento", 
-                                CAST(C.id_mesa AS INTEGER) AS "idMesa", 
+                                C.id_mesa AS "idMesa", 
                                 C.desc_mesa AS "descMesa", 
-                        		A.horario_inicio AS "horarioInicio", 
-                                A.horario_hasta AS "horarioHasta", 
+                        		A.horario_inicio AS "horaDesde", 
+                                A.horario_hasta AS "horaHasta", 
                                 A.clase_abonada AS "claseAgendada", 
                                 A.monto_abonado AS "montoAbonado",
                                 A.creadoen AS "fechaCreacion"
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
-                        	JOIN socio D ON D.id_socio = A.id_socio
-                        WHERE A.fecha_agendamiento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
-                                                        AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }'
+                        	JOIN cliente D ON D.id_cliente = A.id_cliente
+                        WHERE (A.horario_inicio, A.horario_hasta) OVERLAPS ( TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}', TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}')
                         ORDER BY A.fecha_agendamiento DESC`;
         //console.log( query );
         let clasesDelDia = [];
         clasesDelDia = await prisma.$queryRawUnsafe( query );  
 
-
-        const query2 = `SELECT CAST(A.id_socio_reserva AS INTEGER) AS "idSocioReserva", 
-                        		C.nombre || ', ' || C.apellido AS "nombreCmp",
+        //console.log( "query de reservas" );
+        const query2 = `SELECT A.id_cliente_reserva AS "idCliente", 
+                        		B.nombre || ', ' || B.apellido AS "nombreCmp",
                         		--A.fecha_reserva AS "fechaAgendamiento",
                         		A.fecha_creacion AS "fechaCreacion",
                         		A.hora_desde AS "horaDesde",
                         		A.hora_hasta AS "horaHasta",
                         		D.desc_mesa AS "descMesa",
-                        		CAST(D.id_mesa AS INTEGER) AS "idMesa"
-                        	FROM RESERVAS A JOIN SOCIO B ON A.id_socio = B.id_socio
-                        	JOIN PERSONA C ON C.id_persona = B.id_persona
+                        		D.id_mesa AS "idMesa"
+                        	FROM RESERVAS A JOIN CLIENTE B ON A.id_cliente = B.id_cliente
                         	JOIN MESAS D ON D.id_mesa = A.id_mesa
-                            JOIN PERSONA F ON F.id_persona = B.id_persona
-                        WHERE A.fecha_reserva BETWEEN TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}' 
-                                                    AND TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}'
+                        WHERE (A.hora_desde, A.hora_hasta) OVERLAPS ( TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}', TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}')
                         ORDER BY A.fecha_reserva DESC`;
-        //console.log( query );
+        console.log( query2 );
         const reservasClub = await prisma.$queryRawUnsafe( query2 );
 
         //console.log(  eventosMes, clasesDelDia, reservasClub )
+        if ( eventosMes.length === 0 && clasesDelDia.length === 0 && reservasClub.length === 0 ) {
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No existen Eventos dentro de las fechas en el calendario',
+                descipcion : `No existe ningun evento dentro del calendario`
+            } );
+        }else {
 
-        res.status( 200 ).json( {
-            status : true, 
-            msg : 'Todos los eventos en las fechas',
-            eventosFecha : {
-                eventos : eventosMes,
-                clases : clasesDelDia,
-                reservas : reservasClub
-            }
-        } );
-
-
-
+            res.status( 200 ).json( {
+                status : true, 
+                msg : 'Todos los eventos en las fechas',
+                eventosFecha : {
+                    eventos : eventosMes,
+                    clases : clasesDelDia,
+                    reservas : reservasClub
+                }
+            } );
+        }
         
     } catch (error) {
-                //console.log( error );
-                res.status( 500 ).json( {
-                    status : false,
-                    msg : `Ha ocurrido un error al obtener todo lo del mes ${error} `,
-                    //error
-                } );        
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al obtener todo lo del mes ${error} `,
+            //error
+        } );        
     }
 
 

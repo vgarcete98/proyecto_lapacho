@@ -167,6 +167,13 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
         let venta_socio = { };
         let ventas_de_cuotas = 0; 
         let query = ``;
+
+        let ingreso_por_cuota = await prisma.tipos_ingreso.findFirst( { 
+                                                                        where : { descripcion : 'CUOTAS' },
+                                                                        select : {
+                                                                            id_tipo_ingreso : true
+                                                                        } 
+                                                                    } );
         try {
             let cuota ;
             for (let element in cuotas) {
@@ -189,33 +196,26 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
                     //console.log( cuota )
                     let { descripcion, id_cliente, id_cuota_socio, monto_cuota, cliente} = cuota;
                     let { cedula } = cliente;
-                    query = `INSERT INTO public.ventas( id_cuota_socio, 
-                                                        id_cliente_reserva,
-                                                        id_inscripcion, 
-                                                        id_cliente, 
-                                                        estado, 
-                                                        monto, 
-                                                        fecha_operacion, 
-                                                        creado_en, 
-                                                        descripcion_venta, 
-                                                        creado_por,
-                                                        cedula)
-                                                        VALUES(
-                                                        ${Number( id_cuota_socio )},
-                                                        ${"NULL"},
-                                                        ${"NULL"},
-                                                        ${ Number(id_cliente) },
-                                                        '${ "PENDIENTE" }',
-                                                        ${ monto_cuota },
-                                                        ${ "NOW()" },
-                                                        ${"NOW()"},
-                                                        '${descripcion}',
-                                                        ${ 1 },
-                                                        '${ cedula }')`;
-                    //console.log( query );
-                    venta_socio = await prisma.$executeRawUnsafe(query);
-                    if( venta_socio ) {
+                    let venta = await prisma.ventas.create( { 
+                                                                data : {
+                                                                    creado_en : new Date( ),
+                                                                    creado_por : 1,
+                                                                    estado : 'PENDIENTE DE PAGO',
+                                                                    descripcion_venta : descripcion,
+                                                                    monto : monto_cuota,
+                                                                    cedula : cedula,
+                                                                    id_agendamiento : null,
+                                                                    id_cliente_reserva : null,
+                                                                    id_cuota_socio : id_cuota_socio,
+                                                                    id_cliente : id_cliente,
+                                                                    id_inscripcion : null,
+                                                                    fecha_operacion : new Date(),
+                                                                    id_tipo_ingreso : ingreso_por_cuota.id_tipo_ingreso
 
+                                                                }
+                                                            } );
+                    if( venta !== null ) {
+                        console.log( 'Venta generada' );
                         ventas_de_cuotas += 1;
                     }
                     //----------------------------------------------------------------------------------------------------------------------------

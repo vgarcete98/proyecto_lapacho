@@ -67,7 +67,7 @@ const { router_compras } = require('../routes/compras_routes');
 // LA FUNCION QUE SE VA EJECUTAR PARA GENERARME LAS CUOTAS DEL AÑO
 //----------------------------------------------------------------------------
 const job = schedule.scheduleJob('0 1 0 1 1 *', cron_job_genera_cuotas_anio);
-//const job_gastos_fijos = schedule.scheduleJob('0 0 1 * * *', cron_job_genera_gastos_fijos);
+const job_gastos_fijos = schedule.scheduleJob('0 0 1 * * *', cron_job_genera_gastos_fijos);
 //PARA TEST DEL CRON JOB
 //const job = schedule.scheduleJob('40 * * * *', cron_job_genera_cuotas_anio);
 //const job_gastos_fijos = schedule.scheduleJob('5 * * * * *', cron_job_genera_gastos_fijos);

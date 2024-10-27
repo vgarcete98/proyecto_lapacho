@@ -293,37 +293,56 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
     // VOY A COMPROBAR LAS CLASES QUE HAY EN EL DIA PRIMERO PARA PODER VER SI SE PUEDE RESERVAR O NO
     try {
         const { idCliente, idProfesor, /*fechaAgendamiento,*/ inicio, fin, idMesa } = req.body;
-        
-        const { id_agendamiento, id_socio, id_profesor, 
-                //fecha_agendamiento, 
-                horario_inicio, horario_hasta, 
-                clase_abonada, monto_abonado, creadoen } = await prisma.agendamiento_clase.create( { 
-                                                                                            data : { 
-                                                                                                        id_socio : idSocio,
-                                                                                                        id_profesor : idProfesor,
-                                                                                                        id_mesa : Number( idMesa ),
-                                                                                                        //fecha_agendamiento : generar_fecha( fechaAgendamiento ),
-                                                                                                        horario_inicio : new Date(inicio),
-                                                                                                        horario_hasta : new Date( fin ),
-                                                                                                        creadoen : new Date(),
-                                                                                                        //clase_eliminada : false,
-                                                                                                    } 
-                                                                                        } );
-        const { nombre_profesor } = await prisma.profesores.findUnique( { where : { id_profesor :  Number( idProfesor )} } );
-        const { nombre_cmp } = await prisma.socio.findUnique( { where : { id_socio :  Number( idSocio )} } );
-        const { desc_mesa, id_mesa } = await prisma.mesas.findUnique( { where : { id_mesa :  Number( idMesa )} } );
+        const fecha_desde_format = new Date ( inicio );
 
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Clase Creada",
-            descripcion : "Clase Agendada"
-        } );
+        const fecha_hasta_format = new Date ( fin );   
+
+        const precio_clase = await prisma.precio_clase.findFirst( { 
+                                                                    where : {
+                                                                        creado_en : { 
+                                                                            gte : fecha_desde_format
+                                                                        },
+                                                                        creado_en : {
+                                                                            lte : fecha_hasta_format
+                                                                        }
+                                                                    } 
+                                                                } );
+        const clase_nueva = await prisma.agendamiento_clase.create( { 
+                                                                        data : { 
+                                                                                    id_cliente : Number( idCliente ),
+                                                                                    id_profesor : Number(idProfesor),
+                                                                                    id_mesa : Number( idMesa ),
+                                                                                    //fecha_agendamiento : generar_fecha( fechaAgendamiento ),
+                                                                                    horario_inicio : fecha_desde_format,
+                                                                                    horario_hasta : fecha_hasta_format,
+
+                                                                                    creadoen : new Date(),
+                                                                                    id_precio_clase : precio_clase.id_precio_clase,
+                                                                                    monto_abonado : precio_clase.precio
+                                                                                    //clase_eliminada : false,
+                                                                                } 
+                                                                    } );
+        if ( clase_nueva !== null ) {
+            
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Clase Creada",
+                descripcion : "Clase Agendada"
+            } );
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : "La clase no logro ser generada",
+                descripcion : "Favor verifique que la clase fue generada"
+            } );
+        }
+
 
     } catch (error) {
-        //console.log ( error );
+        console.log ( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Ocurrio un error al insertar el registro : ${error}`,
+            msg : `Ocurrio un error al agendar la clase, favor intente de vuelta : ${error}`,
             //error
         } );
 
@@ -579,43 +598,55 @@ const agendar_una_clase_no_cliente = async ( req = request, res = response ) =>{
     // VOY A COMPROBAR LAS CLASES QUE HAY EN EL DIA PRIMERO PARA PODER VER SI SE PUEDE RESERVAR O NO
     try {
         const { idCliente, idProfesor, /*fechaAgendamiento,*/ inicio, fin, idMesa } = req.body;
-        
-        const { id_agendamiento, id_cliente, id_profesor, 
-                //fecha_agendamiento, 
-                horario_inicio, horario_hasta, 
-                clase_abonada, monto_abonado, creadoen } = await prisma.agendamiento_clase.create( { 
-                                                                                            data : { 
-                                                                                                        id_cliente : Number( idCliente ),
-                                                                                                        id_profesor : idProfesor,
-                                                                                                        id_mesa : Number( idMesa ),
-                                                                                                        //fecha_agendamiento : generar_fecha( fechaAgendamiento ),
-                                                                                                        horario_inicio : new Date(inicio),
-                                                                                                        horario_hasta : new Date( fin ),
-                                                                                                        creadoen : new Date(),
-                                                                                                        //clase_eliminada : false,
-                                                                                                    } 
-                                                                                        } );
-        const { nombre_profesor } = await prisma.profesores.findUnique( { where : { id_profesor :  Number( idProfesor )} } );
-        const { nombre_cmp } = await prisma.socio.findUnique( { where : { id_socio :  Number( idSocio )} } );
-        const { desc_mesa, id_mesa } = await prisma.mesas.findUnique( { where : { id_mesa :  Number( idMesa )} } );
+        const fecha_desde_format = new Date ( inicio );
 
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Clase Creada",
-            descripcion : "Clase Agendada"
-        } );
+        const fecha_hasta_format = new Date ( fin );   
+
+        const precio_clase = await prisma.precio_clase.findFirst( { 
+                                                                    where : {
+                                                                        valido : true
+                                                                    } 
+                                                                } );
+        const clase_nueva = await prisma.agendamiento_clase.create( { 
+                                                                        data : { 
+                                                                                    id_cliente : Number( idCliente ),
+                                                                                    id_profesor : Number(idProfesor),
+                                                                                    id_mesa : Number( idMesa ),
+                                                                                    //fecha_agendamiento : generar_fecha( fechaAgendamiento ),
+                                                                                    horario_inicio : fecha_desde_format,
+                                                                                    horario_hasta : fecha_hasta_format,
+                                                                                    
+                                                                                    creadoen : new Date(),
+                                                                                    id_precio_clase : precio_clase.id_precio_clase,
+                                                                                    monto_abonado : precio_clase.precio
+                                                                                    //clase_eliminada : false,
+                                                                                } 
+                                                                    } );
+        if ( clase_nueva !== null ) {
+            
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Clase Creada",
+                descripcion : "Clase Agendada"
+            } );
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : "La clase no logro ser generada",
+                descripcion : "Favor verifique que la clase fue generada"
+            } );
+        }
+
 
     } catch (error) {
-        //console.log ( error );
+        console.log ( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Ocurrio un error al insertar el registro : ${error}`,
+            msg : `Ocurrio un error al agendar la clase, favor intente de vuelta : ${error}`,
             //error
         } );
 
     }
-
-
 
 }
 

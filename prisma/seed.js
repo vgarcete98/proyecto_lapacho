@@ -241,23 +241,24 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
   //                                                                                  );
   const tipos_ingresos = await prisma.tipos_ingreso.createMany( {
                                                               data : [
-                                                                { descripcion : "CUOTAS"  },
-                                                                { descripcion : "TORNEOS"  },
-                                                                { descripcion : "CANTINA"  },
-                                                                { descripcion : "DONACION"  },
-                                                                { descripcion : "ACTIVIDADES"  },
-                                                                { descripcion : "ALQUILER_CLUB_MESAS"  },
+                                                                { descripcion : "CUOTAS", creado_en : new Date(), creado_por : 1  },
+                                                                { descripcion : "CLASES PARTICULARES", creado_en : new Date(), creado_por : 1 },
+                                                                { descripcion : "TORNEOS", creado_en : new Date(), creado_por : 1  },
+                                                                { descripcion : "CANTINA", creado_en : new Date(), creado_por : 1  },
+                                                                { descripcion : "DONACION", creado_en : new Date(), creado_por : 1  },
+                                                                { descripcion : "ACTIVIDADES", creado_en : new Date(), creado_por : 1  },
+                                                                { descripcion : "ALQUILER CLUB MESAS", creado_en : new Date(), creado_por : 1  },
                                                               ]
                                                             });
 
   const tipos_egresos = await prisma.tipos_egreso.createMany( {
                                                               data : [
-                                                                { descripcion : "LIMPIEZA"  },
-                                                                { descripcion : "SERVICIO_DE_AGUA", gasto_fijo : true },
-                                                                { descripcion : "SERVICIO_DE_LUZ", gasto_fijo : true  },
-                                                                { descripcion : "ALQUILER_LOCAL", gasto_fijo : true  },
-                                                                { descripcion : "MANTENIMIENTO_DEL_CLUB"  },
-                                                                { descripcion : "SERVICIO_DE_INTERNET", gasto_fijo : true  },
+                                                                { descripcion : "LIMPIEZA", creado_en : new Date(), creado_por : 1  },
+                                                                { descripcion : "SERVICIO DE AGUA", gasto_fijo : true, creado_en : new Date(), creado_por : 1 },
+                                                                { descripcion : "SERVICIO DE LUZ", gasto_fijo : true, creado_en : new Date(), creado_por : 1  },
+                                                                { descripcion : "ALQUILER LOCAL", gasto_fijo : true, creado_en : new Date(), creado_por : 1  },
+                                                                { descripcion : "MANTENIMIENTO DEL CLUB", creado_en : new Date(), creado_por : 1  },
+                                                                { descripcion : "SERVICIO DE INTERNET", gasto_fijo : true, creado_en : new Date(), creado_por : 1  },
                                                               ]
                                                             });
 
@@ -397,18 +398,43 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                 BEGIN
                                                                   -- SELECCIONO TODOS LOS SOCIOS ACTIVOS
                                                                   --DEBO RECORRER TODOS LOS DATOS DE MI CONSULTA E IR INSERTANDO EN LA TABLA DE CUOTAS
-                                                                    FOR socio_fila IN (	SELECT DISTINCT (A.ID_CLIENTE) AS SOCIO, C.ID_TIPO_DESCUENTO as TIPO_DESC, D.ID_TIPO_CUOTA AS TIPO_CUOTA
-                                                                                FROM CLIENTE A JOIN CUOTAS_SOCIO B ON A.ID_CLIENTE = B.ID_CLIENTE
-                                                                                JOIN tipo_descuento C  ON C.id_tipo_descuento = B.id_tipo_descuento
-                                                                                JOIN tipo_cuota D ON D.id_tipo_cuota = B.id_tipo_cuota
-                                                                              WHERE ESTADO_SOCIO = 1) LOOP
+                                                                    FOR socio_fila IN (	SELECT DISTINCT (A.ID_CLIENTE) AS SOCIO,
+																					   			A.NOMBRE_CMP AS NOMBRE_CMP,
+																					   			A.NOMBRE AS NOMBRE,
+																					   			A.APELLIDO AS APELLIDO,
+																								C.ID_TIPO_SOCIO AS TIPO_SOCIO,
+																					   			C.DESC_TIPO_SOCIO AS DESC_SOCIO,
+																					   			D.ID_PRECIO_CUOTA AS ID_PRECIO,
+																					   			D.MONTO_CUOTA AS MONTO,
+																					   			D.DESC_TIPO_DESCUENTO AS TIPO_DESCUENTO,
+																					   			D.DESC_PRECIO_CUOTA AS DESCUENTO,
+																					   			D.PORC_DESCUENTO AS PORC_DESCUENTO
+     																						FROM CLIENTE A JOIN tipo_socio C  ON A.id_tipo_socio = C.id_tipo_socio
+                                                                                			JOIN precio_cuota D ON D.id_tipo_socio = C.id_tipo_socio
+                                                                              WHERE ESTADO_USUARIO = 'ACTIVO') LOOP
                                                                     FOR i IN 1..12 LOOP
                                                                     
-                                                                      fecha_vencimiento_cuota := DATE_TRUNC('MONTH', CURRENT_DATE + INTERVAL '1 month' * i) + INTERVAL '4 days';
-                                                                      INSERT INTO public.cuotas_socio( ID_CLIENTE, id_tipo_cuota, id_tipo_descuento, 
-                                                                                        fecha_vencimiento, descripcion)
-                                                                      VALUES (socio_fila.socio, socio_fila.tipo_cuota, socio_fila.tipo_desc, 
-                                                                          fecha_vencimiento_cuota, CONCAT ( 'CUOTA : ', fecha_vencimiento_cuota ) );
+                                                                      fecha_vencimiento_cuota := (SELECT (DATE_TRUNC('MONTH', CURRENT_DATE + INTERVAL '1 month' * i))::DATE + dia_vencimiento FROM VENCIMIENTO_CUOTAS WHERE VALIDO = TRUE LIMIT 1);
+                                                                      INSERT INTO public.cuotas_socio(id_cliente, 
+																									  id_vencimiento, 
+																									  id_precio_cuota, 
+																									  fecha_vencimiento, 
+																									  descripcion, 
+																									  descuento, 
+																									  pago_realizado, 
+																									  fecha_pago_realizado, 
+																									  monto_cuota, 
+																									  estado)
+																			 				VALUES (socio_fila.socio, 
+																									(SELECT ID_VENCIMIENTO FROM VENCIMIENTO_CUOTAS WHERE VALIDO = TRUE LIMIT 1),
+																									socio_fila.id_precio,
+																									fecha_vencimiento_cuota,
+																									CONCAT ( 'CUOTA : ', MES_EN_ESPANOL( TO_CHAR( fecha_vencimiento_cuota, 'Month' ) ), ' ,SOCIO :', socio_fila.nombre_cmp ),
+																									socio_fila.porc_descuento, 
+																									FALSE, 
+																				  					NULL,
+																									socio_fila.monto,
+																									'PENDIENTE');
                                                                     END LOOP;
                                                                 
                                                                 
@@ -544,6 +570,63 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
   //
   //                                                    } );                                                                      
   //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+  const crea_gastos_fijos = await prisma.gastos_fijos.createMany( { 
+                                                                    data : [
+                                                                      { creado_en : new Date(), creado_por : 1, fecha_vencimiento : new Date( (new Date()).getFullYear(), (new Date()).getMonth(), 5 ), id_tipo_egreso : 4, monto : 4500000, descripcion_gasto_fijo : 'ALQUILER' },
+                                                                      { creado_en : new Date(), creado_por : 1, fecha_vencimiento : new Date( (new Date()).getFullYear(), (new Date()).getMonth(), 5 ), id_tipo_egreso : 1, monto : 480000, descripcion_gasto_fijo : 'LIMPIEZA GENERAL' },
+                                                                      { creado_en : new Date(), creado_por : 1, fecha_vencimiento : new Date( (new Date()).getFullYear(), (new Date()).getMonth(), 5 ), id_tipo_egreso : 3, monto : 350000, descripcion_gasto_fijo : 'ANDE, LUZ' },
+                                                                      { creado_en : new Date(), creado_por : 1, fecha_vencimiento : new Date( (new Date()).getFullYear(), (new Date()).getMonth(), 5 ), id_tipo_egreso : 2, monto : 40000, descripcion_gasto_fijo : 'ESSAP AGUA' },
+                                                                      { creado_en : new Date(), creado_por : 1, fecha_vencimiento : new Date( (new Date()).getFullYear(), (new Date()).getMonth(), 5 ), id_tipo_egreso : 6, monto : 140000, descripcion_gasto_fijo : 'INTERNET' },
+                                                                      { creado_en : new Date(), creado_por : 1, fecha_vencimiento : new Date( (new Date()).getFullYear(), (new Date()).getMonth(), 5 ), id_tipo_egreso : 1, monto : 70000, descripcion_gasto_fijo : 'ARTICULOS DE LIMPIEZA' },
+                                                                      //{ creado_en : new Date(), creado_por : 1, fecha_vencimiento : new Date( (new Date()).getFullYear(), (new Date()).getMonth(), 5 ), id_tipo : 1, monto : 40000, descripcion_gasto_fijo : '' }
+                                                                    ] 
+
+                                                                } );
+  
+  const crea_procedimiento_gastos_fijos = await prisma.$executeRaw`CREATE OR REPLACE PROCEDURE genera_gastos_fijos()
+                                                                AS $$
+                                                                DECLARE
+                                                                    gastos_fijos RECORD;
+                                                                BEGIN
+                                                                  --DEBO RECORRER TODOS LOS DATOS DE MI CONSULTA E IR INSERTANDO EN LA TABLA DE COMPRAS
+                                                                    FOR gastos_fijos IN ( SELECT ID_GASTO_FIJO,
+                                                                    ID_TIPO_EGRESO,
+                                                                    MONTO,
+                                                                    DESCRIPCION_GASTO_FIJO,
+                                                                    FECHA_VENCIMIENTO
+                                                                  FROM GASTOS_FIJOS ) LOOP
+                                                        
+                                                                                        INSERT INTO public.compras(id_cliente, 
+                                                                        id_insumo, 
+                                                                      id_gasto_fijo, 
+                                                                      descripcion, 
+                                                                      estado, 
+                                                                      creado_en, 
+                                                                      creado_por,
+                                                                      fecha_operacion, 
+                                                                      monto, 
+                                                                      cedula, 
+                                                                      proveedor)
+                                                                VALUES (
+                                                                      1,
+                                                                      NULL,
+                                                                      gastos_fijos.id_gasto_fijo,
+                                                                      gastos_fijos.descripcion_gasto_fijo,
+                                                                      'PENDIENTE DE PAGO',
+                                                                      CURRENT_TIMESTAMP,
+                                                                      1,
+                                                                      gastos_fijos.fecha_vencimiento,
+                                                                      gastos_fijos.monto,
+                                                                      '',
+                                                                      NULL
+                                                                    );
+                                                                                    
+                                                                                        END LOOP;
+
+                                                                                    END $$ LANGUAGE plpgsql;`;
+
 }
 
 

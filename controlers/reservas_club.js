@@ -328,8 +328,13 @@ const borrar_reserva_en_club = async ( req = request, res = response ) => {
 
     try {
         const { idReserva, idSocio, fechaReserva, horaDesde, horaHasta, idMesa } = req.body;
-        const reserva_cancelada = await prisma.reservas.delete( { 
-            where : { id_socio_reserva : Number( idReserva ) }
+        const reserva_cancelada = await prisma.reservas.update( { 
+            where : { id_socio_reserva : Number( idReserva ) },
+            data : {  
+                estado : 'CANCELADO',
+                reserva_editada : new Date(),
+
+            }
         } );
 
         const { fecha_creacion, fecha_reserva, hora_desde, 
@@ -459,9 +464,7 @@ const realizar_reserva_via_bff = async ( req = request, res = response ) =>{
               console.log(error);
             });
 
-        }
-
-        
+        }    
         
     } catch (error) {
         //console.log ( error );
@@ -485,7 +488,12 @@ const agregar_reserva_a_venta = async ( req = request, res = response ) =>{
         const { reservas } = req.body;
         
         let reservas_añadidas = 0;
-
+        let ingreso_por_reserva = await prisma.tipos_ingreso.findFirst( { 
+            where : { descripcion : 'ALQUILER CLUB MESAS' },
+            select : {
+                id_tipo_ingreso : true
+            } 
+        } );
 
         for (const element of reservas) {
             
@@ -510,10 +518,15 @@ const agregar_reserva_a_venta = async ( req = request, res = response ) =>{
                             id_cliente : cliente.id_cliente,
                             id_inscripcion : null,
                             id_cuota_socio : null,
-                            id_cliente_reserva : id_cliente_reserva
+                            id_cliente_reserva : id_cliente_reserva,
+                            id_agendamiento : null,
+                            id_tipo_ingreso : ingreso_por_reserva.id_tipo_ingreso
                         }
                     } );
-                    reservas_añadidas += 1;
+                    if( nueva_venta !== null ) {
+
+                        reservas_añadidas += 1;
+                    }
                 }
             } catch (error) {
                 console.log ( error )

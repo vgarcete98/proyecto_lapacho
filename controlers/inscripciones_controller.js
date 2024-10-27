@@ -593,7 +593,12 @@ const agregar_inscripciones_a_venta = async ( req = request, res = response ) =>
         const { inscripciones } = req.body;
         
         let inscripciones_añadidas = 0;
-
+        let ingreso_por_inscripcion = await prisma.tipos_ingreso.findFirst( { 
+            where : { descripcion : 'TORNEOS' },
+            select : {
+                id_tipo_ingreso : true
+            } 
+        } );
 
         for (const element of inscripciones) {
             
@@ -618,7 +623,10 @@ const agregar_inscripciones_a_venta = async ( req = request, res = response ) =>
                             id_cliente : cliente.id_cliente,
                             id_inscripcion : inscripcion.id_inscripcion,
                             id_cuota_socio : null,
-                            id_cliente_reserva : null
+                            id_cliente_reserva : null,
+                            id_tipo_ingreso : ingreso_por_inscripcion.id_tipo_ingreso,
+                            id_agendamiento : null,
+                            
                         }
                     } );
                     ( nueva_venta !== null )? console.log( 'Venta registrada con exito' ) : console.log( 'No se registro la venta' );
