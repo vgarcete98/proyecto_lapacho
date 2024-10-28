@@ -137,21 +137,24 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
 
 
         const { id_caja, cantidad, pagina, fecha_desde, fecha_hasta } = req.query;
+
+
         //ESTO ES PARA REALIZARLO DE UNA FORMA MAS RESUMIDA
         const query = `SELECT X.nro_comprobante AS "nroComprobante", 
                                 X.tipo_comprobante AS "tipoComprobante",
                                 X.tipo_operacion AS "tipoOperacion",
-                                SUM(X.monto) AS "monto"
-                                            FROM (SELECT CASE WHEN A.NRO_FACTURA IS NULL THEN A.NRO_COMPROBANTE ELSE A.NRO_FACTURA END AS "nro_comprobante",
-                                                        CASE WHEN A.NRO_FACTURA IS NULL THEN 'FACTURA' ELSE 'COMPROBANTE' END AS "tipo_comprobante",
+                                SUM(X.monto) :: INTEGER AS "monto"
+                                            FROM (SELECT CASE WHEN ( A.NRO_FACTURA IS NULL ) THEN A.NRO_COMPROBANTE ELSE A.NRO_FACTURA END AS "nro_comprobante",
+                                                        CASE WHEN ( A.NRO_FACTURA IS NOT NULL ) THEN 'FACTURA' ELSE 'COMPROBANTE' END AS "tipo_comprobante",
                                                         CASE WHEN (A.ID_COMPRA IS NULL) THEN 'VENTA' ELSE 'COMPRA' END AS "tipo_operacion",
-                                                        CASE WHEN A.ID_COMPRA IS NULL THEN F.MONTO ELSE D.MONTO END AS "monto"
+                                                        CASE WHEN ( A.ID_COMPRA IS NOT NULL ) THEN F.MONTO ELSE D.MONTO END AS "monto"
                                                     FROM MOVIMIENTO_CAJA A JOIN CAJA B ON A.ID_CAJA = B.ID_CAJA
                                                     JOIN CLIENTE C ON C.ID_CLIENTE = A.ID_CLIENTE
-                                                    JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
-                                                    JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
-                                                WHERE A.fecha_operacion BETWEEN CURRENT_DATE - INTERVAL '5 DAYS' AND CURRENT_DATE - INTERVAL '10 DAYS') AS X
+                                                    LEFT JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
+                                                    LEFT JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
+                                                WHERE (A.fecha_operacion :: DATE ) BETWEEN ('${fecha_desde}' :: DATE) AND ('${fecha_hasta}' :: DATE)) AS X
                         GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion`;
+        console.log( query )
         const movimientos_de_caja = await prisma.$queryRawUnsafe(query)
 
         //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
@@ -170,7 +173,7 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
             res.status( 200 ).json( {
                 status : true,
                 msg : 'movimientos de caja',
-                movimientosDeCaja
+                movimientos_de_caja
                 //descipcion : `No existe ninguna venta generada para ese cliente`
             } ); 
         }
@@ -199,15 +202,17 @@ const obtener_detalle_movimiento_de_caja = async ( req = request, res = response
                         		A.ID_CLIENTE AS "idCliente",
                         		C.CEDULA AS "cedula",
                         		CONCAT( C.NOMBRE, ' ', C.APELLIDO ) AS "nombreCliente",
+                                CASE WHEN A.ID_COMPRA IS NOT NULL THEN F.DESCRIPCION ELSE D.DESCRIPCION_VENTA END AS "detalle",
                         		CASE WHEN (A.ID_COMPRA IS NULL) THEN 'VENTA' ELSE 'COMPRA' END AS "tipoOperacion",
                         		CASE WHEN A.NRO_FACTURA IS NULL THEN A.NRO_COMPROBANTE ELSE A.NRO_FACTURA END AS "nroComprobante",
-                        		CASE WHEN A.NRO_FACTURA IS NULL THEN 'FACTURA' ELSE 'COMPROBANTE' END AS "tipoComprobante",
-                        		CASE WHEN A.ID_COMPRA IS NULL THEN F.MONTO ELSE D.MONTO END AS "monto"
+                        		CASE WHEN A.NRO_FACTURA IS NOT NULL THEN 'FACTURA' ELSE 'COMPROBANTE' END AS "tipoComprobante",
+                        		CASE WHEN A.ID_COMPRA IS NOT NULL THEN F.MONTO ELSE D.MONTO END AS "monto"
                         	FROM MOVIMIENTO_CAJA A JOIN CAJA B ON A.ID_CAJA = B.ID_CAJA
                         	JOIN CLIENTE C ON C.ID_CLIENTE = A.ID_CLIENTE
-                        	JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
-                        	JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
-                        WHERE ${ ( nro_factura !== undefined ) ? `A.NRO_FACTURA = ${ nro_factura }` : `A.COMPROBANTE = ${ comprobante }` }`;
+                        	LEFT JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
+                        	LEFT JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
+                        WHERE ${ ( nro_factura !== undefined ) ? `A.NRO_FACTURA = '${ nro_factura }'` : `A.COMPROBANTE = '${ comprobante }'` }`;
+        console.log( query )
         const movimientos_de_caja = await prisma.$queryRawUnsafe(query)
         if ( movimientos_de_caja.length === 0  ){
 
@@ -230,6 +235,7 @@ const obtener_detalle_movimiento_de_caja = async ( req = request, res = response
 
         
     } catch (error) {
+        console.log( error )
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo realizar esa accion sobre la caja',
@@ -352,16 +358,14 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
         
         const { nroFactura, idCliente, cedula, tipoPago, nroComprobante, ventas } = req.body;
         
-        const venta_socio = [];
-
-        const compras_club = [];
+        let venta_socio = [];
 
         if ( ventas.length > 0  ){
 
             for (let element in ventas) {
                 //----------------------------------------------------------------------------------------------------------------------------
                 try { 
-                    let { idVenta , idSocioCuota, idReserva, fechaOperacion, monto, estado } = ventas[ element ];
+                    let { idVenta , idSocioCuota, idReserva, idInscripcion, fechaOperacion, monto, tipoServicio } = ventas[ element ];
                     
                     let { descripcion_venta } = await prisma.ventas.findUnique( { where : { id_venta : Number( idVenta ) } } );
 
@@ -388,20 +392,11 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                                                             id_venta : Number( idVenta ),
                                                                                             id_compra : null,
                                                                                             descripcion : descripcion_venta,
-                                                                                            creado_en : new Date()
+                                                                                            creado_en : new Date(),
+                                                                                            id_tipo_ingreso : Number(tipoServicio),
+                                                                                            fecha_operacion : new Date()
                                                                                         } 
                                                                                 } );
-
-                    let caja_actualizada = await prisma.caja.update( { 
-                                                                        data : {
-                                                                            monto_cierre : caja.monto_cierre + Number( monto ),
-                                                                            fecha_actualizacion : new Date(),
-                                                                            cliente_actualiza : 1
-                                                                        },
-                                                                        where : {
-                                                                            id_caja : caja.id_caja
-                                                                        } 
-                                                                    } );
                     //OK ACTUALIZO EL ESTADO DE LA VENTA A PAGADO
                     let actualiza_venta = await prisma.ventas.update( { 
                                                                         data : { 
@@ -424,12 +419,12 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                                                 descripcion : actualiza_venta.descripcion_venta,
                                                                                 id_movimiento_caja : movimientos_de_caja.id_movimiento_caja,
                                                                                 nro_factura : movimientos_de_caja.nro_factura,
-                                                                                id_tipo :  1
+                                                                                id_tipo_ingreso :  movimientos_de_caja.id_tipo_ingreso
                                                                             } 
                                                                         } );
 
                         if ( ingreso_club !== null ) { 
-                            console.log( `ingreso registrado con exito : ${ ingreso_club.column_d_operacion_ingreso }` );
+                            //console.log( `ingreso registrado con exito : ${ ingreso_club.column_d_operacion_ingreso }` );
                             venta_socio.push( { ingreso_club } );
                         }else {
                             console.log( `No se registro el ingreso de esa venta : ${ idVenta }` );
@@ -447,17 +442,18 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
             }
         }
 
+    //console.log( "Llegue hasta aca", ventas.length === venta_socio.length &&  ventas.length !==  0 && venta_socio.length !== 0 )
+    if ( ((ventas.length === venta_socio.length) && (ventas.length !==  0)) && (venta_socio.length !== 0) ){
 
-
-
-    if ( ventas.length === venta_socio.length &&   ventas.length !==  0 && venta_socio.length !== 0 ){
-        res.status( 200 ).json( {
+        console.log( "Llegue hasta aca");
+        return res.status( 200 ).json( {
             status : true,
             msg : 'Ventas Procesadas con exito',
             descipcion : `Se han procesado todas las ventas que se tenian disponibles`
-        } ); 
+        } );
+
     }else { 
-        res.status( 400 ).json( {
+        return res.status( 400 ).json( {
             status : false,
             msg : 'No se creo el tipo de pago solicitado',
             descipcion : `Ocurrio algo al crear el tipo de pago, favor intente de vuelta`
@@ -466,7 +462,7 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
 
     } catch (error) {
         console.log( error );
-        res.status( 500 ).json( {
+        return res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo realizar esa accion sobre la caja',
             //error

@@ -14,7 +14,7 @@ const verifica_ventas_existentes = async ( req = request, res = response, next )
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se le esta pasando ningun movimiento a caja',
-                descipcion : `Debe adjuntar al menos un movimiento de venta para procesar`
+                descripcion : `Debe adjuntar al menos un movimiento de venta para procesar`
             } ); 
         }else {
 
@@ -45,7 +45,7 @@ const verifica_compras_existentes = async ( req = request, res = response, next 
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se le esta pasando ningun movimiento a caja',
-                descipcion : `Debe adjuntar al menos un movimiento de compra para procesar`
+                descripcion : `Debe adjuntar al menos un movimiento de compra para procesar`
             } ); 
         }
 

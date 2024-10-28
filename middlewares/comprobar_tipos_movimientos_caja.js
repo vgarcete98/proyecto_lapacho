@@ -32,17 +32,18 @@ const verificar_ventas_a_caja = async ( req = request, res = response, next )=>{
             }
         }
         
-        if( verificados ) {
+        if( verificados === true ) {
 
             res.status( 400 ).json({
                 status : false,
                 msg : 'Un movimiento que se esta pasando no corresponde',
-                descipcion : `Favor verificar los movimientos a procesar`
+                descripcion : `Favor verificar los movimientos a procesar`
             })
 
-        }
+        }else{
 
-        next();
+            next();
+        }
 
     } catch (error) {
 
@@ -80,17 +81,19 @@ const verificar_compras_a_caja = async ( req = request, res = response, next )=>
             }
         }
         
-        if ( validado ) { 
+        if ( validado === true ) { 
 
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Un movimiento que se esta pasando no corresponde',
-                descipcion : `Favor verificar los movimientos a procesar`
+                descripcion : `Favor verificar los movimientos a procesar`
             } ); 
 
+        }else {
+
+            next();
         }
 
-        next();
             
     } catch (error) {
 
@@ -106,50 +109,48 @@ const verificar_compras_a_caja = async ( req = request, res = response, next )=>
 
 
 
-const verificar_ventas_procesadas = async ( req = request, res = response, next )=>{
+const verificar_ventas_procesadas = async (req = request, res = response, next) => {
 
     try {
-        
         const { ventas } = req.body;
+        
         let verificados = false;
-        for (let element in ventas) {
-            //----------------------------------------------------------------------------------------------------------------------------
-            try { 
-                let { idVenta  } = ventas[ element ];
-                
-                let venta = await prisma.movimiento_caja.findFirst( { where : { id_venta : Number( idVenta ) } } );
-                if ( venta !== null ){
+        for (let venta of ventas) {
+            try {
+                // Extraer idVenta directamente del objeto venta
+                let { idVenta } = venta;
+                let movimiento = await prisma.movimiento_caja.findFirst({
+                    where: { id_venta: Number(idVenta) }
+                });
+
+                console.lof( movimiento )
+                if (movimiento !== null) {
                     verificados = true;
-                    break;
+                    break;  // Si ya se encontró, no es necesario seguir verificando
                 }
-            }catch ( error ){
-                console.log( `No se logro verificar esa venta que se adjunto ${ error }` )
+
+            } catch (error) {
+                console.log(`No se logró verificar esa venta que se adjuntó: ${error}`);
             }
         }
-        
-        if ( verificados ){
-            return res.status( 400 ).json( {
-                status : false,
-                msg : 'Un movimiento que se esta pasando ya se proceso',
-                descipcion : `Favor verificar los movimientos a procesar ya que algunos fueron procesados`
-            } );
-        }else {
-            
-            next();
+        console.log( verificados )
+        if (verificados === true) {
+            res.status(400).json({
+                status: false,
+                msg: 'Un movimiento que se está pasando ya fue procesado',
+                descripcion: 'Favor verificar los movimientos a procesar ya que algunos fueron procesados',
+            });
         }
-
-
+        next();
     } catch (error) {
-
-        console.log(error );
-        res.status( 500 ).json( {
-            status : false,
-            msg : 'No se lograron verificar las ventas, favor intente de nuevo',
-            //error
-        } );
+        console.log( error );
+        res.status(500).json({
+            status: false,
+            msg: 'No se lograron verificar las ventas, favor intente de nuevo',
+        });
     }
 
-}
+};
 
 
 
@@ -179,7 +180,7 @@ const verificar_compras_procesadas = async ( req = request, res = response, next
             return res.status( 400 ).json( {
                 status : false,
                 msg : 'Un movimiento que se esta pasando ya se proceso',
-                descipcion : `Favor verificar los movimientos a procesar ya que algunos fueron procesados`
+                descripcion : `Favor verificar los movimientos a procesar ya que algunos fueron procesados`
             } );
         }else {
 

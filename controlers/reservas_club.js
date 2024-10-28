@@ -56,7 +56,7 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
                                 ${ ( nro_cedula === undefined ) ? `` : `AND B.cedula  = '${ nro_cedula }'` }
                         ORDER BY A.fecha_reserva DESC
                         LIMIT 10 OFFSET ${Number(pagina) -1 };`;
-        console.log( query );
+        //console.log( query );
         const reservasClub = await prisma.$queryRawUnsafe( query );
         
         if ( reservasClub.length === 0 ) {
@@ -95,22 +95,29 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
     try {
 
         const { idCliente, horaDesde, horaHasta, idMesa, idPrecioReserva, montoReserva } = req.body;
+        
+        //-----------------------------------------------------------------------------------------
+        //PRIMERAMENTE VAMOS A BUSCAR EL PRECIO ESTABLECIDO PARA QUE SEA UN POCO MAS DINAMICO
+        let fecha_desde = generar_fecha(horaDesde),
+            fecha_hasta = generar_fecha(horaHasta);
+        //-----------------------------------------------------------------------------------------
 
+        //console.log( montoReserva );
         const nueva_reserva = await prisma.reservas.create( { 
                                                                     data : {
                                                                         id_cliente : Number(idCliente),
                                                                         fecha_creacion : new Date(),
                                                                         //fecha_reserva : generar_fecha( fechaAgendamiento ),
                                                                         fecha_reserva : new Date(),
-                                                                        hora_desde : generar_fecha(horaDesde),
-                                                                        hora_hasta : generar_fecha(horaHasta),
-                                                                        id_mesa : idMesa,
+                                                                        hora_desde : fecha_desde,
+                                                                        hora_hasta : fecha_hasta,
+                                                                        id_mesa : Number(idMesa),
                                                                         estado : 'PENDIENTE',
                                                                         monto : Number(montoReserva),
                                                                         creado_en : new Date(),
                                                                         id_precio_reserva : Number( idPrecioReserva ),
                                                                         creado_por : 1,
-
+                                                                        
                                                                     } 
                                                                 });
         
@@ -568,6 +575,61 @@ const agregar_reserva_a_venta = async ( req = request, res = response ) =>{
 
 }
 
+const setear_precio_reservas = async ( req = request, res = response ) =>{
+
+
+    try {
+        
+        const { fechaPrecio, monto } = req.body;
+
+        const monto_nuevo = await prisma.precio_reservas.create( { 
+                                                                    data : {
+                                                                        monto_reserva : Number( monto ),
+                                                                        creado_en: new Date(),
+                                                                        fecha_precio : new Date(fechaPrecio),
+                                                                        valido : true,
+                                                                        porc_descuento : 0
+                                                                    } 
+                                                                } );
+
+
+        if ( monto_nuevo !== null ){
+
+            res.status( 200 ).json(
+                {
+    
+                    status : true,
+                    msj : 'Precio de las reservas establecido',
+                    descripcion : `El precio nuevo de la reserva fue fijado correctamente`
+                }
+            );   
+        }else {
+            res.status( 400 ).json(
+                {
+    
+                    status : false,
+                    msj : 'No se logro setear el precio que se adjunto',
+                    descripcion : `Favor intente de nuevo, hubo un error al fijar el precio de las reservas`
+                }
+            ); 
+        }
+        
+        
+    } catch (error) {
+        //console.log ( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al eliminar la reserva : ${ error }`,
+            //error
+        } );
+
+    }
+
+}
+
+
+
+
 
 
 module.exports = {
@@ -579,5 +641,6 @@ module.exports = {
     obtener_mesas_disponibles_x_horario,
     realizar_reserva_via_bff,
     crear_reserva_en_club_administrador,
-    agregar_reserva_a_venta
+    agregar_reserva_a_venta,
+    setear_precio_reservas
 };

@@ -10,7 +10,8 @@ const { borrar_reserva_en_club,
         obtener_mesas_disponibles_x_horario,
         realizar_reserva_via_bff,
         crear_reserva_en_club_administrador,
-        agregar_reserva_a_venta} = require( '../controlers/reservas_club' );
+        agregar_reserva_a_venta,
+        setear_precio_reservas} = require( '../controlers/reservas_club' );
 const { verificar_existe_reserva } = require('../helpers/verificar_existe_reserva');
 const { verifica_precio_de_reservas } = require('../middlewares/verficar_precio_reservas');
 const { verificar_reservas_generadas } = require('../middlewares/verificar_reservas_generadas');
@@ -38,5 +39,6 @@ router_reservas_club.post( '/obtener_mesas_disponibles_x_horario',[ ], obtener_m
 
 router_reservas_club.post( '/realizar_reserva_via_bff',[ verificar_acceso_usuario, ], realizar_reserva_via_bff );
 
+router_reservas_club.post( '/setear_precio_reservas',[ verificar_acceso_usuario, ], setear_precio_reservas );
 
 module.exports = router_reservas_club;
