@@ -73,7 +73,7 @@ const job_gastos_fijos = schedule.scheduleJob('0 0 1 * * *', cron_job_genera_gas
 //const job_cuotas_vencidas = schedule.scheduleJob( '0 0 0 0 1 *', cron_job_genera_venta_cuotas_vencidas );
 //PARA TEST DEL CRON JOB
 //const job = schedule.scheduleJob('40 * * * *', cron_job_genera_cuotas_anio);
-const job_cuotas_vencidas = schedule.scheduleJob( '5 * * * * *', cron_job_genera_venta_cuotas_vencidas );
+const job_cuotas_vencidas = schedule.scheduleJob( '* * 5 * * *', cron_job_genera_venta_cuotas_vencidas );
 //const job_gastos_fijos = schedule.scheduleJob('5 * * * * *', cron_job_genera_gastos_fijos);
 //----------------------------------------------------------------------------
 
