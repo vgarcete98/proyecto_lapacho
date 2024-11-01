@@ -217,6 +217,13 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
                     if( venta !== null ) {
                         console.log( 'Venta generada' );
                         ventas_de_cuotas += 1;
+                        let cuota_actualizada = await prisma.cuotas_socio.update( { 
+                            where : { id_cuota_socio : id_cuota_socio  },
+                            data : {
+                                estado : 'PENDIENTE DE PAGO'
+                            } 
+                        
+                        } );
                     }
                     //----------------------------------------------------------------------------------------------------------------------------
 

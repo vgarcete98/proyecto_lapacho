@@ -134,6 +134,10 @@ const rutas = {
         ruta : "/compras"
     },
 
+    facturacion : {
+        ruta : "/facturacion"
+    }
+
 }
 
 

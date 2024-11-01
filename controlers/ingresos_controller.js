@@ -14,14 +14,12 @@ const { generar_fecha } = require( '../helpers/generar_fecha' )
 const columnas_ingresos = [
 
     { key : 'id_operacion_ingreso', header : 'Numero registro',  width: 20  },
-    { key : 'nombre_usuario', header : 'Nombre Usuario',  width: 20 },            
-    { key : 'nombre_completo', header : 'Nombre Completo',  width: 20 },            
-    { key : 'cedula', header : 'Cedula',  width: 20 },            
-    { key : 'comentario', header : 'Comentario',  width: 20 },            
+    { key : 'descripcion', header : 'descripcion',  width: 100 },           
+    { key : 'comentario', header : 'Comentario',  width: 20 }, 
+    { key : 'nro_factura', header : 'Factura',  width: 20 },           
     { key : 'monto', header : 'Monto',  width: 20 }, 
     { key : 'fecha_ingreso', header : 'Fecha de Operacion',  width: 20 },          
-    { key : 'cargado_en', header : 'Fecha de Carga',  width: 20 },            
-    { key : 'editado_en', header : 'Fecha de Edicion',  width: 20 }   
+    { key : 'cargado_en', header : 'Fecha de Carga',  width: 20 }
 
 ];
 
@@ -223,84 +221,38 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
 
         //console.log( req.query );
 
-        const { fechaDesde, fechaHasta, pagina } = req.query;
+        const { fechaDesde, fechaHasta, pagina, cantidad } = req.query;     
 
-
-        const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
-
-        const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
-
-        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
-
-        const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;        
-
-
-
-        const query_ingresos = `SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
-                                                    A.id_socio,
-                                                    B.nombre_usuario,
-                                                    B.nombre_cmp,
-                                                    A.id_tipo AS id_tipo_ingreso,
-                                                    C.descripcion AS tipo_ingreso,
-                                                    A.descripcion AS comentario,
-                                                    A.monto,
-                                                    A.fecha_ingreso AS fecha_ingreso,
-                                                    A.cargado_en AS fecha_carga,
-                                                    A.editado_en as fecha_actualizacion
-                                                FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
-                                                JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
-                                            WHERE A.fecha_ingreso BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+        const query_ingresos = `SELECT A.column_d_operacion_ingreso AS "idIngreso",
+                                                    A.id_tipo_ingreso AS "idTipoIingreso",
+                                                    C.descripcion AS "descripcion",
+                                                    A.descripcion AS "comentario",
+                                                    A.monto AS "monto",
+                                                    A.fecha_ingreso AS "fechaIngreso",
+                                                    A.cargado_en AS "fechaCarga",
+                                                    A.nro_factura AS "nroFactura"
+                                                FROM INGRESOS A JOIN TIPOS_INGRESO C ON A.id_tipo_ingreso = C.id_tipo_ingreso
+                                            WHERE A.fecha_ingreso BETWEEN DATE '${fechaDesde}' AND DATE '${fechaHasta}'
                                                 AND A.borrado = false
                                             ORDER BY A.fecha_ingreso DESC
-                                            LIMIT 20 OFFSET ${Number(pagina)};`
+                                            LIMIT ${ cantidad } OFFSET ${Number(pagina)};`
         //console.log( query_ingresos );
-        const query = await prisma.$queryRawUnsafe( query_ingresos );
+        const ingresosXFecha = await prisma.$queryRawUnsafe( query_ingresos );
 
-                                            
-        //console.log( query );
-        const ingresosXFecha = [];
-
-        if ( query.length > 0 ){
-
-            query.forEach( ( value )=>{
-
-                const { id_operacion_ingreso ,
-                        id_socio, 
-                        nombre_usuario, 
-                        nombre_cmp,
-                        id_tipo ,
-                        tipo_ingreso,
-                        comentario, 
-                        monto,
-                        fecha_ingreso, 
-                        fecha_carga,
-                        fecha_actualizacion  } = value;
-
-                ingresosXFecha.push( {
-                        idOperacionIngreso : id_operacion_ingreso ,
-                        idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio), 
-                        nombreUsuario : nombre_usuario, 
-                        nombreCmp : nombre_cmp,
-                        idTipo : id_tipo , 
-                        //nroFactura : nro_factura,
-                        tiposIngreso : tipo_ingreso,
-                        comentario, 
-                        monto, 
-                        fechaIngreso : fecha_ingreso,
-                        fechaCarga : fecha_carga,
-                        fechaActualizacion : fecha_actualizacion 
-                } )
-            });
-
+        if ( ingresosXFecha.length > 0 ){
+            
+            res.status( 200 ).json( {
+                status : true,
+                msj : `Ingresos de las fechas ${fechaDesde } y ${ fechaHasta }`,
+                ingresosXFecha                        
+            } );
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No se obtuvo ningun ingreso entre esas fechas',
+                descipcion : `No hay ningun ingreso para esas fechas`
+            } ); 
         }
-
-
-        res.status( 200 ).json( {
-            status : true,
-            msj : `Ingresos de las fechas ${fechaDesde } y ${ fechaHasta }`,
-            ingresosXFecha                        
-        } );
-
 
     } catch (error) {
         console.log( error );
@@ -319,60 +271,57 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
     
     try {
         
-        const { fechaDesde, fechaHasta } = req.query;
-        const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
-
-        const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
-
-        const fecha_desde_format = `${annio_desde}-${mes_desde}-${dia_desde}`;
-
-        const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;        
+        const { fechaDesde, fechaHasta } = req.query;    
 
         const query = `SELECT A.column_d_operacion_ingreso AS id_operacion_ingreso,
-                                                                B.nombre_usuario,
-                                                                CONCAT(F.apellido, ', ', F.nombre) as nombre_completo,
-                                                                F.cedula,
                                                                 C.descripcion AS tipo_ingreso,
                                                                 A.descripcion AS comentario,
                                                                 A.monto,
+																A.nro_factura AS nro_factura,
                                                                 A.fecha_ingreso AS fecha_ingreso,
                                                                 A.cargado_en AS fecha_carga,
                                                                 A.editado_en as fecha_actualizacion
-                                                            FROM INGRESOS A JOIN SOCIO B ON A.id_socio = B.id_socio
-															JOIN PERSONA F ON B.id_persona = F.id_persona
-                                                            JOIN TIPOS_INGRESO C ON A.id_tipo = C.id_tipo
-                                                        WHERE A.fecha_ingreso BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
+                                                            FROM INGRESOS A JOIN  TIPOS_INGRESO C ON A.id_tipo_ingreso = C.id_tipo_ingreso
+                                                        WHERE A.fecha_ingreso BETWEEN DATE '${fechaDesde}' AND DATE '${fechaHasta}'
                                                             AND A.borrado = false
                                                         ORDER BY A.fecha_ingreso DESC;`;
         //console.log( query )
         const ingresos_x_fecha = await prisma.$queryRawUnsafe( query );
 
-        //PARA  LO QUE SERIA EGRESOS
-        //----------------------------------------------------------------
-        const workbook_ingresos = new ExcelJS.Workbook();
-
-        const worksheet_ingresos = workbook_ingresos.addWorksheet('ingresos_lapacho');
-
-        // Defino las columnas
-        worksheet_ingresos.columns = columnas_ingresos;
-
-        ingresos_x_fecha.forEach( ( value )=>{
-            const { id_operacion_ingreso, nombre_completo, cedula,
-                    tipo_ingreso, comentario, monto, fecha_carga,
-                    fecha_actualizacion, nombre_usuario } = value;
-
-            worksheet_ingresos.addRow( { 
-                                            id_operacion_ingreso, nombre_completo, cedula,
-                                            tipo_ingreso, comentario, monto, fecha_carga,
-                                            fecha_actualizacion, nombre_usuario 
-                                    } );
-        } );
-        const fecha_reporte = new Date();
-        let ruta = path.join( __dirname, `../reportes/${fecha_reporte.toLocaleString().split('/').join('_').split(':').join('_').split(', ').join( '_' )}.xlsx` );
-        await workbook_ingresos.xlsx.writeFile(ruta);
-        res.sendFile(ruta);
-
+        if ( ingresos_x_fecha.length > 0 ) {
             
+            //console.log( ingresos_x_fecha );
+            //PARA  LO QUE SERIA EGRESOS
+            //----------------------------------------------------------------
+            const workbook_ingresos = new ExcelJS.Workbook();
+    
+            const worksheet_ingresos = workbook_ingresos.addWorksheet('ingresos_lapacho');
+    
+            // Defino las columnas
+            worksheet_ingresos.columns = columnas_ingresos;
+    
+            ingresos_x_fecha.forEach( ( value )=>{
+                const { id_operacion_ingreso, tipo_ingreso, nro_factura,
+                        comentario, monto, fecha_carga,
+                        fecha_actualizacion, nombre_usuario } = value;
+    
+                worksheet_ingresos.addRow( { 
+                                                id_operacion_ingreso, tipo_ingreso, nro_factura,
+                                                comentario, monto, fecha_carga,
+                                                fecha_actualizacion, nombre_usuario 
+                                        } );
+            } );
+            const fecha_reporte = new Date();
+            let ruta = path.join( __dirname, `../reportes/${fecha_reporte.toLocaleString().split('/').join('_').split(':').join('_').split(', ').join( '_' )}.xlsx` );
+            await workbook_ingresos.xlsx.writeFile(ruta);
+            res.sendFile(ruta);
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No se obtuvo ningun movimiento entre esas fechas',
+                descipcion : `No hay ningun movimientos para esas fechas`
+            } ); 
+        }     
 
     } catch (error) {
         console.log( error );

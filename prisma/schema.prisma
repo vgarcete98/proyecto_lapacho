@@ -360,6 +360,7 @@ model movimiento_caja {
   id_tipo_pago       Int
   id_venta           Int?
   id_compra          Int?
+  id_factura         Int?
   id_tipo_ingreso    Int?
   id_cliente         Int
   id_tipo_egreso     Int?
@@ -377,6 +378,7 @@ model movimiento_caja {
   caja               caja           @relation(fields: [id_caja], references: [id_caja], onDelete: NoAction, onUpdate: NoAction, map: "caja_movimiento_caja_fk")
   cliente            cliente        @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_movimiento_caja_fk")
   compras            compras?       @relation(fields: [id_compra], references: [id_compra], onDelete: NoAction, onUpdate: NoAction, map: "compras_movimiento_caja_fk")
+  facturas           facturas?      @relation(fields: [id_factura], references: [id_factura], onDelete: NoAction, onUpdate: NoAction, map: "facturas_movimiento_caja_fk")
   tipo_pago          tipo_pago      @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "tipo_pago_movimiento_caja_fk")
   tipos_egreso       tipos_egreso?  @relation(fields: [id_tipo_egreso], references: [id_tipo_egreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_egreso_movimiento_caja_fk")
   tipos_ingreso      tipos_ingreso? @relation(fields: [id_tipo_ingreso], references: [id_tipo_ingreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_ingreso_movimiento_caja_fk")
@@ -523,4 +525,31 @@ model gastos_fijos {
   fecha_vencimiento      DateTime     @db.Date
   compras                compras[]
   tipos_egreso           tipos_egreso @relation(fields: [id_tipo_egreso], references: [id_tipo_egreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_egreso_gastos_fijos_fk")
+}
+
+model facturas {
+  id_factura      Int               @id(map: "facturas_pk") @default(autoincrement())
+  nro_timbrado    Int
+  nro_factura     String            @db.VarChar(255)
+  fecha_emision   DateTime?         @db.Date
+  ruc_cliente     String?           @db.VarChar(255)
+  total_iva       Int?
+  condicion_venta String?           @default("C") @db.VarChar(2)
+  monto_total     Int?
+  timbrado        timbrado          @relation(fields: [nro_timbrado], references: [nro_timbrado], onDelete: NoAction, onUpdate: NoAction, map: "timbrado_facturas_fk")
+  movimiento_caja movimiento_caja[]
+}
+
+model timbrado {
+  nro_timbrado        Int        @id(map: "timbrado_pk") @default(autoincrement())
+  cod_establecimiento String     @default("001") @db.VarChar(5)
+  punto_expedicion    String     @default(dbgenerated("1")) @db.VarChar(5)
+  fecha_autorizacion  DateTime?  @db.Date
+  fecha_vencimiento   DateTime   @db.Date
+  numero_desde        Int
+  numero_hasta        Int
+  ruc_emisor          String?    @db.VarChar(255)
+  razon_social        String?    @db.VarChar(255)
+  direccion           String?    @db.VarChar(255)
+  facturas            facturas[]
 }

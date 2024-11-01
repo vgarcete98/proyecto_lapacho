@@ -51,12 +51,14 @@ const { validar_existe_usuario_socio } = require( '../middlewares/validar_existe
 const { obtener_data_socio } = require('../helpers/verficar_socio_carga');
 const router_agendamientos_clase = require('../routes/agendamiento_clases_routes');
 const { comprobar_acceso_rol, cargar_rutas_rol } = require('../helpers/comprobar_acceso_rol');
+const { router_facturacion } = require( '../routes/facturacion_route' );
 //----------------------------------------------------------------------------
 
 //CRON JOBS QUE VOY A NECESITAR
 //----------------------------------------------------------------------------
 const { cron_job_genera_cuotas_anio } = require( '../helpers/cron_job_genera_cuotas_anio' );
 const { cron_job_genera_gastos_fijos } = require( '../helpers/cron_job_genera_cuotas_anio' );
+const { cron_job_genera_venta_cuotas_vencidas } = require( '../cuotas/genera_venta_cuotas_vencidas' )
 const router_caja_chica = require('../routes/caja_chica_routes');
 const router_parametros = require('../routes/parametros_routes');
 const router_caja = require('../routes/caja_routes');
@@ -68,8 +70,10 @@ const { router_compras } = require('../routes/compras_routes');
 //----------------------------------------------------------------------------
 const job = schedule.scheduleJob('0 1 0 1 1 *', cron_job_genera_cuotas_anio);
 const job_gastos_fijos = schedule.scheduleJob('0 0 1 * * *', cron_job_genera_gastos_fijos);
+//const job_cuotas_vencidas = schedule.scheduleJob( '0 0 0 0 1 *', cron_job_genera_venta_cuotas_vencidas );
 //PARA TEST DEL CRON JOB
 //const job = schedule.scheduleJob('40 * * * *', cron_job_genera_cuotas_anio);
+const job_cuotas_vencidas = schedule.scheduleJob( '5 * * * * *', cron_job_genera_venta_cuotas_vencidas );
 //const job_gastos_fijos = schedule.scheduleJob('5 * * * * *', cron_job_genera_gastos_fijos);
 //----------------------------------------------------------------------------
 
@@ -184,7 +188,9 @@ class Server {
         
         this.app.use( rutas.ventas.ruta, router_pagos );
 
-        this.app.use( rutas.compras.ruta, router_compras );        
+        this.app.use( rutas.compras.ruta, router_compras );    
+        
+        this.app.use( rutas.facturacion.ruta, router_facturacion );
     
     }
 

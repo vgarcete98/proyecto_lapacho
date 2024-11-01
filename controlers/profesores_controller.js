@@ -441,53 +441,42 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
 
     // SERIA MEJOR METER EL ID DEL PROFESOR EN EL QUERY PARAM Y EN EL BODY LOS DATOS NUEVOS
     // LO MISMO PARA EDITAR SOLO QUE AQUI EDITO UN SOLO CAMPO
-
-    const { id_profesor_delete } = req.params;
-    //const { contacto_nuevo, nuevo_costo } = req.body;
-    const fecha_edicion = new Date();
-    
     try {
+        const { idProfesor } = req.body;
         const profesor_editado = await prisma.profesores.update( {
             where : {
-                id_profesor : Number(id_profesor_delete)
+                id_profesor : Number(idProfesor)
             },
 
             data : {
                 //contacto_profesor : contacto_nuevo,
                 //costo_x_hora : nuevo_costo,
-                editadoen : fecha_edicion,
+                editadoen : new Date(),
                 estado_profesor : estadosProfesor.ya_no_es_profesor
                 //profesor_borrado : true
             }
         } );
 
-        const { cedula, contacto_profesor, 
-                costo_x_hora, creadoen,
-                editadoen, estado_profesor, nombre_profesor } = profesor_editado;
-
-        const profesorEditado = {
-            cedula,
-            contactoProfesor : contacto_profesor,
-            costoXHora :costo_x_hora,
-            creadoEn : creadoen,
-            editadoEn : editadoen,
-            estadoProfesor : estado_profesor,
-            nombreProfesor : nombre_profesor
+        if ( profesor_editado !== null ){ 
+            
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Profesor eliminado correctamente",
+                descripcion : "El profesor ha sido borrado"
+            } );
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No Se borro al profesor seleccionado',
+                descipcion : `Favor intente realizar el borrado de vuelta`
+            } ); 
         }
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Profesor eliminado correctamente",
-            profesorEditado
-        } );
 
     } catch ( error ) {
         console.log( error );
         res.status( 400 ).json( {
             status : false,
             msg : "El profesor no se pudo eliminar correctamente",
-            //mensaje_error : "Id de profesor no existe",
-            //error,
-            //id_profesor_delete
         } );
 
     }
