@@ -703,9 +703,9 @@ const genera_factura = async ( datos_factura  = {}, ventas = [] ) => {
             },
             factura : {
                 nroFactura : factura.nro_factura,
-                totalIva : monto_total/11,
+                totalIva : 0,
                 condicionVenta : factura.condicion,
-                montoTotal : monto_total
+                montoTotal : 0
             }
         };
     } catch (error) {
