@@ -30,17 +30,17 @@ const generar_documentos_factura = async ( req = request, res = response )=>{
             try {
                 
                 for (let index = timbrado.numero_desde ; index <= timbrado.numero_hasta; index++) {
-                    console.log( "entre al for" )
+                    //console.log( "entre al for" )
                     //HAY QUE GENERAR LAS FACTURAS DESDE UN NUMERO HASTA OTRO NUMERO
                     let factura = await prisma.facturas.create( {
                                                                     data : {
                                                                         nro_timbrado : timbrado.nro_timbrado,
                                                                         fecha_emision : null,
                                                                         monto_total : null,
-                                                                        nro_factura : `${timbrado.cod_establecimiento}-${timbrado.punto_expedicion}-${index}`,
+                                                                        nro_factura : `${timbrado.cod_establecimiento}-${timbrado.punto_expedicion}-${index.toString().padStart(7, '0')}`,
                                                                         total_iva : null,
                                                                         condicion_venta : null,
-
+                                                                        numero : index
                                                                     }
                                                                 } );
                 }

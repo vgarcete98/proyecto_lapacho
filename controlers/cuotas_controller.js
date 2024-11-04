@@ -236,7 +236,8 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
                                 TO_CHAR ( C.FECHA_VENCIMIENTO, 'MM') AS "numeroMEs",
                                 C.FECHA_VENCIMIENTO AS "fechaVencimiento",
                                 C.fecha_pago_realizado as "fechaPago",
-                                C.monto_cuota AS "montoCuota"
+                                C.monto_cuota AS "montoCuota",
+                                C.estado AS "estado"
                             FROM CLIENTE A JOIN CUOTAS_SOCIO C ON C.ID_CLIENTE = A.ID_CLIENTE
                         WHERE EXTRACT(YEAR FROM C.FECHA_VENCIMIENTO) = ${annio}
                                 AND A.CEDULA = '${numero_cedula}'

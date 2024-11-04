@@ -22,7 +22,15 @@ const verificar_ventas_a_caja = async ( req = request, res = response, next )=>{
             try { 
                 let { idVenta  } = ventas[ element ];
                 
-                let venta = await prisma.ventas.findUnique( { where : { id_venta : Number( idVenta ) } } );
+                let venta = await prisma.ventas.findFirst( { 
+                                                                where : { 
+                                                                    AND : [
+
+                                                                        { id_venta : Number( idVenta ) },
+                                                                        { estado : 'PAGADO' } 
+                                                                    ]
+                                                                } 
+                                                            } );
                 if ( venta !== null ){
                     verificados = true;
                     break;
@@ -123,7 +131,7 @@ const verificar_ventas_procesadas = async (req = request, res = response, next) 
                     where: { id_venta: Number(idVenta) }
                 });
 
-                console.lof( movimiento )
+                console.log( movimiento )
                 if (movimiento !== null) {
                     verificados = true;
                     break;  // Si ya se encontró, no es necesario seguir verificando

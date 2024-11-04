@@ -373,6 +373,7 @@ model movimiento_caja {
   editado_en         DateTime?      @db.Timestamp(6)
   editado_por        Int?
   creado_por         Int
+  timbrado           Int?
   egresos            egresos[]
   ingresos           ingresos[]
   caja               caja           @relation(fields: [id_caja], references: [id_caja], onDelete: NoAction, onUpdate: NoAction, map: "caja_movimiento_caja_fk")
@@ -536,6 +537,7 @@ model facturas {
   total_iva       Int?
   condicion_venta String?           @default("C") @db.VarChar(2)
   monto_total     Int?
+  numero          Int
   timbrado        timbrado          @relation(fields: [nro_timbrado], references: [nro_timbrado], onDelete: NoAction, onUpdate: NoAction, map: "timbrado_facturas_fk")
   movimiento_caja movimiento_caja[]
 }
