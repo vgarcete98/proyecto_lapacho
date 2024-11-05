@@ -11,19 +11,22 @@ const obtener_compras_club = async ( req = request, res = response ) =>{
 
     try {
 
-        const { id_cliente, pagina, cantidad, nro_cedula } = req.query;
+        const { pagina, cantidad } = req.query;
 
         const compras_club = await prisma.compras.findMany( {  
                                                                 select : {
                                                                     id_compra : true,
                                                                     estado : true,
                                                                     fecha_operacion : true,
-
+                                                                    descripcion : true,
+                                                                    cantidad : true,
+                                                                    creado_en : true,
+                                                                    id_tipo_egreso : true
                                                                 },
                                                                 skip : (Number(pagina) - 1) * Number(cantidad),
                                                                 take : Number(cantidad),
                                                                 where : {
-                                                                    estado : false //que aun no se completo el circuito de compras
+                                                                    estado : 'PENDIENTE DE COMPRA' //que aun no se completo el circuito de compras
                                                                 }
 
                                                             } );
@@ -33,7 +36,11 @@ const obtener_compras_club = async ( req = request, res = response ) =>{
             const compras = compras_club.map(element =>({
                 idCompra : element.id_compra,
                 fechaGeneracion : element.fecha_operacion,
-    
+                estado : element.estado,
+                descripcion : element.descripcion,
+                cantidad : element.cantidad,
+                fechaCreacion : element.creado_en,
+                tipoCompra : element.id_tipo_egreso
                 
             }) );
     
@@ -73,38 +80,67 @@ const generar_compras_club = async ( req = request, res = response ) =>{
 
     try {
 
-        const { id_cliente, pagina, cantidad, nro_cedula } = req.query;
+        const { compras } = req.body;
+        let nueva_compra, gasto_fijo;
+        let id_gasto_fijo = null;
+        let compras_procesadas = 0;
+        for (let element of compras) {
 
-        const compras_club = await prisma.compras.findMany( {  
-                                                                select : {
-                                                                    id_compra : true,
-                                                                    estado : true,
-                                                                    fecha_operacion : true,
-
-                                                                },
-                                                                skip : (Number(pagina) - 1) * Number(cantidad),
-                                                                take : Number(cantidad),
+            try {
+                
+                let { descripcion, cantidad, gastoFijo, tipoCompra, fechaVencimiento } = element;
+    
+                if ( gastoFijo === true ){
+                    gasto_fijo = await prisma.gastos_fijos.create( { 
+                                                                        data : {
+                                                                            creado_en : new Date(),
+                                                                            creado_por : 1,
+                                                                            fecha_vencimiento : new Date(fechaVencimiento),
+                                                                            descripcion_gasto_fijo : descripcion,
+                                                                            monto : 0,
+                                                                            id_tipo_egreso : Number( tipoCompra )
+                                                                        } 
+                                                                    } );
+                }
+                nueva_compra = await prisma.compras.create( { 
+                                                                data : {
+                                                                    creado_en : new Date(),
+                                                                    creado_por : 1,
+                                                                    descripcion : descripcion,
+                                                                    cantidad : Number( cantidad ),
+                                                                    estado : 'PENDIENTE DE COMPRA',
+                                                                    monto : 0,
+                                                                    id_tipo_egreso : Number( tipoCompra ),
+                                                                    id_cliente : 1,
+    
+                                                                } 
                                                             } );
+                if( nueva_compra !== null ) {
+                    compras_procesadas += 1;
+                    console.log( nueva_compra )
+                }
+            } catch (error) {
+                console.log( error );
+            }
 
+        }
 
-        const compras = compras_club.map( element =>({
-            idCompra : element.id_compra,
-            idCliente : element.id_cliente,
-            idSocioCuota : element.id_cuota_socio,
-            idReserva : element.id_socio_reserva,
-            nroCedula : element.cedula,
-            fechaOperacion : element.fecha_operacion,
-            monto : element.monto,
-            estado : element.estado,
-        }) );
+        if ( compras.length ===  compras_procesadas ){
 
-        res.status( 200 ).json( {
-            status : true,
-            msg : 'Compras del club',
-            compras
-            //descipcion : `No existe ninguna venta generada para ese cliente`
-         
-        } )
+            res.status( 200 ).json( {
+                status : true,
+                msg : 'Compras del club generadas',
+                descripcion : "Todas las compras del club fueron generadas"
+                //descipcion : `No existe ninguna venta generada para ese cliente`
+            } );
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No todas las compras del club fueron procesadas',
+                descripcion : "Verifique las compras que faltan agregar para su compra"
+                //descipcion : `No existe ninguna venta generada para ese cliente`
+            } );
+        }
         
     } catch (error) {
 

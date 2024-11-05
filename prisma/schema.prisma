@@ -347,6 +347,7 @@ model compras {
   cedula          String?           @db.VarChar(255)
   proveedor       String?           @db.VarChar(120)
   id_tipo_egreso  Int?
+  cantidad        Int               @default(1)
   cliente         cliente           @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_compras_fk")
   gastos_fijos    gastos_fijos?     @relation(fields: [id_gasto_fijo], references: [id_gasto_fijo], onDelete: NoAction, onUpdate: NoAction, map: "gastos_fijos_compras_fk")
   insumos         insumos?          @relation(fields: [id_insumo], references: [id_insumo], onDelete: NoAction, onUpdate: NoAction, map: "insumos_compras_fk")

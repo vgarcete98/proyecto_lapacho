@@ -442,7 +442,7 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
     // SERIA MEJOR METER EL ID DEL PROFESOR EN EL QUERY PARAM Y EN EL BODY LOS DATOS NUEVOS
     // LO MISMO PARA EDITAR SOLO QUE AQUI EDITO UN SOLO CAMPO
     try {
-        const { idProfesor } = req.body;
+        const { idProfesor } = req.query;
         const profesor_editado = await prisma.profesores.update( {
             where : {
                 id_profesor : Number(idProfesor)

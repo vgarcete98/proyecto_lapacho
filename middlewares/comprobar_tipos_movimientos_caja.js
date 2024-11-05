@@ -74,10 +74,10 @@ const verificar_compras_a_caja = async ( req = request, res = response, next )=>
         const { compras } = req.body;
 
         let validado = false;
-        for (let element in ventas) {
+        for (let element of compras) {
             //----------------------------------------------------------------------------------------------------------------------------
             try { 
-                let { idCompra  } = compras[ element ];
+                let { idCompra  } = element;
                 
                 let compra = await prisma.compras.findUnique( { where : { id_compra : Number( idCompra ) } } );
                 if ( compra !== null ){
@@ -91,15 +91,15 @@ const verificar_compras_a_caja = async ( req = request, res = response, next )=>
         
         if ( validado === true ) { 
 
+            next();
+            
+        }else {
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Un movimiento que se esta pasando no corresponde',
                 descripcion : `Favor verificar los movimientos a procesar`
             } ); 
 
-        }else {
-
-            next();
         }
 
             

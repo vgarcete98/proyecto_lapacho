@@ -508,47 +508,66 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
 
 const generar_movimientos_de_caja_compras = async ( req = request, res = response ) =>{ 
 
+    let compras_procesadas = 0;
     try {
         
-        const { nroFactura, idCliente, cedula, tipoPago, nroComprobante, ventas, compras } = req.body;
-        
-        const venta_socio = [];
+        const { nroFactura, tipoPago, nroComprobante, compras } = req.body;
 
         const compras_club = [];
-
+        
         if ( compras.length > 0 ){
-            for (let element in compras) {
+            for (let element of compras) {
                 //----------------------------------------------------------------------------------------------------------------------------
                 try { 
-                    let { idVenta , idSocioCuota, idReserva, fechaOperacion, monto, estado } = compras[ element ];
+                    //AQUI VAMOS A OBTENER SIEMPRE LA ULTIMA CAJA ABIERTA
+                    //----------------------------------------------------------------------------------------------------------------------------
+                    let caja = await prisma.caja.findFirst( { 
+                        orderBy : { fecha_apertura : 'desc' }, 
+                        where : {
+                            AND : [
+                                { fecha_cierre : null }
+                            ]
+                        } 
+                    } );
+                    //----------------------------------------------------------------------------------------------------------------------------
+
+                    let { idCompra, cantidad, monto, estado, descripcion, tipoCompra } = element;
     
                     let movimientos_de_caja = await prisma.movimiento_caja.create( { 
                                                                                         data : {
                                                                                             creado_por : 1,
-                                                                                            cedula : cedula,
-                                                                                            id_cliente : Number( idCliente ),
+                                                                                            cedula : '',
+                                                                                            id_cliente : 1,
                                                                                             id_tipo_pago : Number( tipoPago ),
-                                                                                            id_caja : Number( idCaja ),
+                                                                                            id_caja : caja.id_caja,
                                                                                             nro_comprobante : nroComprobante,
                                                                                             nro_factura : nroFactura,
-                                                                                            id_venta : Number( idVenta ),
-    
+                                                                                            id_venta : null,
+                                                                                            id_compra : Number( idCompra ),
+                                                                                            descripcion : descripcion,
+                                                                                            fecha_operacion : new Date(),
+                                                                                            id_tipo_egreso : null,
+                                                                                            id_tipo_ingreso : Number( tipoCompra ),
+
+
                                                                                         } 
                                                                                 } );
     
-                    let actualiza_venta = await prisma.ventas.update( { 
+                    let actualiza_compra = await prisma.compras.update( { 
                                                                         data : { 
-                                                                                    estado : true, 
+                                                                                    estado : 'PAGADO', 
                                                                                     editado_en : new Date( ),
                                                                                     editado_por : 1, //ESTO HAY QUE CAMBIAR LUEGO
+                                                                                    monto : Number( monto )
     
                                                                                 }, 
-                                                                        where : { id_venta : Number( idVenta ) } 
+                                                                        where : { id_compra : Number( idCompra ) } 
                                                                     } );
-                    if ( actualiza_venta !== null ){
-                        console.log( `venta actualizada con exito ${ actualiza_venta.id_venta }` );
+                    if ( actualiza_compra !== null ){
+                        compras_procesadas += 1;
+                        console.log( `compra actualizada con exito ${ actualiza_compra.id_compra }` );
                     }else {
-                        console.log( `No se actualizo el estado de esa venta : ${ idVenta }` );
+                        console.log( `No se actualizo el estado de esa venta : ${ idCompra }` );
                     }
                     
                     
@@ -557,6 +576,23 @@ const generar_movimientos_de_caja_compras = async ( req = request, res = respons
                 }
     
             }
+        }
+
+        if ( compras.length ===  compras_procesadas ){
+
+            res.status( 200 ).json( {
+                status : true,
+                msg : 'Compras del club generadas',
+                descripcion : "Todas las compras del club fueron procesadas"
+                //descipcion : `No existe ninguna venta generada para ese cliente`
+            } );
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No todas las compras del club fueron procesadas',
+                descripcion : "Verifique las compras que faltan agregar para su proceso"
+                //descipcion : `No existe ninguna venta generada para ese cliente`
+            } );
         }
 
     } catch (error) {
