@@ -15,12 +15,14 @@ const verifica_precio_de_reservas = await = async ( req = request, res = respons
         let fecha_desde = generar_fecha(horaDesde),
             fecha_hasta = generar_fecha(horaHasta)
         const precio_reserva = await prisma.precio_reservas.findFirst( { 
-                                                                where : {
-                                                                    AND : [
-                                                                        { fecha_precio : { gte : fecha_desde } },
-                                                                        { fecha_precio : { lte : fecha_hasta } },
-                                                                    ]
-                                                                } 
+                                                                orderBy : [
+                                                                    {
+
+                                                                        fecha_precio : 'desc'
+                                                                    }
+
+                                                                ]
+                                                                
                                                             } );
         //-----------------------------------------------------------------------------------------
         if ( precio_reserva !== null ) {

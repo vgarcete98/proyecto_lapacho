@@ -80,7 +80,7 @@ const cerrar_caja = async ( req = request, res = response ) =>{
     try {
 
 
-        const { id_caja } = req.query;
+        const { idCaja } = req.body;
         const { idCliente } = req.body;//TIENE QUE VENIR DEL TOKEN, ESTA PENDIENTE DE REALIZAR
 
         const cierre_caja = await prisma.caja.update( { 
@@ -90,7 +90,7 @@ const cerrar_caja = async ( req = request, res = response ) =>{
                                                             fecha_actualizacion : new Date(),
 
                                                         },
-                                                        where : { id_caja : Number( id_caja ) }
+                                                        where : { id_caja : Number( idCaja ) }
                                                     } );
         if ( cierre_caja !== null ) {
 
@@ -371,7 +371,7 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
         if ( ventas.length > 0  ){
             //GENERO O COMPLETO LAS CABECERAS DE MI FACTURA
             //----------------------------------------------------------------------------------------------------------------------------
-            monto_total = obtener_monto_total_ventas(ventas);
+            monto_total = await obtener_monto_total_ventas(ventas);
             factura = await genera_factura( { monto_total : monto_total, nro_factura : nroFactura, fecha_emision : new Date(), id_cliente : idCliente, nroTimbrado }, ventas );
             detalleFactura = [];
             //----------------------------------------------------------------------------------------------------------------------------
@@ -516,6 +516,10 @@ const generar_movimientos_de_caja_compras = async ( req = request, res = respons
         const compras_club = [];
         
         if ( compras.length > 0 ){
+            let movimientos_de_caja;
+            let actualiza_compra;
+            let agrega_egreso;
+            let egreso;
             for (let element of compras) {
                 //----------------------------------------------------------------------------------------------------------------------------
                 try { 
@@ -533,38 +537,51 @@ const generar_movimientos_de_caja_compras = async ( req = request, res = respons
 
                     let { idCompra, cantidad, monto, estado, descripcion, tipoCompra } = element;
     
-                    let movimientos_de_caja = await prisma.movimiento_caja.create( { 
-                                                                                        data : {
-                                                                                            creado_por : 1,
-                                                                                            cedula : '',
-                                                                                            id_cliente : 1,
-                                                                                            id_tipo_pago : Number( tipoPago ),
-                                                                                            id_caja : caja.id_caja,
-                                                                                            nro_comprobante : nroComprobante,
-                                                                                            nro_factura : nroFactura,
-                                                                                            id_venta : null,
-                                                                                            id_compra : Number( idCompra ),
-                                                                                            descripcion : descripcion,
-                                                                                            fecha_operacion : new Date(),
-                                                                                            id_tipo_egreso : null,
-                                                                                            id_tipo_ingreso : Number( tipoCompra ),
-
-
-                                                                                        } 
-                                                                                } );
+                    movimientos_de_caja = await prisma.movimiento_caja.create( { 
+                                                                                    data : {
+                                                                                        creado_por : 1,
+                                                                                        cedula : '',
+                                                                                        id_cliente : 1,
+                                                                                        id_tipo_pago : Number( tipoPago ),
+                                                                                        id_caja : caja.id_caja,
+                                                                                        nro_comprobante : nroComprobante,
+                                                                                        nro_factura : nroFactura,
+                                                                                        id_venta : null,
+                                                                                        id_compra : Number( idCompra ),
+                                                                                        descripcion : descripcion,
+                                                                                        fecha_operacion : new Date(),
+                                                                                        id_tipo_egreso : Number( tipoCompra ),
+                                                                                        id_tipo_ingreso : null,
+                                                                                    } 
+                                                                            } );
     
-                    let actualiza_compra = await prisma.compras.update( { 
+                    actualiza_compra = await prisma.compras.update( { 
                                                                         data : { 
                                                                                     estado : 'PAGADO', 
                                                                                     editado_en : new Date( ),
                                                                                     editado_por : 1, //ESTO HAY QUE CAMBIAR LUEGO
                                                                                     monto : Number( monto )
-    
                                                                                 }, 
                                                                         where : { id_compra : Number( idCompra ) } 
                                                                     } );
                     if ( actualiza_compra !== null ){
                         compras_procesadas += 1;
+                        egreso = await prisma.egresos.create( { 
+                                                                data : {
+                                                                    cargado_en : new Date(),
+                                                                    comprobante : nroComprobante,
+                                                                    descripcion : descripcion,
+                                                                    fecha_egreso : new Date(),
+                                                                    fecha_pago : new Date(),
+                                                                    monto : Number( monto ),
+                                                                    nro_factura : nroFactura,
+                                                                    id_movimiento_caja : movimientos_de_caja.id_movimiento_caja,
+                                                                    id_tipo_egreso : movimientos_de_caja.id_tipo_egreso,
+                                                                    borrado : false
+                                                                }  
+                                                            } );
+
+
                         console.log( `compra actualizada con exito ${ actualiza_compra.id_compra }` );
                     }else {
                         console.log( `No se actualizo el estado de esa venta : ${ idCompra }` );
@@ -739,9 +756,9 @@ const genera_factura = async ( datos_factura  = {}, ventas = [] ) => {
             },
             factura : {
                 nroFactura : factura.nro_factura,
-                totalIva : 0,
+                totalIva : monto_total/11,
                 condicionVenta : factura.condicion,
-                montoTotal : 0
+                montoTotal : monto_total
             }
         };
     } catch (error) {
@@ -768,33 +785,27 @@ const obtener_monto_total_ventas = async ( ventas = [] ) => {
 
                 servicio = await prisma.agendamiento_clase.findUnique( { 
                                                                         where : { id_agendamiento : Number(idAgendamiento) },
-                                                                        select : {
-                                                                            include : {
-                                                                                precio_clase : {
-                                                                                    select : {
-                                                                                        precio : true,
-
-                                                                                    }
+                                                                        include : {
+                                                                            precio_clase : {
+                                                                                select : {
+                                                                                    precio : true,
                                                                                 }
-                                                                            } 
-                                                                        }   
+                                                                            }
+                                                                        }  
                                                                     } );
                 monto_total += servicio.precio_clase.precio;
             }else if ( idReserva !== null ) {
 
                 servicio = await prisma.reservas.findUnique( { 
-                                                                    where : { id_cliente_reserva : Number(idReserva) },
-                                                                    select : {
-                                                                        include : {
-                                                                            precio_reservas : {
-                                                                                select : {
-                                                                                    monto_reserva : true,
-
-                                                                                }
+                                                                where : { id_cliente_reserva : Number(idReserva) },
+                                                                    include : {
+                                                                        precio_reservas : {
+                                                                            select : {
+                                                                                monto_reserva : true,
                                                                             }
-                                                                        } 
+                                                                        }
                                                                     } 
-                                                                } );
+                                                            } );
                 monto_total += servicio.precio_reservas.monto_reserva;                                                                        
             }else if( idSocioCuota !== null ) {
                 

@@ -525,11 +525,12 @@ const agregar_reserva_a_venta = async ( req = request, res = response ) =>{
                             id_cliente : cliente.id_cliente,
                             id_inscripcion : null,
                             id_cuota_socio : null,
-                            id_cliente_reserva : id_cliente_reserva,
+                            id_cliente_reserva : Number(idReserva),
                             id_agendamiento : null,
                             id_tipo_ingreso : ingreso_por_reserva.id_tipo_ingreso
                         }
                     } );
+                    console.log( nueva_venta )
                     if( nueva_venta !== null ) {
 
                         reservas_añadidas += 1;

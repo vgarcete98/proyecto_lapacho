@@ -88,7 +88,7 @@ const generar_compras_club = async ( req = request, res = response ) =>{
 
             try {
                 
-                let { descripcion, cantidad, gastoFijo, tipoCompra, fechaVencimiento } = element;
+                let { descripcion, cantidad, gastoFijo, tipoEgreso, fechaVencimiento } = element;
     
                 if ( gastoFijo === true ){
                     gasto_fijo = await prisma.gastos_fijos.create( { 
@@ -98,7 +98,7 @@ const generar_compras_club = async ( req = request, res = response ) =>{
                                                                             fecha_vencimiento : new Date(fechaVencimiento),
                                                                             descripcion_gasto_fijo : descripcion,
                                                                             monto : 0,
-                                                                            id_tipo_egreso : Number( tipoCompra )
+                                                                            id_tipo_egreso : Number( tipoEgreso )
                                                                         } 
                                                                     } );
                 }
@@ -110,7 +110,7 @@ const generar_compras_club = async ( req = request, res = response ) =>{
                                                                     cantidad : Number( cantidad ),
                                                                     estado : 'PENDIENTE DE COMPRA',
                                                                     monto : 0,
-                                                                    id_tipo_egreso : Number( tipoCompra ),
+                                                                    id_tipo_egreso : Number( tipoEgreso ),
                                                                     id_cliente : 1,
     
                                                                 } 

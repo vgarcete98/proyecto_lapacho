@@ -211,24 +211,25 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
                 take : Number(cantidad),
           });        
 
+        console.log(  ventas )
         let ventaServicios = [];
         if ( ventas.length > 0 ) {
 
-            ventaServicios = ventas.map( element =>({
-                idVenta : element.id_venta,
-                idCliente : element.id_cliente,
-                idSocioCuota : element.id_cuota_socio,
-                idReserva : element.id_cliente_reserva,
-                idClase : element.id_agendamiento,
-                idInscripcion : element.id_inscripcion,
-                descripcionVenta : element.descripcion_venta,
-                idReserva : element.id_socio_reserva,
-                tipoServicio : element.id_tipo_ingreso,
-                nroCedula : element.cedula,
-                fechaOperacion : element.fecha_operacion,
-                monto : element.monto,
-                estado : element.estado,
-            }));
+            ventaServicios = ventas.map(element => ({
+                idVenta: element.id_venta ?? null,
+                idCliente: element.id_cliente ?? null,
+                idSocioCuota: element.id_cuota_socio ?? null,
+                idReserva: element.id_cliente_reserva ?? null,
+                idClase: element.id_agendamiento ?? null,
+                idInscripcion: element.id_inscripcion ?? null,
+                descripcionVenta: element.descripcion_venta ?? null,
+                tipoServicio: element.id_tipo_ingreso ?? null,
+                nroCedula: element.cedula ?? null,
+                fechaOperacion: element.fecha_operacion ?? null,
+                monto: element.monto ?? 0, // Aquí puedes poner 0 o null según lo que necesites
+                estado: element.estado ?? "SIN_ESTADO", // Otro ejemplo, elige un valor por defecto
+            }));            
+            console.log( ventaServicios );
             res.status( 200 ).json( {
                 status : true,
                 msg : 'Ventas de ese cliente',
