@@ -90,7 +90,7 @@ const obtener_ultimo_nro_factura = async ( req = request, res = response )=>{
 
             where : { 
                 fecha_vencimiento : { 
-                    gt : new Date()
+                    gte : new Date()
                 }
             },
             select : {
@@ -131,7 +131,7 @@ const obtener_ultimo_nro_factura = async ( req = request, res = response )=>{
         console.log( error );
         res.status( 500 ).json( {
             status : true,
-            msg : `No se pudo obtener los datos para el grafico : ${error}`,
+            msg : `No se pudo obtener los datos para la carga de la factura : ${error}`,
             //data
         } );
     }
