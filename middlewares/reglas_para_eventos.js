@@ -19,10 +19,7 @@ const verificar_edad = async ( req = request, res = response, next )=>{
         for (const element of categorias) {
             let { idCategoria } = element;
             let reglas_categoria = await prisma.categorias.findUnique( { where : { 
-                                                                            AND : [
-                                                                                { id_categoria : Number(idCategoria)  },
-                                                                                { id_evento : Number( idEvento ) }
-                                                                            ]
+                                                                            id_categoria : Number(idCategoria)
                                                                         },
                                                                         select : {
                                                                             edad_maxima : true,
@@ -42,7 +39,7 @@ const verificar_edad = async ( req = request, res = response, next )=>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debee verificar una de las inscripciones ya que no cumple con las reglas de la categoria',
-                descipcion : `Una inscripcion no cumple con las reglas del evento`
+                descipcion : `Una inscripcion no cumple con las reglas del evento : edad`
             } ); 
         }else {
             next();
@@ -74,18 +71,16 @@ const verificar_sexo = async ( req = request, res = response, next )=>{
         for (const element of categorias) {
             let { idCategoria } = element;
             let reglas_categoria = await prisma.categorias.findUnique( { where : { 
-                                                                            AND : [
-                                                                                { id_categoria : Number(idCategoria)  },
-                                                                                { id_evento : Number( idEvento ) }
-                                                                            ]
+                                                                            
+                                                                            id_categoria : Number(idCategoria) ,
                                                                         },
                                                                         select : {
                                                                             sexo : true
                                                                         } 
                                                                     } );
             if( reglas_categoria !== null ) {
-
-                if ( cliente_sexo === reglas_categoria.sexo ) {
+                console.log( cliente_sexo )
+                if ( cliente_sexo !== reglas_categoria.sexo ) {
                     inscripciones_validas = true;
                     break;
                 }
@@ -97,7 +92,7 @@ const verificar_sexo = async ( req = request, res = response, next )=>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debee verificar una de las inscripciones ya que no cumple con las reglas de la categoria',
-                descipcion : `Una inscripcion no cumple con las reglas del evento`
+                descipcion : `Una inscripcion no cumple con las reglas del evento : sexo`
             } ); 
         }else {
             next();
@@ -128,14 +123,11 @@ const verificar_nivel = async ( req = request, res = response, next )=>{
 
         let inscripciones_validas = false;
         const cliente = await prisma.cliente.findUnique( { where : { id_cliente : Number(idCliente) } } )
-        const cliente_nivel = (new Date()).getFullYear - cliente.fecha_nacimiento.getFullYear();
+        const cliente_nivel = cliente.nivel;
         for (const element of categorias) {
             let { idCategoria } = element;
             let reglas_categoria = await prisma.categorias.findUnique( { where : { 
-                                                                            AND : [
-                                                                                { id_categoria : Number(idCategoria)  },
-                                                                                { id_evento : Number( idEvento ) }
-                                                                            ]
+                                                                            id_categoria : Number(idCategoria)
                                                                         },
                                                                         select : {
                                                                             nivel_maximo : true,
@@ -144,9 +136,13 @@ const verificar_nivel = async ( req = request, res = response, next )=>{
                                                                     } );
             if ( reglas_categoria !== null ){
 
-                if (  cliente_edad >= reglas_categoria.edad  && cliente_edad <= reglas_categoria.edad ) {
-                    inscripciones_validas = true;
-                    break;
+                console.log(cliente_nivel);
+                if ( cliente_nivel !== null ){
+                    
+                    if (  cliente_nivel >= reglas_categoria.nivel_minimo  && cliente_nivel <= reglas_categoria.nivel_maximo ) {
+                        inscripciones_validas = true;
+                        break;
+                    }
                 }
             }
         }
@@ -156,7 +152,7 @@ const verificar_nivel = async ( req = request, res = response, next )=>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debee verificar una de las inscripciones ya que no cumple con las reglas de la categoria',
-                descipcion : `Una inscripcion no cumple con las reglas del evento`
+                descipcion : `Una inscripcion no cumple con las reglas del evento : nivel requerido`
             } ); 
         }else {
             next();

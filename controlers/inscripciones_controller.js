@@ -13,7 +13,7 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
         
         // NECESITO REGISTRAR UNA INSCRIPCION 
         // Voy a manejar que se abona entero por la inscripcion y no por partes como sucede con las clases particulares
-        const { idCliente, idEvento, categorias } = req.body;
+        const { idCliente, categorias } = req.body;
 
         let cat = [];
         let inscripciones_registradas = 0;
@@ -24,7 +24,7 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
             try {
 
 
-                let { idCategoria, idEventoCalendario, montoAbonado, descInscripcion } = element;
+                let { idCategoria, idEventoCalendario, montoAbonado, descInscripcion, idEvento } = element;
                 //console.log( req.body );
                 let categoria = await prisma.categorias.findUnique( { where : { id_categoria : Number( idCategoria ) } } );
 
@@ -245,21 +245,20 @@ const abonar_x_inscripcion = async ( req = request, res = response ) =>{
 
 const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
 
-    
     try {
         const { id_evento, id_categoria } = req.query;
         //console.log( req.query )
         const query = `SELECT   A.id_inscripcion AS "idInscripcion",
 								C.id_categoria AS "idCategoria",
 								C.nombre_categoria AS "nombreCategoria",
-                                A.id_cliente AS "idSocio", 
+                                A.id_cliente AS "idCliente", 
                                 A.id_evento AS "idEventoCalendario", 
                                 A.desc_inscripcion AS "descInscripcion", 
                                 A.fecha_inscripcion AS "fechaInscripcion", 
                                 A.inscripcioncreadoen AS "inscripcionCreadoEn", 
-                                A.estado AS "estadoInscripcion", 
+                                A.estado AS "estado", 
                                 A.inscripcioneditadoen AS "inscripcionEditadoEn",
-                                B.nombre_cmp as "nombreSocio"--,
+                                B.nombre_cmp as "nombre"--,
                                 --CONCAT( B.nombre, ' ', B.apellido ) as "nombreCmp",
 								--B.nombrecmp AS "nombreCmp"
                             FROM inscripciones A JOIN CLIENTE B ON A.id_cliente = B.id_cliente
@@ -269,12 +268,81 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
         const inscripciones = await prisma.$queryRawUnsafe( query )
         const cantInscripciones = inscripciones.length;
 
-        res.status( 200 ).json( { 
-                                    status : true,
-                                    msg : "Inscripciones de ese evento",
-                                    cantInscripciones,
-                                    inscripciones
-                                } );
+        if ( cantInscripciones > 0  ){
+            res.status( 200 ).json( { 
+                                        status : true,
+                                        msg : "Inscripciones de ese evento",
+                                        cantInscripciones,
+                                        inscripciones
+                                    } );
+
+        }else {
+            res.status( 400 ).json( { 
+                status : false,
+                msg : "Aun no se registran inscripciones para el evento",
+                descripcion : 'Registre alguna inscripcion y vuelva a intentar'
+            } );
+        }
+
+    } catch (error) {
+        //console.log ( error );  
+        res.status( 500 ).json( { 
+            status : false,
+            msg : `No se ha podido obtener las inscripciones de ese evento ${error}`,
+            //cant_inscripciones : 0
+        } );
+
+    }
+
+
+}
+
+
+
+
+
+const ver_inscripciones_x_evento_x_categoria = async ( req = request, res = response ) =>{
+      
+    try {
+        const { id_evento, id_categoria } = req.query;
+        //console.log( req.query )
+        const query = `SELECT C.id_categoria AS "idCategoria",
+		                        C.nombre_categoria AS "nombreCategoria",
+								JSON_AGG(JSON_BUILD_OBJECT(
+									'idCliente', A.id_cliente, 
+									'idEventoCalendario', A.id_evento , 
+									'descInscripcion', A.desc_inscripcion, 
+									'fechaInscripcion', A.fecha_inscripcion, 
+									'inscripcionCreadoEn', A.inscripcioncreadoen, 
+									'estado', A.estado, 
+								 	'idInscripcion', A.id_inscripcion,
+									'nombre', B.nombre_cmp --,
+									--CONCAT( B.nombre, ' ', B.apellido ) as "nombreCmp",
+									--B.nombrecmp AS "nombreCmp"			
+								)) AS "inscriptos"
+                            FROM inscripciones A JOIN CLIENTE B ON A.id_cliente = B.id_cliente
+							JOIN CATEGORIAS C on A.id_categoria = c.id_categoria
+                        WHERE ${ ( id_evento !== undefined ) ? `A.id_evento = ${ id_evento }` : `` }
+                            ${ ( id_categoria !== undefined ) ? `AND C.id_categoria = ${ id_categoria }` : `` }
+                        GROUP BY C.id_categoria, C.nombre_categoria`
+        const inscripciones = await prisma.$queryRawUnsafe( query )
+        const cantInscripciones = inscripciones.length;
+
+        if ( cantInscripciones > 0  ){
+            res.status( 200 ).json( { 
+                                        status : true,
+                                        msg : "Inscripciones de ese evento",
+                                        cantInscripciones,
+                                        inscripciones
+                                    } );
+
+        }else {
+            res.status( 400 ).json( { 
+                status : false,
+                msg : "Aun no se registran inscripciones para el evento",
+                descripcion : 'Registre alguna inscripcion y vuelva a intentar'
+            } );
+        }
 
     } catch (error) {
         //console.log ( error );  
@@ -787,5 +855,6 @@ module.exports = {
     borrar_inscripcion_socio,
     agregar_inscripciones_a_venta,
     cerrar_inscripciones_de_evento,
-    cerrar_inscripciones_de_categoria
+    cerrar_inscripciones_de_categoria,
+    ver_inscripciones_x_evento_x_categoria
 }

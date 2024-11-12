@@ -173,7 +173,7 @@ const crear_categorias_x_evento = async ( req = request, res = response ) =>{
 
         //VOY A AGREGAR LA POSIBILIDAD DE CREAR VARIAS CATEGORIAS POR EVENTO
         
-        const { idEvento, categorias }  = req.body;
+        const { categorias }  = req.body;
 
         let categorias_creadas = 0;
         for (const element of categorias) {
@@ -185,12 +185,12 @@ const crear_categorias_x_evento = async ( req = request, res = response ) =>{
                                                                 data : { 
                                                                     descripcion : descripcionCategoria,  
                                                                     nombre_categoria : nombreCategoria, 
-                                                                    id_evento : Number(idEvento),
+                                                                    id_evento : Number(idEventoCalendario),
                                                                     costo : Number( costoCategoria ),
                                                                     edad_maxima : Number( edadMaxima),
                                                                     edad_minima : Number( edadMinima ),
-                                                                    nivelMaximo : Number( nivelMaximo ),
-                                                                    nivelMinimo : Number( nivelMinimo )
+                                                                    nivel_maximo : Number( nivelMaximo ),
+                                                                    nivel_minimo : Number( nivelMinimo )
                                                                 } 
                                                             } );
                 if (categoria !== null){
@@ -528,7 +528,7 @@ const obtener_eventos_calendario = async ( req = request, res = response ) =>{
     try {
         const { annio } = req.query;        
         const [ fecha_desde_mes, fecha_hasta_mes ] = [ new Date(annio, 0, 1), new Date(annio, 12, 0) ]
-        const eventos = await prisma.calendario_eventos.findMany( { 
+        const eventos = await prisma.eventos.findMany( { 
                                                                     where : {  
 
                                                                             fecha_desde_evento : { 
@@ -539,42 +539,56 @@ const obtener_eventos_calendario = async ( req = request, res = response ) =>{
                                                                             }
                                                                     } 
                                                                 } );
-        const eventosMes =  eventos.map( ( element ) =>{
-            const { fecha_desde_evento, 
-                    fecha_hasta_evento, 
-                    costo, 
-                    decripcion_evento,
-                    id_tipo_evento,
-                    todo_el_dia,
-                    nombre_evento,
-                    id_evento_calendario,
-                    eventocreadoen,
-                    fechaagendamiento } = element;
 
-            return {
-                //------------------------------------------------------------------------------------------------------------------------
-                idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
-                nombreCmp : nombre_evento,
-                //fechaAgendamiento : fechaagendamiento,
-                fechaCreacion : eventocreadoen,
-                horaDesde : fecha_desde_evento,
-                horaHasta : fecha_hasta_evento,
-                //------------------------------------------------------------------------------------------------------------------------
-                descripcion : decripcion_evento,
-                costo,
-                idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                todoEldia : todo_el_dia,
-            }
-        } );
+        console.log( eventos )
 
-        res.status( 200 ).json( {
-            status : true,
-            msg : `Eventos del año`,
-            eventosMes
-        } );
+
+        if ( eventos.length > 0 ) {
+
+            const eventosMes =  eventos.map( ( element ) =>{
+                const { fecha_desde_evento, 
+                        fecha_hasta_evento, 
+                        costo, 
+                        decripcion_evento,
+                        id_tipo_evento,
+                        todo_el_dia,
+                        nombre_evento,
+                        id_evento,
+                        eventocreadoen,
+                        fechaagendamiento } = element;
+    
+                return {
+                    //------------------------------------------------------------------------------------------------------------------------
+                    idEventoCalendario : id_evento ?? null,
+                    nombreCmp : nombre_evento ?? null,
+                    //fechaAgendamiento : fechaagendamiento,
+                    fechaCreacion : eventocreadoen ?? null,
+                    horaDesde : fecha_desde_evento ?? null,
+                    horaHasta : fecha_hasta_evento ?? null,
+                    //------------------------------------------------------------------------------------------------------------------------
+                    descripcion : decripcion_evento ?? null,
+                    costo : costo ?? null,
+                    idTipoEvento : id_tipo_evento ?? null ,
+                    todoEldia : todo_el_dia ?? null,
+                }
+            } );
+    
+            res.status( 200 ).json( {
+                status : true,
+                msg : `Eventos del año`,
+                eventosMes
+            } );
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : `No se encontraron eventos para el periodo mencionado`,
+                descripcion : 'No existen eventos creados para este periodo'
+            } );
+        }
+
 
     } catch (error) {
-        //console.log( error );
+        console.log( error );
         res.status( 400 ).json( {
             status : false,
             msg : `Ha ocurrido un error al obtener los eventos del año : ${error}`
@@ -625,41 +639,15 @@ const borrar_evento_calendario = async ( req = request, res = response ) =>{
                 status : true,
                 msg : "Evento no BORRADO",
                 //cantidad_registros : borrado_evento
-                eventoBorrado : {
-                    //------------------------------------------------------------------------------------------------------------------------
-                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
-                    nombreCmp : nombre_evento,
-                    fechaAgendamiento : fechaagendamiento,
-                    fechaCreacion : eventocreadoen,
-                    horaDesde : fecha_desde_evento,
-                    horaHasta : fecha_hasta_evento,
-                    //------------------------------------------------------------------------------------------------------------------------
-                    descripcion : decripcion_evento,
-                    costo,
-                    idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                    todoEldia : todo_el_dia,
-                }
+                descripcion : 'No se logro borrar al evento favor intente liberar y vuelva a intentarlo'
             } );
         } else {
 
             res.status( 200 ).json( {
                 status : true,
                 msg : "Evento BORRADO",
+                descripcion : 'Evento borrado con exito'
                 //cantidad_registros : borrado_evento
-                eventoBorrado : {
-                    //------------------------------------------------------------------------------------------------------------------------
-                    idEventoCalendario : (typeof(id_evento_calendario))? Number(id_evento_calendario.toString()) : id_evento_calendario,
-                    nombreCmp : nombre_evento,
-                    fechaAgendamiento : fechaagendamiento,
-                    fechaCreacion : eventocreadoen,
-                    horaDesde : fecha_desde_evento,
-                    horaHasta : fecha_hasta_evento,
-                    //------------------------------------------------------------------------------------------------------------------------
-                    descripcion : decripcion_evento,
-                    costo,
-                    idTipoEvento : (typeof(id_tipo_evento))? Number(id_tipo_evento.toString()) : id_tipo_evento,
-                    todoEldia : todo_el_dia,
-                }
             } );
         }    
     } catch (error) {
@@ -667,7 +655,7 @@ const borrar_evento_calendario = async ( req = request, res = response ) =>{
         res.status( 200 ).json( {
             status : false,
             msg : `No se pudo borrar el evento  ${ error }`,
-            error
+            //error
         } );
     }
 
@@ -901,7 +889,12 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
                                                                                 id_evento : true,
                                                                                 costo : true,
                                                                                 descripcion : true,
-                                                                                nombre_categoria : true
+                                                                                nombre_categoria : true,
+                                                                                nivel_maximo : true,
+                                                                                nivel_minimo : true,
+                                                                                edad_maxima : true,
+                                                                                edad_minima : true,
+                                                                                sexo : true
                                                                             }
                                                                         }
                                                                     } 
@@ -939,7 +932,12 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
                         idEventoCalendario : element.id_evento,
                         costo : element.costo,
                         descripcion : element.descripcion,
-                        nombreCategoria : element.nombre_categoria
+                        nombreCategoria : element.nombre_categoria,
+                        nivelMinimo : element.nivel_minimo,
+                        niveMaximo : element.nivel_maximo,
+                        edadMaxima : element.edad_maxima ,
+                        edadMinima : element.edad_minima ,
+                        sexo : element.sexo,
                     }) ) 
             }
         } );

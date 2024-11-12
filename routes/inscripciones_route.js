@@ -16,7 +16,8 @@ const {
         obtener_ganancias_gastos_x_evento,
         ver_todas_las_inscripciones_x_evento,
         agregar_inscripciones_a_venta,
-        cerrar_inscripciones_de_evento} = require( '../controlers/inscripciones_controller' );
+        cerrar_inscripciones_de_evento,
+        ver_inscripciones_x_evento_x_categoria} = require( '../controlers/inscripciones_controller' );
 
 const { verificar_edad, verificar_nivel, verificar_sexo } = require('../middlewares/reglas_para_eventos')
 const { obtener_data_socio } = require('../helpers/verficar_socio_carga');
@@ -34,6 +35,8 @@ const router_inscripciones = Router();
 //PARA LOS QUE SON SOCIOS 
 
 router_inscripciones.get( '/ver_inscripciones_x_evento',[ obtener_data_socio ], ver_inscripciones_x_evento );
+
+router_inscripciones.get( '/ver_inscripciones_x_evento_x_categoria', [], ver_inscripciones_x_evento_x_categoria );
 
 router_inscripciones.post( '/agregar_inscripciones_a_venta',[ obtener_data_socio, verificar_inscripciones_generadas ], agregar_inscripciones_a_venta );
 
@@ -57,17 +60,18 @@ router_inscripciones.post( '/inscribirse_a_evento',
                                         verificar_nivel, 
                                         verificar_sexo  
                                 ], 
-                                ( req = request, res = response ) => {
-
-                                        const { acceso } = req.body;
-                                        if ( acceso === 'ADMINISTRADOR' ) { 
-                                                return inscribirse_a_evento( req , res )
-                                        }else {
-                                                return res.status( 200 ).json({
-                                                        msg : 'El usuario no es admin'
-                                                })
-                                        }
-                                } );
+                                //( req = request, res = response ) => {
+                                //        const { acceso } = req.body;
+                                //        if ( acceso === 'ADMINISTRADOR' ) { 
+                                //                return inscribirse_a_evento( req , res )
+                                //        }else {
+                                //                return res.status( 200 ).json({
+                                //                        msg : 'El usuario no es admin'
+                                //                })
+                                //        }
+                                //}
+                                inscribirse_a_evento
+                        );
 
 router_inscripciones.get( '/ver_todas_inscripciones_x_evento',[  ], ver_todas_las_inscripciones_x_evento );
 

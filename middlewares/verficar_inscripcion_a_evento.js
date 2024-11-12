@@ -7,21 +7,19 @@ const verificar_inscripcion_a_evento = async ( req = request, res = response, ne
 
     try {
 
-        const { idEvento, categorias, idSocio } = req.body;
+        const { categorias, idCliente } = req.body;
 
-
-        const evento = await prisma.eventos.findFirst( { where : { id_evento : Number( idEvento ) } } );
         let categorias_registradas = [];
         let inscripcion_comprobada = false;
         try {
 
             for (const element of categorias) {
                 
-                let { idCategoria } = element;
+                let { idCategoria, idEvento } = element;
                 let inscripciones_registradas = await prisma.inscripciones.findFirst( { 
                                                                                             where : { 
                                                                                                 AND : [
-                                                                                                    { id_cliente : Number( idSocio ) },
+                                                                                                    { id_cliente : Number( idCliente ) },
                                                                                                     { id_evento : Number( idEvento ) },
                                                                                                     { id_categoria : Number( idCategoria ) }
                                                                                                 ]
@@ -55,7 +53,7 @@ const verificar_inscripcion_a_evento = async ( req = request, res = response, ne
         console.log ( error );   
         res.status( 500 ).json( {
             status : false,
-            msg : 'No se logro verificar si existe una caja abierta y disponible',
+            msg : 'No se logro verificar la inscripcion al evento disponible',
             //error
         } );
     }
