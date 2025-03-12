@@ -136,6 +136,10 @@ const rutas = {
 
     facturacion : {
         ruta : "/facturacion"
+    },
+
+    auditoria : {
+        ruta : "/auditoria_api"
     }
 
 }

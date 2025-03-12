@@ -1,7 +1,5 @@
 const Router = require( 'express' )
 
-
-
 const { abonar_una_clase,
         agendar_una_clase,
         editar_una_clase,
@@ -15,6 +13,13 @@ const { comprobar_horario_profesor } = require('../helpers/comprobar_disponibili
 const { obtener_data_socio, verificar_vista_usuario } = require('../helpers/verficar_socio_carga');
 const { verificar_existe_clase } = require('../helpers/verificar_existe_clase');
 const { verificar_requerimientos_usuario } = require('../middlewares/verficar_requerimientos_usuario');
+
+const { 
+        verificar_existe_reserva_agendada_para_clases,
+        verificar_existe_evento_agendado_para_clases
+    } = require( '../helpers/verificar_disponibilidad_para_servicios' )
+
+
 
 const router_agendamientos_clase = Router();
 
@@ -37,22 +42,28 @@ router_agendamientos_clase.put( '/pagar_x_clase', [ obtener_data_socio, verifica
 router_agendamientos_clase.put( '/editar_clase', [ obtener_data_socio, verificar_existe_clase ], editar_una_clase );
 
 router_agendamientos_clase.post( '/agendar_clase', 
-                                                    [ comprobar_horario_profesor, 
+                                                    [ 
+                                                        verificar_existe_reserva_agendada_para_clases,
+                                                        verificar_existe_evento_agendado_para_clases,
+                                                        comprobar_horario_profesor, 
                                                         obtener_data_socio,
                                                         verificar_requerimientos_usuario 
-                                                    ],( req = request, res = response ) => {
-
-                                                        const { acceso } = req.body;
-                                                        //console.log( acceso )
-                                                        if ( acceso === 'ADMINISTRADOR' || acceso === 'PROFESOR') { 
-                                                            return agendar_una_clase_no_cliente( req, res );
-                                                        }else {
-                                                                //return agendar_una_clase( req , res )
-                                                                return res.status( 200 ).json({
-                                                                        msg : 'El usuario no posee el rol adecuado'
-                                                                })
-                                                        }
-                                                        } );
+                                                    ]
+                                                    ,agendar_una_clase_no_cliente
+                                                    //( req = request, res = response ) => {
+//
+                                                    //    const { acceso } = req.body;
+                                                    //    //console.log( acceso )
+                                                    //    if ( acceso === 'ADMINISTRADOR' || acceso === 'PROFESOR') { 
+                                                    //        return agendar_una_clase_no_cliente( req, res );
+                                                    //    }else {
+                                                    //            //return agendar_una_clase( req , res )
+                                                    //            return res.status( 200 ).json({
+                                                    //                    msg : 'El usuario no posee el rol adecuado'
+                                                    //            })
+                                                    //    }
+                                                    //} 
+                                );
 
 
 

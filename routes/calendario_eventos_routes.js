@@ -26,6 +26,8 @@ const { obtener_ganancias_gastos_x_evento, obtener_grafico_inscriptos_x_evento_c
 
 
 
+
+
 const router_eventos = Router();
 
 

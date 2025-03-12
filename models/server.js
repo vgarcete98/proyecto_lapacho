@@ -1,12 +1,21 @@
 
 const express = require( 'express' );
+var expressWinston = require('express-winston');
+var winston = require('winston');
+
+const logger = winston.createLogger({
+    transports: [
+        //new winston.transports.Console(), // Para ver los logs en consola
+    ],
+    format: winston.format.json(),
+});
 
 //----------------------------------------------------
 const { PrismaClient } = require('@prisma/client')
 const { request, response } = require('express')
 //const prisma = new PrismaClient();
 const schedule = require('node-schedule');
-
+const prisma = new PrismaClient();
 //----------------------------------------------------
 
 const listEndpoints = require('express-list-endpoints')
@@ -44,7 +53,7 @@ const router_clientes = require( '../routes/clientes_routes' );
 
 // MIDDLEWARES PERSONALIZADOS A NIVEL DE APLICACION
 //----------------------------------------------------------------------------
-const { middleware_request, } = require( '../middlewares/logs_middleware' );
+const { middleware_request, middleware_captura_errores } = require( '../middlewares/logs_middleware' );
 const validar_token = require('../middlewares///validar_token');
 const { desencriptar_body_login } = require('../middlewares/desencriptar_login');
 const { validar_existe_usuario_socio } = require( '../middlewares/validar_existe_usuario' );
@@ -63,6 +72,7 @@ const router_caja_chica = require('../routes/caja_chica_routes');
 const router_parametros = require('../routes/parametros_routes');
 const router_caja = require('../routes/caja_routes');
 const { router_compras } = require('../routes/compras_routes');
+const router_audit_api = require('../routes/auditoria_api_routes');
 //----------------------------------------------------------------------------
 
 
@@ -106,6 +116,54 @@ class Server {
 
         //this.app.use( middleware_response );
 
+        this.app.use(expressWinston.logger({
+                winstonInstance: logger,
+                msg: "{{req.method}} {{req.url}}",
+                requestWhitelist: ["body"],
+                responseWhitelist: ["body"],
+                dynamicMeta: async (req, res) => {
+                    return {
+                        method: req.method,
+                        url: req.url,
+                        status: res.statusCode,
+                        request: req.body,
+                        response: res.body,
+                    };
+                },
+                metaField: null, // Evita anidamiento innecesario
+                ignoreRoute: () => false, // Loggea todas las rutas
+                level: "info",
+                statusLevels: true,
+                async dynamicMeta(req, res) {
+                    await prisma.api_logs.create({
+                        data: {
+                            ruta_solicitud: req.url,
+                            fecha_solicitud: new Date(),
+                            type_request: req.method,
+                            status_code: res.statusCode,
+                            request_body: JSON.stringify( req.body),
+                            response_body: JSON.stringify(res.body),
+                        },
+                    });
+                }
+            }));
+        
+        this.app.use(expressWinston.errorLogger({
+                winstonInstance: logger,
+                async dynamicMeta(req, res, err) {
+                    await prisma.log.create({
+                        data: {
+        
+                            ruta_solicitud: req.url,
+                            fecha_solicitud: new Date(),
+                            type_request: req.method,
+                            status_code: res.statusCode,
+                            request_body: JSON.stringify( req.body),
+                            response_body: { error: err.message }
+                        },
+                    });
+                }
+            }));
 
         //COMENTO ESTA PARTE YA QUE DEBO DE TRABAJAR CON JSON ENCRIPTADO
         
@@ -137,6 +195,7 @@ class Server {
                 }
          );
         });
+
 
     }
 
@@ -191,6 +250,8 @@ class Server {
         this.app.use( rutas.compras.ruta, router_compras );    
         
         this.app.use( rutas.facturacion.ruta, router_facturacion );
+
+        this.app.use( rutas.auditoria.ruta, router_audit_api );
     
     }
 

@@ -168,11 +168,20 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
 
     try {
 
-
-        const { id_cliente, pagina, cantidad, nro_cedula } = req.query;
+        const { pagina, cantidad, nro_cedula } = req.query;
         let ventas = [];
+
+
+        console.log( nro_cedula );
+        const cliente = await prisma.cliente.findMany( { 
+            where : { cedula : nro_cedula },
+            select : {
+                id_cliente : true
+            } 
+        } );
+
         const ventas_dependientes = await prisma.cliente.findMany( { 
-                                                                        where : { parent_id_cliente : Number(id_cliente) },
+                                                                        where : { parent_id_cliente : Number(cliente.id_cliente) },
                                                                         select : {
                                                                             id_cliente : true
                                                                         } 
@@ -195,23 +204,20 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
               id_venta: true,
             },
             where: {
-                    OR: [
+                    AND : [
                             // Si `id_cliente` está definido, se incluye esta condición
-                            id_cliente ? { id_cliente: Number(id_cliente) } : undefined,
                             nro_cedula ? { cedula : nro_cedula } : undefined,
                             // Se verifica si `otros_clientes` no está vacío
                             (ventas_dependientes.length !== 0 ) ? { id_cliente: { in: otros_clientes } } : undefined,
-                    ].filter(Boolean),  // Elimina valores indefinidos dentro del OR
+                            { estado : { in : [ 'PENDIENTE', 'PENDIENTE DE PAGO' ] } }//que todavia no se pago o algo asi
 
-                    AND : [
-                        { estado : { in : [ 'PENDIENTE', 'PENDIENTE DE PAGO' ] } }//que todavia no se pago o algo asi
-                    ]
+                    ].filter(Boolean)
                 },  // Elimina valores indefinidos dentro del AND
                 skip : (Number(pagina) - 1) * Number(cantidad),
                 take : Number(cantidad),
           });        
 
-        console.log(  ventas )
+        //console.log(  ventas )
         let ventaServicios = [];
         if ( ventas.length > 0 ) {
 
@@ -229,7 +235,7 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
                 monto: element.monto ?? 0, // Aquí puedes poner 0 o null según lo que necesites
                 estado: element.estado ?? "SIN_ESTADO", // Otro ejemplo, elige un valor por defecto
             }));            
-            console.log( ventaServicios );
+            //console.log( ventaServicios );
             res.status( 200 ).json( {
                 status : true,
                 msg : 'Ventas de ese cliente',

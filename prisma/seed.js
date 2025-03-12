@@ -453,7 +453,7 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
   const socios = await prisma.cliente.createMany( { data : [  
                                                             { 
                                                               nombre : "Victor", apellido : "Garcete", 
-                                                              cedula : '4365710', fecha_nacimiento : generar_fecha( '29/05/2023' ) ,
+                                                              cedula : '4365710123123', fecha_nacimiento : generar_fecha( '29/05/2023' ) ,
                                                               id_tipo_socio : 1, creadoen : new Date(), estado_usuario : 'ACTIVO',
                                                               nombre_cmp : "Victor Garcete", numero_telefono : "0985552004",
                                                               nombre_usuario : "v_garcete", password : encriptar_password("12345678"), 

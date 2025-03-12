@@ -439,6 +439,25 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
     
                         if ( nuevo_requerimiento !== null ){
                             requerimientos_creados += 1;
+                            //LOS REQUERIMIENTOS EN SI SON COMPRAS AL FIN Y AL CABO QUE REALIZA EL CLUB
+                            let { id_insumo } = nuevo_requerimiento;
+                            let compra_nueva = await prisma.compras.create( {  
+                                                                                data : {
+                                                                                    creado_en : new Date(),
+                                                                                    creado_por : 1,
+                                                                                    descripcion : descripcion,
+                                                                                    estado : 'PENDIENTE DE PAGO',
+                                                                                    monto : Number( costo ),
+                                                                                    cantidad : cantidad,
+                                                                                    id_insumo : id_insumo,
+                                                                                    id_cliente : 1,
+                                                                                    id_tipo_egreso : 4 //TIENE QUE HABER UN TIPO DE GASTO COMPRAS_TORNEOS O ALGO ASI 
+                                                                                                        // DE MOMENTO LE DEJO ASI NOMAS 09/01/2025
+                                                                                }
+
+                                                                            } );
+
+
                         }
     
                     } catch (error) {

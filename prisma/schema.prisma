@@ -288,7 +288,7 @@ model cliente {
   apellido           String               @db.VarChar(255)
   nombre             String               @db.VarChar(255)
   cedula             String               @unique(map: "cliente_cedula_index") @db.VarChar(255)
-  creadoen           DateTime             @db.Timestamp(6)
+  creadoen           DateTime             @default(now()) @db.Timestamp(6)
   fecha_nacimiento   DateTime?            @db.Date
   nombre_cmp         String?              @default("") @db.VarChar(255)
   correo_electronico String?              @default("") @db.VarChar(255)
@@ -301,6 +301,7 @@ model cliente {
   nombre_usuario     String?              @db.VarChar(50)
   sexo               String?              @db.VarChar(10)
   nivel              Int?
+  contrasea          String?              @db.VarChar(50)
   agendamiento_clase agendamiento_clase[]
   caja               caja[]
   caja_chica         caja_chica[]
@@ -555,4 +556,14 @@ model timbrado {
   razon_social        String?    @db.VarChar(255)
   direccion           String?    @db.VarChar(255)
   facturas            facturas[]
+}
+
+model api_logs {
+  id_log          Int       @id(map: "api_logs_pk") @default(autoincrement())
+  status_code     Int
+  request_body    String    @db.VarChar
+  response_body   String?   @db.VarChar
+  type_request    String    @db.VarChar(10)
+  fecha_solicitud DateTime? @db.Timestamp(6)
+  ruta_solicitud  String    @db.VarChar(255)
 }
