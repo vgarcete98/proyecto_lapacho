@@ -734,12 +734,12 @@ const obtener_socio_usuario = async ( req = request, res = response ) => {
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
         //console.log( query )
-        let sociosFormateados = await prisma.$queryRawUnsafe( query ); 
+        let usuariosFormateados = await prisma.$queryRawUnsafe( query ); 
         res.status(200).json({
             status: true,
-            msg: 'Socios del club',
-            cant : sociosFormateados.length,
-            sociosFormateados
+            msg: 'Usuarios del club',
+            cant : usuariosFormateados.length,
+            usuariosFormateados
         });     
         
         
