@@ -68,7 +68,6 @@ const { router_facturacion } = require( '../routes/facturacion_route' );
 const { cron_job_genera_cuotas_anio } = require( '../helpers/cron_job_genera_cuotas_anio' );
 const { cron_job_genera_gastos_fijos } = require( '../helpers/cron_job_genera_cuotas_anio' );
 const { cron_job_genera_venta_cuotas_vencidas } = require( '../cuotas/genera_venta_cuotas_vencidas' )
-const router_caja_chica = require('../routes/caja_chica_routes');
 const router_parametros = require('../routes/parametros_routes');
 const router_caja = require('../routes/caja_routes');
 const { router_compras } = require('../routes/compras_routes');
@@ -236,8 +235,6 @@ class Server {
         this.app.use( rutas.tipo_cuotas.ruta, router_tipo_cuota );
 
         this.app.use( rutas.cuotas_del_club.ruta, router_cuotas );
-
-        this.app.use( rutas.caja_chica.ruta, router_caja_chica );
 
         this.app.use( rutas.clientes.ruta, router_clientes );
 

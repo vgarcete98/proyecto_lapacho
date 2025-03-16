@@ -21,73 +21,19 @@ const estados_socio = {
 
 
 
-
-
-
-
-const crear_socio = async ( req = request, res = response ) => {
+const crear_socio_dependientes = async ( req = request, res = response ) => {
 
 
     try {
 
-        const { nombre, apellido, fechaNacimiento, cedula, estadoSocio,
-                correo, numeroTel, direccion, ruc, tipoSocio,
-                contraseña, nombreUsuario, idAcceso, dependientes } = req.body;
+        const { idSocio, dependientes } = req.body;
         
         //OBTENER EL SOCIO INSERTADO
         //------------------------------------------------------------------------------------------
         let nuevo_socio = {};
         let nuevos_socios = [];
-        const cantidad_a_insertar = 1 + dependientes.length;
-
-        try {
-            nuevo_socio = await prisma.cliente.upsert( { 
-                                                            where : { cedula : cedula, es_socio : false },
-                                                            update : { nombre : nombre,
-                                                                        apellido : apellido,
-                                                                        fecha_nacimiento : generar_fecha( fechaNacimiento),
-                                                                        id_tipo_socio : tipoSocio,
-                                                                        correo_electronico : correo,
-                                                                        numero_telefono : numeroTel,
-                                                                        direccion : direccion,
-                                                                        ruc : ruc,
-                                                                        nombre_cmp : `${ nombre } ${ apellido }`,
-                                                                        creadoen : new Date(),
-                                                                        estado_usuario : estados_socio.activo.descripcion,
-                                                                        password : contraseña,//encriptar_password(contraseña),
-                                                                        nombre_usuario : nombreUsuario,
-                                                                        id_rol_usuario : idAcceso,
-                                                                        es_socio : true },
-                                                            create : { 
-                                                                nombre : nombre,
-                                                                apellido : apellido,
-                                                                cedula : cedula,
-                                                                fecha_nacimiento : generar_fecha( fechaNacimiento),
-                                                                id_tipo_socio : tipoSocio,
-                                                                correo_electronico : correo,
-                                                                numero_telefono : numeroTel,
-                                                                direccion : direccion,
-                                                                ruc : ruc,
-                                                                nombre_cmp : `${ nombre } ${ apellido }`,
-                                                                creadoen : new Date(),
-                                                                estado_usuario : estados_socio.activo.descripcion,
-                                                                password : contraseña,//encriptar_password(contraseña),
-                                                                nombre_usuario : nombreUsuario,
-                                                                id_rol_usuario : idAcceso,
-                                                                es_socio : true
-                                                            }
-                                                    } );
-            if ( nuevo_socio.correo_electronico != "" ){
-                //console.log( correo_electronico )
-                const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
-                sendMail( nuevo_socio.correo_electronico, cuerpo_mail );
-            }
-            nuevos_socios.push( { nombre, apellido } );
-            
-        } catch (error3) {
-            console.log( `ocurrio un error al insertar el primer socio ${ error3}` )
-            
-        }
+        const cantidad_a_insertar = dependientes.length;
+        nuevo_socio = await prisma.cliente.findUnique( { where : { id_cliente : Number(idSocio) } } )
 
         const idClienteTitular = nuevo_socio.id_cliente;
         //console.log( dependientes );
@@ -97,7 +43,7 @@ const crear_socio = async ( req = request, res = response ) => {
                 for (let element in dependientes ) {
     
                     dependiente = await prisma.cliente.upsert( {
-                                                                    where : { cedula : cedula, es_socio : false },
+                                                                    where : { cedula :  dependientes[element].cedula, es_socio : false },
                                                                     update : {
                                                                         nombre : dependientes[element].nombre,
                                                                         apellido : dependientes[element].apellido,
@@ -107,13 +53,9 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                         correo_electronico : dependientes[element].correo,
                                                                         numero_telefono : dependientes[element].numeroTel,
                                                                         direccion : dependientes[element].direccion,
-                                                                        ruc : dependientes[element].ruc,
                                                                         nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                                         creadoen : new Date (),
                                                                         estado_usuario : estados_socio.activo.descripcion,
-                                                                        password : dependientes[element].contraseña,//encriptar_password(dependientes[element].contraseña),
-                                                                        nombre_usuario : dependientes[element].nombreUsuario,
-                                                                        id_rol_usuario : dependientes[element].idAcceso,
                                                                         parent_id_cliente : idClienteTitular,
                                                                         es_socio : true
                                                                     },
@@ -126,21 +68,16 @@ const crear_socio = async ( req = request, res = response ) => {
                                                                         correo_electronico : dependientes[element].correo,
                                                                         numero_telefono : dependientes[element].numeroTel,
                                                                         direccion : dependientes[element].direccion,
-                                                                        ruc : dependientes[element].ruc,
                                                                         nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
                                                                         creadoen : new Date (),
                                                                         estado_usuario : estados_socio.activo.descripcion,
-                                                                        password : dependientes[element].contraseña, //encriptar_password(dependientes[element].contraseña),
-                                                                        nombre_usuario : dependientes[element].nombreUsuario,
-                                                                        id_rol_usuario : dependientes[element].idAcceso,
                                                                         parent_id_cliente : idClienteTitular,
                                                                         es_socio : true,  
                                                                     }
                                                             } );
 
                     if ( dependientes[element].correo_electronico != "" &&  dependientes[element].correo_electronico !== undefined){
-                    
-                        const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
+                        const cuerpo_mail = `Bienvenido al club Lapacho Socio ${dependientes[element].nombre}, ${dependientes[element].apellido}`;
                         sendMail( dependientes[element].correo_electronico, cuerpo_mail );
                     }
                     nuevos_socios.push( { nombre : dependientes[element].nombre, apellido : dependientes[element].apellido } );
@@ -161,7 +98,7 @@ const crear_socio = async ( req = request, res = response ) => {
     
                     status : true,
                     msj : 'Socio Creado',
-                    descripcion : `${ ( dependientes.length === 0 ) ? `Socio Creado con exito ${nombre}, ${apellido}` : `Socios creados con exito ${nombre}, ${apellido}, ${ dependientes.reduce( (acumulador, element)=> ` ${element.nombre}, ${element.apellido} ` ) }` }, insertados : ${ nuevos_socios.length } socios`
+                    descripcion : ` ${ dependientes.reduce( (acumulador, element)=> ` ${element.nombre}, ${element.apellido} ` ) } socios`
                 }
             );   
         }else {
@@ -170,7 +107,98 @@ const crear_socio = async ( req = request, res = response ) => {
     
                     status : true,
                     msj : 'No se lograron crear todos los socios que se adjunto',
-                    descripcion : `${ ( dependientes.length === 0 ) ? `Socio Creado con exito ${nombre}, ${apellido}` : `Socios creados con exito ${nombre}, ${apellido}, ${ dependientes.reduce( (acumulador, element)=> ` ${element.nombre}, ${element.apellido} ` ) }` }, insertados : ${ nuevos_socios.length } socios`
+                    descripcion : `insertados : ${ nuevos_socios.length } socios`
+                }
+            ); 
+        }
+
+    } catch ( error ) {
+        //console.log( error );
+        res.status( 500 ).json(
+
+            {
+                status : false,
+                msj : `No se puede crear al socio solicitado ${error}`,
+                //error
+            }
+
+        );
+
+    }
+
+}
+
+
+
+const crear_socio = async ( req = request, res = response ) => {
+
+
+    try {
+
+        const { nombre, apellido, fechaNacimiento, cedula, estadoSocio,
+                correo, numeroTel, direccion, ruc, tipoSocio  } = req.body;
+        
+        //OBTENER EL SOCIO INSERTADO
+        //------------------------------------------------------------------------------------------
+        let nuevo_socio = {};
+        nuevo_socio = await prisma.cliente.upsert( { 
+            where : { cedula : cedula, es_socio : false },
+            update : { nombre : nombre,
+                        apellido : apellido,
+                        fecha_nacimiento : generar_fecha( fechaNacimiento),
+                        id_tipo_socio : tipoSocio,
+                        correo_electronico : correo,
+                        numero_telefono : numeroTel,
+                        direccion : direccion,
+                        ruc : ruc,
+                        nombre_cmp : `${ nombre } ${ apellido }`,
+                        creadoen : new Date(),
+                        estado_usuario : estados_socio.activo.descripcion,
+                        password : contraseña,//encriptar_password(contraseña),
+                        nombre_usuario : nombreUsuario,
+                        id_rol_usuario : idAcceso,
+                        es_socio : true },
+            create : { 
+                nombre : nombre,
+                apellido : apellido,
+                cedula : cedula,
+                fecha_nacimiento : generar_fecha( fechaNacimiento),
+                id_tipo_socio : tipoSocio,
+                correo_electronico : correo,
+                numero_telefono : numeroTel,
+                direccion : direccion,
+                ruc : ruc,
+                nombre_cmp : `${ nombre } ${ apellido }`,
+                creadoen : new Date(),
+                estado_usuario : estados_socio.activo.descripcion,
+                es_socio : true
+            }
+        } );
+        if ( nuevo_socio.correo_electronico != "" ){
+            //console.log( correo_electronico )
+            const cuerpo_mail = `Bienvenido al club Lapacho Socio ${nombre}, ${apellido}`;
+            sendMail( nuevo_socio.correo_electronico, cuerpo_mail );
+        }
+
+
+
+        if ( nuevo_socio !== null){
+            res.status( 200 ).json(
+                {
+    
+                    status : true,
+                    msj : 'Socio Creado',
+                    descripcion : `Socio Creado con exito ${nombre}, ${apellido}` 
+                }
+            );   
+
+        }else {
+            res.status( 400 ).json(
+                {
+    
+                    status : true,
+                    msj : 'No se logro crear al socio que se adjunto',
+                    descripcion : ` No se logro crear al socio que se adjunto  ${nombre}, ${apellido}`
                 }
             ); 
         }
@@ -198,9 +226,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
 
     try {
         const { nombre, apellido, fechaNacimiento, cedula, estadoSocio, nroCedula,
-            correo, numeroTel, direccion, ruc, tipoSocio,
-            contraseña, nombreUsuario, idAcceso, idCliente, dependientes } = req.body;
-        const rucNuevo = ruc ;
+                correo, numeroTel, direccion, ruc, tipoSocio, idCliente, esSocio} = req.body;
         //------------------------------------------------------------------------------------------
         const fecha_socio_actualizado = new Date();
         const socio_actualizado = await prisma.cliente.update( { 
@@ -213,103 +239,35 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                                     cedula : nroCedula,
                                                                     editadoen : fecha_socio_actualizado,
                                                                     correo_electronico : correo,
-                                                                    id_rol_usuario : idAcceso,
-                                                                    password : encriptar_password (contraseña),
-                                                                    nombre_usuario : nombreUsuario,
-                                                                    ruc : rucNuevo,
-                                                                    //tipo_socio : tipoSocio,
+                                                                    ruc : ruc,
+                                                                    id_tipo_socio : Number(tipoSocio),
                                                                     numero_telefono : numeroTel,
-                                                                    estado_usuario : estadoSocio,
+                                                                    estado_usuario : ( Boolean(esSocio) === true ) ? estados_socio.activo.descripcion : estados_socio.suspendido.descripcion,
                                                                     direccion : direccion
                                                                 }
                                                             } );
         //console.log( socio_actualizado );
 
-        if ( correo_electronico !== "" && correo_electronico !== undefined ){
-            //console.log( correo_electronico )
-            const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
-            sendMail( correo_electronico, cuerpo_mail );
-        }
-        //DEBERIAMOS PODER ACTUA
-        let sociosDependientes = [];
 
-        if (dependientes.length !== 0 && dependientes !== undefined && dependientes !== null) {
-            let clienteTitular = idCliente;
-            let dependiente;
-            for (let element in dependientes ) {
-                
-                //VALIDO SI ES QUE NO EXISTE ESE CLIENTE ENTONCES LO CREO, SINO SIMPLEMENTE LO ACTUALIZO
-                const cliente_dependiente = await prisma.cliente.findFirst( { where : { cedula : dependientes[element].cedula } } );
-                fecha_db = generar_fecha( dependientes[element].fechaNacimiento);
-                if ( cliente_dependiente === null || cliente_dependiente === undefined ) {
-                        dependiente = await prisma.cliente.create(  { 
-                                                                        data : {
-                                                                            nombre : dependientes[element].nombre,
-                                                                            apellido : dependientes[element].apellido,
-                                                                            cedula : dependientes[element].cedula,
-                                                                            fecha_nacimiento : fecha_db,
-                                                                            id_tipo_socio : dependientes[element].tipoSocio,
-                                                                            correo_electronico : dependientes[element].correo,
-                                                                            numero_telefono : dependientes[element].numeroTel,
-                                                                            direccion : dependientes[element].direccion,
-                                                                            ruc : dependientes[element].ruc,
-                                                                            nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
-                                                                            creadoen : dependientes[element].fecha_creacion_socio,
-                                                                            estado_usuario : estados_socio.activo.descripcion,
-                                                                            password : encriptar_password(dependientes[element].contraseña),
-                                                                            nombre_usuario : dependientes[element].nombreUsuario,
-                                                                            id_rol_usuario : dependientes[element].idAcceso,
-                                                                            //tipo_usuario : '',
-                                                                            parent_id_cliente : clienteTitular
+        if( socio_actualizado !== null ){
 
-                                                                        } 
-                                                                    
-                                                                    }  );
-                }else {
-
-                    dependiente = await prisma.cliente.update(  { 
-                                                where : {  id_cliente : dependientes[element].idCliente  },
-                                                data : {
-                                                    nombre : dependientes[element].nombre,
-                                                    apellido : dependientes[element].apellido,
-                                                    cedula : dependientes[element].cedula,
-                                                    fecha_nacimiento : fecha_db,
-                                                    id_tipo_socio : dependientes[element].tipoSocio,
-                                                    correo_electronico : dependientes[element].correo,
-                                                    numero_telefono : dependientes[element].numeroTel,
-                                                    direccion : dependientes[element].direccion,
-                                                    ruc : dependientes[element].ruc,
-                                                    nombre_cmp : `${ dependientes[element].nombre } ${ dependientes[element].apellido }`,
-                                                    creadoen : dependientes[element].fecha_creacion_socio,
-                                                    estado_usuario : estados_socio.activo.descripcion,
-                                                    password : encriptar_password(dependientes[element].contraseña),
-                                                    nombre_usuario : dependientes[element].nombreUsuario,
-                                                    id_rol_usuario : dependientes[element].idAcceso,
-                                                    //tipo_usuario : '',
-                                                    parent_id_cliente : clienteTitular
-                                                
-                                                } 
-                                            
-                                            }  );
-                    
-                }
-                if ( dependientes[element].correo_electronico != "" &&  dependientes[element].correo_electronico !== undefined){
-                    
-                    const cuerpo_mail = ` usuario : ${ nombreUsuario }, contraseña : ${ contraseña } `;
-                    sendMail( dependientes[element].correo_electronico, cuerpo_mail );
-                }
+            if ( correo !== "" && correo !== undefined ){
+                //console.log( correo_electronico )
+                const cuerpo_mail = `Actualizacion de datos de socio`;
+                sendMail( correo, cuerpo_mail );
             }
-
+    
+    
+            res.status( 200 ).json(
+                {
+    
+                    status : true,
+                    msj : 'Socio Actualizado',
+                    descripcion : `Actualizacion de socio realizada con exito`
+                }
+            );      
         }
 
-        res.status( 200 ).json(
-            {
-
-                status : true,
-                msj : 'Socio Actualizado',
-                descripcion : `${ ( sociosDependientes.length === 0 ) ? `Socio Actualizado con exito ${nombre}, ${apellido}` : `Socios Actualizados con exito ${nombre}, ${apellido}, ${ sociosDependientes.reduce( (acumulador, element)=> ` ${element.nombre}, ${element.apellido} ` ) }` }`
-            }
-        );      
     } catch (error) {
         console.log( error );
         res.status( 500 ).json( {
@@ -322,6 +280,127 @@ const actualizar_socio = async ( req = request, res = response ) => {
 
 }
 
+
+
+
+const crear_socio_usuario = async ( req = request, res = response ) => {
+
+
+    try {
+
+        const { idSocio, contraseña, nombreUsuario, idAcceso   } = req.body;
+        
+        //OBTENER EL SOCIO INSERTADO
+        //------------------------------------------------------------------------------------------
+        let nuevo_socio_usuario = {};
+        const socio = await prisma.cliente.findUnique( { where : { id_cliente : Number( idSocio ) } } );
+
+        nuevo_socio_usuario = await prisma.cliente.update( { 
+            where : { id_cliente : socio.id_cliente, es_socio : true },
+            data : {  
+                estado_usuario : estados_socio.activo.descripcion,
+                password : contraseña,//encriptar_password(contraseña),
+                nombre_usuario : nombreUsuario,
+                id_rol_usuario : idAcceso
+            }
+        } );
+
+
+
+        if ( nuevo_socio_usuario !== null){
+            res.status( 200 ).json(
+                {
+    
+                    status : true,
+                    msj : 'Usuario Creado',
+                    descripcion : `Usuario Creado con exito ${socio.nombre}, ${socio.apellido}` 
+                }
+            );   
+
+        }else {
+            res.status( 400 ).json(
+                {
+    
+                    status : true,
+                    msj : 'No se logro crear al usuario que se adjunto',
+                    descripcion : ` No se logro crear al usuario que se adjunto  ${socio.nombre}, ${socio.apellido}`
+                }
+            ); 
+        }
+
+    } catch ( error ) {
+        //console.log( error );
+        res.status( 500 ).json(
+
+            {
+                status : false,
+                msj : `No se puede crear al socio solicitado ${error}`,
+                //error
+            }
+
+        );
+
+    }
+
+}
+
+
+
+const actualizar_socio_usuario = async ( req = request, res = response ) => {
+
+
+    try {
+
+        const { idSocio, contraseña, nombreUsuario, idAcceso   } = req.body;
+        
+        //OBTENER EL SOCIO INSERTADO
+        //------------------------------------------------------------------------------------------
+        let nuevo_socio_usuario = {};
+        const socio = await prisma.cliente.findUnique( { where : { id_cliente : Number( idSocio ) } } );
+
+        nuevo_socio_usuario = await prisma.cliente.update( { 
+            where : { id_cliente : socio.id_cliente, es_socio : true },
+            data : {  
+                estado_usuario : estados_socio.activo.descripcion,
+                password : contraseña,//encriptar_password(contraseña),
+                nombre_usuario : nombreUsuario,
+                id_rol_usuario : idAcceso
+            }
+        } );
+
+
+
+        if ( nuevo_socio_usuario !== null){
+            res.status( 200 ).json(
+                {
+    
+                    status : true,
+                    msj : 'Usuario Creado',
+                    descripcion : `Usuario Creado con exito ${socio.nombre}, ${socio.apellido}` 
+                }
+            );   
+
+        }else {
+            res.status( 400 ).json(
+                {
+    
+                    status : true,
+                    msj : 'No se logro crear al usuario que se adjunto',
+                    descripcion : ` No se logro crear al usuario que se adjunto  ${socio.nombre}, ${socio.apellido}`
+                }
+            ); 
+        }
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `No se pudo actualizar al Socio  ${ error }`,
+            //error
+        } );
+    }
+
+
+}
 
 
 const borrar_socio = async ( req = request, res = response ) => {
@@ -626,6 +705,58 @@ const obtener_socio = async ( req = request, res = response ) => {
 
 
 
+const obtener_socio_usuario = async ( req = request, res = response ) => {
+
+    //OBTENER EL SOCIO PASANDOLE UN ID
+
+    try {
+
+        const { cantidad, omitir, nombre, estado_socio } = req.query;
+
+        const query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
+                                --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
+                                A.CEDULA AS "cedula",
+                                A.CORREO_ELECTRONICO AS "correoElectronico", 
+                                A.DIRECCION AS "direccion",
+                                A.ID_CLIENTE AS "idCliente", 
+                                A.RUC AS "ruc" ,
+                                A.CREADOEN AS "creadoEn", 
+                                --A.PASSWORD AS "contrasea",
+                                A.NOMBRE_USUARIO AS "nombreUsuario",
+                                A.FECHA_NACIMIENTO AS "fechaNacimiento",
+                                CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
+                                C.DESC_TIPO_SOCIO AS "descTipoSocio", 
+                                A.NUMERO_TELEFONO AS "numeroTelefono",
+                                A.ESTADO_USUARIO AS "estadoSocio" 
+                            FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                        WHERE A.ESTADO_USUARIO = '${ estados_socio.activo.descripcion }' AND A.NOMBRE_USUARIO IS NOT NULL
+                        ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
+                        ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
+                        ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
+        //console.log( query )
+        let sociosFormateados = await prisma.$queryRawUnsafe( query ); 
+        res.status(200).json({
+            status: true,
+            msg: 'Socios del club',
+            cant : sociosFormateados.length,
+            sociosFormateados
+        });     
+        
+        
+    } catch (error) {
+        //console.log( error );
+        res.status( 500 ).json( {
+           status : false,
+           msg : `No se pudo obtener el detalle de los socios ${ error } `,
+           //error 
+        });
+        
+    }
+  
+
+}
+
+
 
 module.exports = { 
                     crear_socio, 
@@ -634,5 +765,9 @@ module.exports = {
                     obtener_socios,
                     obtener_socios_detallados, 
                     borrar_socio,
-                    obtener_socio_cedula_nombre 
+                    obtener_socio_cedula_nombre,
+                    crear_socio_dependientes,
+                    crear_socio_usuario,
+                    actualizar_socio_usuario,
+                    obtener_socio_usuario
                 };
