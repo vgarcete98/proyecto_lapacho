@@ -154,9 +154,9 @@ const crear_socio = async ( req = request, res = response ) => {
                         nombre_cmp : `${ nombre } ${ apellido }`,
                         creadoen : new Date(),
                         estado_usuario : estados_socio.activo.descripcion,
-                        password : contraseña,//encriptar_password(contraseña),
-                        nombre_usuario : nombreUsuario,
-                        id_rol_usuario : idAcceso,
+                        //password : contraseña,//encriptar_password(contraseña),
+                        //nombre_usuario : nombreUsuario,
+                        //id_rol_usuario : idAcceso,
                         es_socio : true },
             create : { 
                 nombre : nombre,
