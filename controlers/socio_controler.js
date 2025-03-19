@@ -97,7 +97,7 @@ const crear_socio_dependientes = async ( req = request, res = response ) => {
                 {
     
                     status : true,
-                    msj : 'Socio Creado',
+                    msg : 'Socio Creado',
                     descripcion : ` ${ dependientes.reduce( (acumulador, element)=> ` ${element.nombre}, ${element.apellido} ` ) } socios`
                 }
             );   
@@ -106,7 +106,7 @@ const crear_socio_dependientes = async ( req = request, res = response ) => {
                 {
     
                     status : true,
-                    msj : 'No se lograron crear todos los socios que se adjunto',
+                    msg : 'No se lograron crear todos los socios que se adjunto',
                     descripcion : `insertados : ${ nuevos_socios.length } socios`
                 }
             ); 
@@ -118,7 +118,7 @@ const crear_socio_dependientes = async ( req = request, res = response ) => {
 
             {
                 status : false,
-                msj : `No se puede crear al socio solicitado ${error}`,
+                msg : `No se puede crear al socio solicitado ${error}`,
                 //error
             }
 
@@ -187,7 +187,7 @@ const crear_socio = async ( req = request, res = response ) => {
                 {
     
                     status : true,
-                    msj : 'Socio Creado',
+                    msg : 'Socio Creado',
                     descripcion : `Socio Creado con exito ${nombre}, ${apellido}` 
                 }
             );   
@@ -197,7 +197,7 @@ const crear_socio = async ( req = request, res = response ) => {
                 {
     
                     status : true,
-                    msj : 'No se logro crear al socio que se adjunto',
+                    msg : 'No se logro crear al socio que se adjunto',
                     descripcion : ` No se logro crear al socio que se adjunto  ${nombre}, ${apellido}`
                 }
             ); 
@@ -209,7 +209,7 @@ const crear_socio = async ( req = request, res = response ) => {
 
             {
                 status : false,
-                msj : `No se puede crear al socio solicitado ${error}`,
+                msg : `No se puede crear al socio solicitado ${error}`,
                 //error
             }
 
@@ -262,7 +262,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
                 {
     
                     status : true,
-                    msj : 'Socio Actualizado',
+                    msg : 'Socio Actualizado',
                     descripcion : `Actualizacion de socio realizada con exito`
                 }
             );      
@@ -312,7 +312,7 @@ const crear_socio_usuario = async ( req = request, res = response ) => {
                 {
     
                     status : true,
-                    msj : 'Usuario Creado',
+                    msg : 'Usuario Creado',
                     descripcion : `Usuario Creado con exito ${socio.nombre}, ${socio.apellido}` 
                 }
             );   
@@ -322,7 +322,7 @@ const crear_socio_usuario = async ( req = request, res = response ) => {
                 {
     
                     status : true,
-                    msj : 'No se logro crear al usuario que se adjunto',
+                    msg : 'No se logro crear al usuario que se adjunto',
                     descripcion : ` No se logro crear al usuario que se adjunto  ${socio.nombre}, ${socio.apellido}`
                 }
             ); 
@@ -334,7 +334,7 @@ const crear_socio_usuario = async ( req = request, res = response ) => {
 
             {
                 status : false,
-                msj : `No se puede crear al socio solicitado ${error}`,
+                msg : `No se puede crear al socio solicitado ${error}`,
                 //error
             }
 
@@ -375,7 +375,7 @@ const actualizar_socio_usuario = async ( req = request, res = response ) => {
                 {
     
                     status : true,
-                    msj : 'Usuario Creado',
+                    msg : 'Usuario Creado',
                     descripcion : `Usuario Creado con exito ${socio.nombre}, ${socio.apellido}` 
                 }
             );   
@@ -385,7 +385,7 @@ const actualizar_socio_usuario = async ( req = request, res = response ) => {
                 {
     
                     status : true,
-                    msj : 'No se logro crear al usuario que se adjunto',
+                    msg : 'No se logro crear al usuario que se adjunto',
                     descripcion : ` No se logro crear al usuario que se adjunto  ${socio.nombre}, ${socio.apellido}`
                 }
             ); 
@@ -427,7 +427,7 @@ const borrar_socio = async ( req = request, res = response ) => {
                 {
     
                     status : true,
-                    msj : 'Socio Borrado',
+                    msg : 'Socio Borrado',
                     descipcion : `El socio ${nombre}, ${apellido} ha sido borrado`
     
                 }
@@ -439,7 +439,7 @@ const borrar_socio = async ( req = request, res = response ) => {
                 {
     
                     status : false,
-                    msj : 'Socio Borrado',
+                    msg : 'Socio Borrado',
                     descipcion : `No se pudo borrar al socio, intente de nuevo`
                 }   
             ); 
@@ -450,7 +450,7 @@ const borrar_socio = async ( req = request, res = response ) => {
         res.status( 500 ).json(
             {
                 status : false,
-                msj : `No se logro borrar al socio, Ocurrio un error ${ error }`,
+                msg : `No se logro borrar al socio, Ocurrio un error ${ error }`,
                 //error
             }
 
