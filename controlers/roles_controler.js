@@ -51,7 +51,7 @@ const crear_rol_con_accesos = async (  req = request, res = response  ) =>{
 
             {
                 status : true,
-                msj : 'Rol Creado con accesos',
+                msg : 'Rol Creado con accesos',
                 rol : {
                     idRolUsuario : (  typeof( id_rol_usuario ) === 'bigint') ? Number(id_rol_usuario.toString()) : id_rol_usuario,
                     descripcionRol,
@@ -66,7 +66,7 @@ const crear_rol_con_accesos = async (  req = request, res = response  ) =>{
         res.status( 500 ).json(
             {
                 status : false,
-                msj : `No se pudo crear el Rol y sus accesos : ${error}`,
+                msg : `No se pudo crear el Rol y sus accesos : ${error}`,
                 //rol_nuevo : descripcionRol
             }
 
@@ -103,7 +103,7 @@ const crear_rol = async ( req = request, res = response ) => {
 
             {
                 status : true,
-                msj : 'Rol Creado',
+                msg : 'Rol Creado',
                 rol : { 
                     descripcionRol : descripcion_rol, 
                     idRolUsuario : id_rol_usuario, 
@@ -122,7 +122,7 @@ const crear_rol = async ( req = request, res = response ) => {
 
             {
                 status : false,
-                msj : `No se pudo crear el Rol : ${error}`,
+                msg : `No se pudo crear el Rol : ${error}`,
                 //rol_nuevo : descripcionRol
             }
 
@@ -155,7 +155,7 @@ const actualizar_rol = async ( req = request, res = response ) => {
 
             {
                 status : true,
-                msj : `Rol Editado`,
+                msg : `Rol Editado`,
                 rol : { 
                     descripcionRol : descripcion_rol, 
                     idRolUsuario : ( typeof( id_rol_usuario ) === 'bigint' )? Number( id_rol_usuario.toString() ): id_rol_usuario, 
@@ -174,7 +174,7 @@ const actualizar_rol = async ( req = request, res = response ) => {
 
             {
                 status : false,
-                msj : `No se pudo actualizar el Rol : ${error}`,
+                msg : `No se pudo actualizar el Rol : ${error}`,
                 //rol_nuevo : descripcionRol
             }
 
@@ -209,7 +209,7 @@ const borrar_rol = async ( req = request, res = response ) => {
 
             {
                 status : true,
-                msj : 'Rol Borrado',
+                msg : 'Rol Borrado',
                 rol : { 
                     descripcionRol : descripcion_rol, 
                     idRolUsuario : ( typeof( id_rol_usuario ) === 'bigint' )? Number( id_rol_usuario.toString() ): id_rol_usuario, 
@@ -228,7 +228,7 @@ const borrar_rol = async ( req = request, res = response ) => {
 
             {
                 status : false,
-                msj : `No se pudo borrar el Rol : ${error}`,
+                msg : `No se pudo borrar el Rol : ${error}`,
                 //rol_nuevo : descripcionRol
             }
 
@@ -269,7 +269,7 @@ const obtener_roles = async ( req = request, res = response ) => {
     
             {
                 status : true,
-                msj : 'Roles del sistema',
+                msg : 'Roles del sistema',
                 rolesUsuario
             }
     
@@ -281,7 +281,7 @@ const obtener_roles = async ( req = request, res = response ) => {
 
             {
                 status : false,
-                msj : `No se pudo obtener los roles: ${error}`,
+                msg : `No se pudo obtener los roles: ${error}`,
                 //rol_nuevo : descripcionRol
             }
 
@@ -333,7 +333,7 @@ const actualizar_accesos_rol = async ( req = request, res = response ) => {
 
             {
                 status : true,
-                msj : 'Accesos actualizados del rol',
+                msg : 'Accesos actualizados del rol',
                 rol : {
                     idRolUsuario : (  typeof( id_rol_usuario ) === 'bigint') ? Number(id_rol_usuario.toString()) : id_rol_usuario,
                     descripcionRol,
@@ -348,7 +348,7 @@ const actualizar_accesos_rol = async ( req = request, res = response ) => {
         res.status( 500 ).json(
             {
                 status : false,
-                msj : `No se pudo crear el Rol y sus accesos : ${error}`,
+                msg : `No se pudo crear el Rol y sus accesos : ${error}`,
                 //rol_nuevo : descripcionRol
             }
 
@@ -392,7 +392,7 @@ const quitar_accesos_rol = async ( req = request, res = response ) => {
 
             {
                 status : true,
-                msj : 'Accesos removidos del rol',
+                msg : 'Accesos removidos del rol',
                 rol : {
                     idRolUsuario : (  typeof( idRolUsuario ) === 'bigint') ? Number(idRolUsuario.toString()) : idRolUsuario,
                     descripcionRol,
@@ -407,7 +407,7 @@ const quitar_accesos_rol = async ( req = request, res = response ) => {
         res.status( 500 ).json(
             {
                 status : false,
-                msj : `No se pudo crear el Rol y sus accesos : ${error}`,
+                msg : `No se pudo crear el Rol y sus accesos : ${error}`,
                 //rol_nuevo : descripcionRol
             }
 
@@ -445,7 +445,7 @@ const obtener_accesos_rol = async ( req = request, res = response ) => {
 
             {
                 status : true,
-                msj : 'Accesos del usuario',
+                msg : 'Accesos del usuario',
                 accesoUsuario
             }
 
@@ -456,7 +456,7 @@ const obtener_accesos_rol = async ( req = request, res = response ) => {
         res.status( 500 ).json(
             {
                 status : false,
-                msj : `No se pudo crear el Rol y sus accesos : ${error}`,
+                msg : `No se pudo crear el Rol y sus accesos : ${error}`,
                 //rol_nuevo : descripcionRol
             }
 

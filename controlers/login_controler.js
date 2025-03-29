@@ -34,7 +34,7 @@ const login = async ( req = request, res = response )=> {
             res.status( 400 ).json(
                 {
                     status : true,
-                    msj : 'No existe el usuario, No se pudo generar el token',
+                    msg : 'No existe el usuario, No se pudo generar el token',
                     //usuario,
                     token : false,
                 }
@@ -60,7 +60,7 @@ const login = async ( req = request, res = response )=> {
                 res.status( 200 ).json(
                     {
                         status : true,
-                        msj : 'Login OK',
+                        msg : 'Login OK',
                         //usuario,
                         token,
                         acceso : { 
@@ -74,7 +74,7 @@ const login = async ( req = request, res = response )=> {
                 res.status( 200 ).json(
                     {
                         status : true,
-                        msj : 'Contraseña incorrecta',
+                        msg : 'Contraseña incorrecta',
                         descripcion : "Ingrese correctamente su contraseña"
                     }
                 );
@@ -87,7 +87,7 @@ const login = async ( req = request, res = response )=> {
         
             {
                 status : false,
-                msj : `Ha ocurrido un error al cargar el socio : ${ error }`,
+                msg : `Ha ocurrido un error al cargar el socio : ${ error }`,
                 //mensaje_error : error
             }
     

@@ -84,7 +84,7 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No existen Eventos dentro de las fechas en el calendario',
-                descipcion : `No existe ningun evento dentro del calendario`
+                descripcion : `No existe ningun evento dentro del calendario`
             } );
         }else {
 

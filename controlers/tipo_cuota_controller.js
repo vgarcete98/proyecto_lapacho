@@ -31,7 +31,7 @@ const obtener_tipos_de_cuota = async ( req = request, res = response ) => {
         res.status( 200 ).json(
             {
                 status : true,
-                msj : 'Tipos de cuota en el club',
+                msg : 'Tipos de cuota en el club',
                 tiposCuota
             }
         );        
@@ -40,7 +40,7 @@ const obtener_tipos_de_cuota = async ( req = request, res = response ) => {
         res.status( 400 ).json(
             {
                 status : false,
-                msj : 'Ha ocurrido un error al consultar los tipos de cuota : ' + error
+                msg : 'Ha ocurrido un error al consultar los tipos de cuota : ' + error
             }
         ); 
         
@@ -70,7 +70,7 @@ const crear_tipo_de_cuota = async ( req = request, res = response ) => {
 
                 {
                     status : true,
-                    msj : 'Nuevo tipo de cuota Creado',
+                    msg : 'Nuevo tipo de cuota Creado',
                     tipoCuota :{
                         creadoEn : creadoen,
                         descripcion : desc_tipo_cuota,
@@ -86,7 +86,7 @@ const crear_tipo_de_cuota = async ( req = request, res = response ) => {
 
                 {
                     status : true,
-                    msj : 'No se pudo crear el tipo de cuota',
+                    msg : 'No se pudo crear el tipo de cuota',
                     status : false
                 }
             );
@@ -97,7 +97,7 @@ const crear_tipo_de_cuota = async ( req = request, res = response ) => {
 
             {
                 status : true,
-                msj : 'No se pudo crear el tipo de cuota',
+                msg : 'No se pudo crear el tipo de cuota',
                 status : false
             }
         );
@@ -129,7 +129,7 @@ const editar_tipo_de_cuota = async ( req = request, res = response ) => {
 
                 {
                     status : true,
-                    msj : 'Monto actualizado de cuotas',
+                    msg : 'Monto actualizado de cuotas',
                     tipoCuota : {
                         creadoEn : creadoen, 
                         descTipoCuota : desc_tipo_cuota, 
@@ -145,7 +145,7 @@ const editar_tipo_de_cuota = async ( req = request, res = response ) => {
             res.status( 400 ).json(
                 {
                     status : false,
-                    msj : 'No se encontro el registro para editar'
+                    msg : 'No se encontro el registro para editar'
                 }
             );
         }        
@@ -154,7 +154,7 @@ const editar_tipo_de_cuota = async ( req = request, res = response ) => {
         res.status( 400 ).json(
             {
                 status : false,
-                msj : `Ocurrio un error al editar el registro : ${ error }`
+                msg : `Ocurrio un error al editar el registro : ${ error }`
             }
         );
     }
@@ -184,7 +184,7 @@ const borrar_tipo_de_cuota = async ( req = request, res = response ) => {
 
                 {
                     status : true,
-                    msj : 'Tipo de cuota borrado',
+                    msg : 'Tipo de cuota borrado',
                     tipoCuota : {
                         creadoEn : creadoen, 
                         descTipoCuota : desc_tipo_cuota, 
@@ -200,7 +200,7 @@ const borrar_tipo_de_cuota = async ( req = request, res = response ) => {
             res.status( 400 ).json(
                 {
                     status : false,
-                    msj : 'No se encontro el registro para eliminar'
+                    msg : 'No se encontro el registro para eliminar'
                 }
             );
         }        
@@ -209,7 +209,7 @@ const borrar_tipo_de_cuota = async ( req = request, res = response ) => {
         res.status( 400 ).json(
             {
                 status : false,
-                msj : `Ocurrio un error al eliminar el registro : ${ error }`
+                msg : `Ocurrio un error al eliminar el registro : ${ error }`
             }
         );
     }

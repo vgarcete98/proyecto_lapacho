@@ -65,7 +65,7 @@ const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response 
 
                 {
                     status : false,
-                    msj : 'El socio no registra pagos pendientes',
+                    msg : 'El socio no registra pagos pendientes',
                     //cantidad : cuotas_pendientes.length
                 }
             );
@@ -74,7 +74,7 @@ const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response 
 
                 {
                     status : true,
-                    msj : 'Pagos pendientes del socio',
+                    msg : 'Pagos pendientes del socio',
                     cuotasPendientes
                 }
             );
@@ -127,7 +127,7 @@ const obtener_cuotas_pendientes_x_socio_a_la_fecha = async ( req = request, res 
 
                 {
                     status : false,
-                    msj : 'El socio no registra pagos pendientes',
+                    msg : 'El socio no registra pagos pendientes',
                     //cantidad : cuotas_pendientes.length
                 }
             );
@@ -136,7 +136,7 @@ const obtener_cuotas_pendientes_x_socio_a_la_fecha = async ( req = request, res 
 
                 {
                     status : true,
-                    msj : 'Pagos pendientes del socio',
+                    msg : 'Pagos pendientes del socio',
                     cuotasPendientes
                 }
             );
@@ -190,7 +190,7 @@ const obtener_cuotas_pendientes_a_la_fecha = async ( req = request, res = respon
 
                 {
                     status : false,
-                    msj : 'El socio no registra pagos pendientes',
+                    msg : 'El socio no registra pagos pendientes',
                     //cantidad : cuotas_pendientes.length
                 }
             );
@@ -199,7 +199,7 @@ const obtener_cuotas_pendientes_a_la_fecha = async ( req = request, res = respon
 
                 {
                     status : true,
-                    msj : 'Pagos pendientes del socio',
+                    msg : 'Pagos pendientes del socio',
                     cuotasPendientes
                 }
             );
@@ -253,7 +253,7 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
 
                 {
                     status : false,
-                    msj : 'El socio no registra cuotas',
+                    msg : 'El socio no registra cuotas',
                     //cantidad : cuotas_pendientes.length
                 }
             );
@@ -262,7 +262,7 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
 
                 {
                     status : true,
-                    msj : 'Cuotas del socio',
+                    msg : 'Cuotas del socio',
                     cuotas
                 }
             );
@@ -339,7 +339,7 @@ const obtener_cuotas_pendientes_del_mes = async ( req = request, res = response 
 
                 {
                     status : false,
-                    msj : 'No se registran cuotas pendientes en el mes',
+                    msg : 'No se registran cuotas pendientes en el mes',
                     //cantidad : cuotas_pendientes.length
                 }
             );
@@ -348,7 +348,7 @@ const obtener_cuotas_pendientes_del_mes = async ( req = request, res = response 
 
                 {
                     status : true,
-                    msj : 'Pagos pendientes del socio',
+                    msg : 'Pagos pendientes del socio',
                     //cantidad : cuotasPendientes,
                     cuotasPendientes
                 }
@@ -420,7 +420,7 @@ const obtener_cuotas_pagadas_del_mes = async ( req = request, res = response )=>
 
                 {
                     status : false,
-                    msj : 'No se registran cuotas pagadas en el mes',
+                    msg : 'No se registran cuotas pagadas en el mes',
                     //cantidad : cuotas_pendientes.length
                 }
             );
@@ -429,7 +429,7 @@ const obtener_cuotas_pagadas_del_mes = async ( req = request, res = response )=>
 
                 {
                     status : true,
-                    msj : 'Pagos Realizados de los socios',
+                    msg : 'Pagos Realizados de los socios',
                     //cantidad : cuotasPendientes,
                     cuotasPendientes
                 }
@@ -499,7 +499,7 @@ const obtener_cuotas_atrasadas_del_mes = async ( req = request, res = response )
 
                 {
                     status : false,
-                    msj : 'No se registran cuotas atrasadas en el mes',
+                    msg : 'No se registran cuotas atrasadas en el mes',
                     //cantidad : cuotas_pendientes.length
                 }
             );
@@ -508,7 +508,7 @@ const obtener_cuotas_atrasadas_del_mes = async ( req = request, res = response )
 
                 {
                     status : true,
-                    msj : 'Pagos pendientes del socio',
+                    msg : 'Pagos pendientes del socio',
                     //cantidad : cuotasPendientes,
                     cuotasPendientes
                 }
@@ -561,7 +561,7 @@ const obtener_grilla_de_cuotas = async ( req = request, res = response )=>{
 
                 {
                     status : true,
-                    msj : 'No existe grilla disponible de cuotas',
+                    msg : 'No existe grilla disponible de cuotas',
                     grillaCuotas
                 }
             );
@@ -583,7 +583,7 @@ const obtener_grilla_de_cuotas = async ( req = request, res = response )=>{
 
                 {
                     status : true,
-                    msj : 'Grilla de las cuotas',
+                    msg : 'Grilla de las cuotas',
                     grillaCuotas
                 }
             );
@@ -710,7 +710,7 @@ const obtener_cantidad_socios_al_dia = async ( req = request, res = response ) =
 
             {
                 status : true,
-                msj : 'Cantidad de socios al dia',
+                msg : 'Cantidad de socios al dia',
                 sociosAlDia
             }
         );
@@ -757,7 +757,7 @@ const obtener_cantidad_socios_atrasados = async ( req = request, res = response 
 
             {
                 status : true,
-                msj : 'Cantidad de socios atrasados',
+                msg : 'Cantidad de socios atrasados',
                 sociosAtrasados
             }
         );
@@ -804,7 +804,7 @@ const obtener_socios_atrasados = async ( req = request, res = response ) => {
 
             {
                 status : true,
-                msj : 'socios Atrasados',
+                msg : 'socios Atrasados',
                 sociosAtrasados
             }
         );
@@ -851,7 +851,7 @@ const obtener_socios_al_dia = async ( req = request, res = response ) => {
 
             {
                 status : true,
-                msj : 'socios Atrasados',
+                msg : 'socios Atrasados',
                 sociosAlDia
             }
         );

@@ -39,7 +39,7 @@ const verificar_edad = async ( req = request, res = response, next )=>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debee verificar una de las inscripciones ya que no cumple con las reglas de la categoria',
-                descipcion : `Una inscripcion no cumple con las reglas del evento : edad`
+                descripcion : `Una inscripcion no cumple con las reglas del evento : edad`
             } ); 
         }else {
             next();
@@ -92,7 +92,7 @@ const verificar_sexo = async ( req = request, res = response, next )=>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debee verificar una de las inscripciones ya que no cumple con las reglas de la categoria',
-                descipcion : `Una inscripcion no cumple con las reglas del evento : sexo`
+                descripcion : `Una inscripcion no cumple con las reglas del evento : sexo`
             } ); 
         }else {
             next();
@@ -152,7 +152,7 @@ const verificar_nivel = async ( req = request, res = response, next )=>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debee verificar una de las inscripciones ya que no cumple con las reglas de la categoria',
-                descipcion : `Una inscripcion no cumple con las reglas del evento : nivel requerido`
+                descripcion : `Una inscripcion no cumple con las reglas del evento : nivel requerido`
             } ); 
         }else {
             next();

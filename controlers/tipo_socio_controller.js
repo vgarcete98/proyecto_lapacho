@@ -16,7 +16,7 @@ const crear_tipo_socio = async ( req = request, res = response ) => {
 
         {
             status : true,
-            msj : 'Tipo de Socio Creado',
+            msg : 'Tipo de Socio Creado',
             nuevo_tipo_socio
         }
 
@@ -51,7 +51,7 @@ const obtener_tipos_socios = async ( req = request, res = response ) => {
 
         {
             status : true,
-            msj : 'Tipos de socio en el club',
+            msg : 'Tipos de socio en el club',
             tipoSocio
         }
 

@@ -34,7 +34,7 @@ const verifica_precio_de_reservas = await = async ( req = request, res = respons
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debe de generar el precio para las reservas',
-                descipcion : `No existe un precio establecido para las reservas`
+                descripcion : `No existe un precio establecido para las reservas`
             } ); 
         }
 

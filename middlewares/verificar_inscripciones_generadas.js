@@ -29,7 +29,7 @@ const verificar_inscripciones_generadas = async ( req = request, res = response,
             res.status( 400 ).json( {
                 status : false,
                 msg : 'DEbe verificar las inscripciones adjuntadas',
-                descipcion : `Una de las inscripciones adjuntadas no existe`
+                descripcion : `Una de las inscripciones adjuntadas no existe`
             } ); 
         }
 

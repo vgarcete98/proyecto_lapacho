@@ -117,7 +117,7 @@ const comprobar_existe_socio = async ( req = request, res = response, next ) =>{
             const { nombre, apellido, fecha_nacimiento } = persona;
             res.status( 400 ).json( {
                 status : true,
-                msj : 'Ya existe un socio con esos datos',
+                msg : 'Ya existe un socio con esos datos',
                 descripcion : `Datos del socio existente: ${nombre}, ${ apellido } `
             } );
         }else {

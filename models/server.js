@@ -189,7 +189,7 @@ class Server {
             res.status(500).json( 
                 {
                     status : false,
-                    msj : `Ha ocurrido un error en la aplicacion  ${ err }` ,
+                    msg : `Ha ocurrido un error en la aplicacion  ${ err }` ,
                     //nuevo_tipo_socio
                 }
          );

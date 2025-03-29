@@ -64,7 +64,7 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se lograron obtener las Reservas para esas fechas',
-                descipcion : `No existe ninguna reserva generada entre esas fechas`
+                descripcion : `No existe ninguna reserva generada entre esas fechas`
             } );
         } else {
             
@@ -548,7 +548,7 @@ const agregar_reserva_a_venta = async ( req = request, res = response ) =>{
                 {
     
                     status : true,
-                    msj : 'Ventas Creadas',
+                    msg : 'Ventas Creadas',
                     descripcion : `Todas las Ventas fueron generadas con exito`
                 }
             );   
@@ -557,7 +557,7 @@ const agregar_reserva_a_venta = async ( req = request, res = response ) =>{
                 {
     
                     status : true,
-                    msj : 'No se lograron crear todas las ventas que se adjunto',
+                    msg : 'No se lograron crear todas las ventas que se adjunto',
                     descripcion : `Ventas que fueron generadas con exito ${ reservas_añadidas }, Ventas fallidas ${ reservas.length - reservas_añadidas }`
                 }
             ); 
@@ -600,7 +600,7 @@ const setear_precio_reservas = async ( req = request, res = response ) =>{
                 {
     
                     status : true,
-                    msj : 'Precio de las reservas establecido',
+                    msg : 'Precio de las reservas establecido',
                     descripcion : `El precio nuevo de la reserva fue fijado correctamente`
                 }
             );   
@@ -609,7 +609,7 @@ const setear_precio_reservas = async ( req = request, res = response ) =>{
                 {
     
                     status : false,
-                    msj : 'No se logro setear el precio que se adjunto',
+                    msg : 'No se logro setear el precio que se adjunto',
                     descripcion : `Favor intente de nuevo, hubo un error al fijar el precio de las reservas`
                 }
             ); 

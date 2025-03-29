@@ -30,13 +30,13 @@ const crear_caja = async ( req = request, res = response ) =>{
             res.status( 200 ).json( {
                 status : false,
                 msg : 'Caja Creada',
-                descipcion : `Caja creada con exito idCaja :  ${ id_caja }, montoInicial : ${ monto_inicial }`
+                descripcion : `Caja creada con exito idCaja :  ${ id_caja }, montoInicial : ${ monto_inicial }`
             } );            
         }else {
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se pudo realizar esa accion sobre la caja',
-                descipcion : `Ocurrio algo al crear la caja, error`
+                descripcion : `Ocurrio algo al crear la caja, error`
             } ); 
         }
 
@@ -80,17 +80,17 @@ const cerrar_caja = async ( req = request, res = response ) =>{
     try {
 
 
-        const { idCaja } = req.body;
-        const { idCliente } = req.body;//TIENE QUE VENIR DEL TOKEN, ESTA PENDIENTE DE REALIZAR
+        //const { idCaja } = req.body;
+        //const { idCliente } = req.body;//TIENE QUE VENIR DEL TOKEN, ESTA PENDIENTE DE REALIZAR
 
         const cierre_caja = await prisma.caja.update( { 
                                                         data : {
                                                             fecha_cierre : new Date(),
-                                                            id_cliente_cierre : Number( idCliente ),
+                                                            id_cliente_cierre : 1, //ESTE LUEGO HAY QUE CAMBIAR
                                                             fecha_actualizacion : new Date(),
 
                                                         },
-                                                        where : { id_caja : Number( idCaja ) }
+                                                        where : { fecha_cierre : null  } //SIEMPRE CERRAMOS EL ULTIMO COSA QUE CONTROLAMOS QUE NO SE CREE UNO DEMAS CUANDO ESTA ACTIVO
                                                     } );
         if ( cierre_caja !== null ) {
 
@@ -98,13 +98,13 @@ const cerrar_caja = async ( req = request, res = response ) =>{
             res.status( 200 ).json( {
                 status : false,
                 msg : 'Caja Cerrada',
-                descipcion : `Caja cerrada con exito idCaja :  ${ id_caja }, montoInicial : ${ monto_inicial }, montoFinal : ${ monto_cierre }`
+                descripcion : `Caja cerrada con exito idCaja :  ${ id_caja }, montoInicial : ${ monto_inicial }, montoFinal : ${ monto_cierre }`
             } );            
         }else {
             res.status( 200 ).json( {
                 status : false,
                 msg : 'No se pudo realizar esa accion sobre la caja',
-                descipcion : `Ocurrio algo al cerrar la caja, error`
+                descripcion : `Ocurrio algo al cerrar la caja, error`
             } ); 
         }
     } catch (error) {
@@ -167,7 +167,7 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se obtuvo ningun movimiento entre esas fechas',
-                descipcion : `No hay ningun movimientos para esas fechas`
+                descripcion : `No hay ningun movimientos para esas fechas`
             } ); 
 
 
@@ -177,7 +177,7 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
                 status : true,
                 msg : 'movimientos de caja',
                 movimientos_de_caja
-                //descipcion : `No existe ninguna venta generada para ese cliente`
+                //descripcion : `No existe ninguna venta generada para ese cliente`
             } ); 
         }
 
@@ -222,7 +222,7 @@ const obtener_detalle_movimiento_de_caja = async ( req = request, res = response
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se obtuvo ningun movimiento entre esas fechas',
-                descipcion : `No hay ningun movimientos para esas fechas`
+                descripcion : `No hay ningun movimientos para esas fechas`
             } ); 
 
 
@@ -232,7 +232,7 @@ const obtener_detalle_movimiento_de_caja = async ( req = request, res = response
                 status : true,
                 msg : 'movimientos de caja',
                 movimientos_de_caja
-                //descipcion : `No existe ninguna venta generada para ese cliente`
+                //descripcion : `No existe ninguna venta generada para ese cliente`
             } ); 
         }
 
@@ -292,7 +292,7 @@ const obtener_tipo_pagos = async ( req = request, res = response ) => {
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se lograron obtener los tipos de pago',
-                descipcion : `No existe ningun tipo de pago, favor crear uno`
+                descripcion : `No existe ningun tipo de pago, favor crear uno`
             } );   
         }
         
@@ -329,7 +329,7 @@ const crear_tipo_pago = async ( req = request, res = response ) => {
             res.status( 200 ).json( {
                 status : true,
                 msg : 'Tipo de Pago creado',
-                descipcion : `Se ha creado un tipo de pago con exito`
+                descripcion : `Se ha creado un tipo de pago con exito`
             } ); 
 
 
@@ -337,7 +337,7 @@ const crear_tipo_pago = async ( req = request, res = response ) => {
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se creo el tipo de pago solicitado',
-                descipcion : `Ocurrio algo al crear el tipo de pago, favor intente de vuelta`
+                descripcion : `Ocurrio algo al crear el tipo de pago, favor intente de vuelta`
             } );   
         }
         
@@ -601,14 +601,14 @@ const generar_movimientos_de_caja_compras = async ( req = request, res = respons
                 status : true,
                 msg : 'Compras del club generadas',
                 descripcion : "Todas las compras del club fueron procesadas"
-                //descipcion : `No existe ninguna venta generada para ese cliente`
+                //descripcion : `No existe ninguna venta generada para ese cliente`
             } );
         }else {
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No todas las compras del club fueron procesadas',
                 descripcion : "Verifique las compras que faltan agregar para su proceso"
-                //descipcion : `No existe ninguna venta generada para ese cliente`
+                //descripcion : `No existe ninguna venta generada para ese cliente`
             } );
         }
 
@@ -670,7 +670,7 @@ const obtener_detalles_caja = async ( req = request, res = response ) =>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se obtuvieron los detalles de la caja',
-                descipcion : `Aun no se ha procesado ningun movimiento en esa caja`
+                descripcion : `Aun no se ha procesado ningun movimiento en esa caja`
             } );   
         }
 

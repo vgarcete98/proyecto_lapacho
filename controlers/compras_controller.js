@@ -50,7 +50,7 @@ const obtener_compras_club = async ( req = request, res = response ) =>{
                 status : true,
                 msg : 'Ventas de ese cliente',
                 compras
-                //descipcion : `No existe ninguna venta generada para ese cliente`
+                //descripcion : `No existe ninguna venta generada para ese cliente`
             } ); 
 
 
@@ -58,7 +58,7 @@ const obtener_compras_club = async ( req = request, res = response ) =>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se lograron obtener las Compras del club',
-                descipcion : `No existe ninguna compra generada por el club`
+                descripcion : `No existe ninguna compra generada por el club`
             } ); 
         }
 
@@ -133,14 +133,14 @@ const generar_compras_club = async ( req = request, res = response ) =>{
                 status : true,
                 msg : 'Compras del club generadas',
                 descripcion : "Todas las compras del club fueron generadas"
-                //descipcion : `No existe ninguna venta generada para ese cliente`
+                //descripcion : `No existe ninguna venta generada para ese cliente`
             } );
         }else {
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No todas las compras del club fueron procesadas',
                 descripcion : "Verifique las compras que faltan agregar para su compra"
-                //descipcion : `No existe ninguna venta generada para ese cliente`
+                //descripcion : `No existe ninguna venta generada para ese cliente`
             } );
         }
         
@@ -253,14 +253,14 @@ const procesar_pago_por_compras_club = async () => {
                 status : true,
                 msg : 'Compras del club generadas',
                 descripcion : "Todas las compras del club fueron generadas"
-                //descipcion : `No existe ninguna venta generada para ese cliente`
+                //descripcion : `No existe ninguna venta generada para ese cliente`
             } );
         }else {
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No todas las compras del club fueron procesadas',
                 descripcion : "Verifique las compras que faltan agregar para completar"
-                //descipcion : `No existe ninguna venta generada para ese cliente`
+                //descripcion : `No existe ninguna venta generada para ese cliente`
             } );
         }
         

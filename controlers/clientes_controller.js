@@ -26,7 +26,7 @@ const crear_cliente = async ( req = request, res = response ) => {
         res.status( 200 ).json( 
             {
                 status : true,
-                msj : 'Cliente Creado',
+                msg : 'Cliente Creado',
                 descripcion :`Cliente ${nombre}, ${apellido} Creado`
             } 
         );
@@ -79,7 +79,7 @@ const obtener_clientes = async ( req = request, res = response ) => {
         res.status( 200 ).json( 
             {
                 status : true,
-                msj : 'Clientes del Club',
+                msg : 'Clientes del Club',
                 clientes
             } 
         );
@@ -119,7 +119,7 @@ const actualizar_cliente = async ( req = request, res = response ) => {
         res.status( 200 ).json( 
             {
                 status : true,
-                msj : 'Cliente Actualizado',
+                msg : 'Cliente Actualizado',
                 descripcion :`Cliente ${nombre}, ${apellido} Actualizado`
             } 
         );
@@ -158,7 +158,7 @@ const borrar_cliente = async ( req = request, res = response ) => {
         res.status( 200 ).json( 
             {
                 status : true,
-                msj : 'Cliente Borrado',
+                msg : 'Cliente Borrado',
                 descripcion :`Cliente ${nombre}, ${apellido} Borrado`
             } 
         );

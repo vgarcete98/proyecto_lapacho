@@ -51,7 +51,7 @@ const validar_acceso_a_ruta = async (req = request, res = response, next)=>{
         res.status(500).json( 
             {
                 status : false,
-                msj : `Ha ocurrido un error al comprobar las rutas del usuario :  ${ error }` ,
+                msg : `Ha ocurrido un error al comprobar las rutas del usuario :  ${ error }` ,
                 //nuevo_tipo_socio
             }
         );                

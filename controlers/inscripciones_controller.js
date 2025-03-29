@@ -66,7 +66,7 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
             res.status( 400 ).json({
                 
                     status : true,
-                    msj : 'No se lograron registrar todas las inscripciones a las categorias',
+                    msg : 'No se lograron registrar todas las inscripciones a las categorias',
                     descripcion : `Solo se procesaron ${ inscripciones_registradas } de ${ categorias.length } inscripciones`
                 }
             ); 
@@ -712,7 +712,7 @@ const agregar_inscripciones_a_venta = async ( req = request, res = response ) =>
                 {
     
                     status : true,
-                    msj : 'Ventas Creadas',
+                    msg : 'Ventas Creadas',
                     descripcion : `Todas las Ventas fueron generadas con exito`
                 }
             );   
@@ -721,7 +721,7 @@ const agregar_inscripciones_a_venta = async ( req = request, res = response ) =>
                 {
     
                     status : true,
-                    msj : 'No se lograron crear todas las ventas que se adjunto',
+                    msg : 'No se lograron crear todas las ventas que se adjunto',
                     descripcion : `Ventas que fueron generadas con exito ${ inscripciones_añadidas }, Ventas fallidas ${ inscripciones.length - inscripciones_añadidas }`
                 }
             ); 
@@ -761,7 +761,7 @@ const cerrar_inscripciones_de_evento = async ( req = request, res = response  ) 
                 {
     
                     status : true,
-                    msj : 'Cierre del evento realizado con exito',
+                    msg : 'Cierre del evento realizado con exito',
                     descripcion : `Se cerro el evento, cualquier inscripcion no sera registrada`
                 }
             );
@@ -770,7 +770,7 @@ const cerrar_inscripciones_de_evento = async ( req = request, res = response  ) 
                 {
     
                     status : false,
-                    msj : 'No se logro realizar el cierre del evento',
+                    msg : 'No se logro realizar el cierre del evento',
                     descripcion : `No se logro concretar el cierre del evento, favor intente de vuelta`
                 }
             );
@@ -811,7 +811,7 @@ const cerrar_inscripciones_de_categoria = async ( req = request, res = response 
                 {
     
                     status : true,
-                    msj : 'Cierre del evento realizado con exito',
+                    msg : 'Cierre del evento realizado con exito',
                     descripcion : `Se cerro el evento, cualquier inscripcion no sera registrada`
                 }
             );
@@ -820,7 +820,7 @@ const cerrar_inscripciones_de_categoria = async ( req = request, res = response 
                 {
     
                     status : false,
-                    msj : 'No se logro realizar el cierre del evento',
+                    msg : 'No se logro realizar el cierre del evento',
                     descripcion : `No se logro concretar el cierre del evento, favor intente de vuelta`
                 }
             );

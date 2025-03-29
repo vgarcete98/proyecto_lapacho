@@ -428,7 +428,7 @@ const borrar_socio = async ( req = request, res = response ) => {
     
                     status : true,
                     msg : 'Socio Borrado',
-                    descipcion : `El socio ${nombre}, ${apellido} ha sido borrado`
+                    descripcion : `El socio ${nombre}, ${apellido} ha sido borrado`
     
                 }
     
@@ -440,7 +440,7 @@ const borrar_socio = async ( req = request, res = response ) => {
     
                     status : false,
                     msg : 'Socio Borrado',
-                    descipcion : `No se pudo borrar al socio, intente de nuevo`
+                    descripcion : `No se pudo borrar al socio, intente de nuevo`
                 }   
             ); 
         }

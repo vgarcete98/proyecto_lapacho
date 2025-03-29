@@ -32,7 +32,7 @@ const verificar_reservas_generadas = async ( req = request, res = response, next
             res.status( 400 ).json( {
                 status : false,
                 msg : 'DEbe verificar las reservas adjuntadas',
-                descipcion : `Una de las reservas adjuntadas no existe`
+                descripcion : `Una de las reservas adjuntadas no existe`
             } ); 
         }
 

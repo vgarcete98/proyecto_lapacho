@@ -26,7 +26,7 @@ const obtener_data_socio = async ( req = request, res = response, next ) =>{
         
             {
                 status : false,
-                msj : `Ha ocurrido un error al realizar la consulta, No se pudo generar el token : ${ error }`,
+                msg : `Ha ocurrido un error al realizar la consulta, No se pudo generar el token : ${ error }`,
                 //mensaje_error : error
             }
     
@@ -60,7 +60,7 @@ const verificar_vista_usuario = async ( req = request, res = response, next ) =>
         
             {
                 status : false,
-                msj : `Ha ocurrido un error al realizar la consulta, No se pudo generar el token : ${ error }`,
+                msg : `Ha ocurrido un error al realizar la consulta, No se pudo generar el token : ${ error }`,
                 //mensaje_error : error
             }
     
@@ -88,7 +88,7 @@ const verificar_acceso_usuario = async ( req = request, res = response, next ) =
         
             {
                 status : false,
-                msj : `Ha ocurrido un error al realizar la consulta, No se pudo generar el token : ${ error }`,
+                msg : `Ha ocurrido un error al realizar la consulta, No se pudo generar el token : ${ error }`,
                 //mensaje_error : error
             }
     
@@ -117,7 +117,7 @@ const verificar_vista_profesor = async ( req = request, res = response, next ) =
         
                     {
                         status : false,
-                        msj : `No se tiene acceso a este recurso`,
+                        msg : `No se tiene acceso a este recurso`,
                         //mensaje_error : error
                     }
             
@@ -135,7 +135,7 @@ const verificar_vista_profesor = async ( req = request, res = response, next ) =
         
             {
                 status : false,
-                msj : `Ha ocurrido un error al realizar la consulta, No se pudo generar el token : ${ error }`,
+                msg : `Ha ocurrido un error al realizar la consulta, No se pudo generar el token : ${ error }`,
                 //mensaje_error : error
             }
     

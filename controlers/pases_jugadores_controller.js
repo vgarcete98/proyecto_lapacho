@@ -124,7 +124,7 @@ const obtener_pases_pendientes = async ( req = request, res = response ) =>{
 
                 {
                     status : false,
-                    msj : 'No se registran pagos pendientes de pases',
+                    msg : 'No se registran pagos pendientes de pases',
                     cantidad : pases_pendientes.length,
                     pasesPendientes
                 }
@@ -150,7 +150,7 @@ const obtener_pases_pendientes = async ( req = request, res = response ) =>{
 
                 {
                     status : true,
-                    msj : 'Pases pendientes de pagos',
+                    msg : 'Pases pendientes de pagos',
                     cantidad : pases_pendientes.length,
                     pasesPendientes
                 }
@@ -191,7 +191,7 @@ const obtener_pases_completados = async ( req = request, res = response ) =>{
 
                 {
                     status : false,
-                    msj : 'No se registran traspasos realizados',
+                    msg : 'No se registran traspasos realizados',
                     cantidad : pases_pendientes.length,
                     pasesAbonados
                 }
@@ -221,7 +221,7 @@ const obtener_pases_completados = async ( req = request, res = response ) =>{
 
                 {
                     status : true,
-                    msj : 'Pases pendientes de pagos',
+                    msg : 'Pases pendientes de pagos',
                     cantidad : pases_pendientes.length,
                     pasesAbonados
                 }

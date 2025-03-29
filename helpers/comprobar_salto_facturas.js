@@ -38,7 +38,7 @@ const comprobar_salto_factura = async ( req = request, res = response, next )=> 
             return res.status( 400 ).json( {
                 status : false,
                 msg : 'Se salteo la numeracion normal de facturacion',
-                descipcion : `Facturas pendientes de verificar y controlar : ${ factura_previas }`
+                descripcion : `Facturas pendientes de verificar y controlar : ${ factura_previas }`
             } );     
 
         }else {
@@ -94,7 +94,7 @@ const comprobar_factura_registrada = async ( req = request, res = response, next
             return res.status( 400 ).json( {
                 status : false,
                 msg : 'No existe la numeracion para esa factura',
-                descipcion : `Facturas pendientes de verificar y controlar : ${ nroFactura } y timbrado : ${ nroTimbrado }`
+                descripcion : `Facturas pendientes de verificar y controlar : ${ nroFactura } y timbrado : ${ nroTimbrado }`
             } );     
 
         }else {
@@ -123,6 +123,7 @@ const comprobar_utilizacion_factura_registrada = async ( req = request, res = re
         //VOY A BUSCAR SI HAY UNA FACTURA VACIA QUE CORRESPONDE A ESA
         //const factura = "";
         const numeracion = nroFactura.split( '-' ).pop();
+        console.log(numeracion  )
         const factura_previas = await prisma.facturas.findFirst( { 
                                                                         where : { 
                                                                             AND :[
@@ -132,7 +133,7 @@ const comprobar_utilizacion_factura_registrada = async ( req = request, res = re
                                                                                 { fecha_emision : { not : null } },
                                                                                 { ruc_cliente : { not : null } },
                                                                                 { nro_timbrado : Number( nroTimbrado ) },
-                                                                                { numero : { lte : Number(numeracion) }  },
+                                                                                { numero : { equals : Number(numeracion) }  },
                                                                                 { total_iva : { gt : 0 } },
                                                                                 { condicion_venta : { not : null } },
                                                                                 
@@ -152,7 +153,7 @@ const comprobar_utilizacion_factura_registrada = async ( req = request, res = re
             return res.status( 400 ).json( {
                 status : false,
                 msg : 'Esa factura ya fue utilizada para venta',
-                descipcion : `Facturas pendientes de verificar y controlar : ${ nroFactura } y timbrado : ${ nroTimbrado }`
+                descripcion : `Facturas pendientes de verificar y controlar : ${ nroFactura } y timbrado : ${ nroTimbrado }`
             } );     
         }
 

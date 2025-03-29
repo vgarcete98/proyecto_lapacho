@@ -36,7 +36,7 @@ const desencriptar_body_login = async ( req = request, res = response, next )=>{
         res.status(500).json( 
             {
                 status : false,
-                msj : `Ha ocurrido un error al desencriptar  ${ error }` ,
+                msg : `Ha ocurrido un error al desencriptar  ${ error }` ,
                 //nuevo_tipo_socio
             }
         );                

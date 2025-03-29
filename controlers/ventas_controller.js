@@ -50,7 +50,7 @@ const generar_venta_servicios = async (  req = request, res = response  ) =>{
                 {
     
                     status : true,
-                    msj : 'Ventas Creadas',
+                    msg : 'Ventas Creadas',
                     descripcion : `Todas las Ventas fueron generadas con exito`
                 }
             );   
@@ -59,7 +59,7 @@ const generar_venta_servicios = async (  req = request, res = response  ) =>{
                 {
     
                     status : true,
-                    msj : 'No se lograron crear todas las ventas que se adjunto',
+                    msg : 'No se lograron crear todas las ventas que se adjunto',
                     descripcion : `Ventas que fueron generadas con exito ${ nuevas_ventas.length }, Ventas fallidas ${ ventas.length - nuevas_ventas.length }`
                 }
             ); 
@@ -71,7 +71,7 @@ const generar_venta_servicios = async (  req = request, res = response  ) =>{
 
             {
                 status : false,
-                msj : `No se logro generar ninguna sola venta ${error}`,
+                msg : `No se logro generar ninguna sola venta ${error}`,
                 //error
             }
 
@@ -134,7 +134,7 @@ const eliminar_venta_servicios = async (  req = request, res = response  ) =>{
                         status : true,
                         msg : 'Se han anulado la totalidad de ventas de ese cliente',
                         descripcion : 'Todas las ventas fueron anuladas exitosamente '
-                        //descipcion : `No existe ninguna venta generada para ese cliente`
+                        //descripcion : `No existe ninguna venta generada para ese cliente`
                     } ); 
         
         
@@ -143,7 +143,7 @@ const eliminar_venta_servicios = async (  req = request, res = response  ) =>{
                         status : false,
                         msg : 'Se han anulado la totalidad de ventas de ese cliente',
                         descripcion : 'Todas las ventas fueron anuladas exitosamente '
-                        //descipcion : `No existe ninguna venta generada para ese cliente`
+                        //descripcion : `No existe ninguna venta generada para ese cliente`
                     } ); 
                 }
                 
@@ -240,7 +240,7 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
                 status : true,
                 msg : 'Ventas de ese cliente',
                 ventaServicios
-                //descipcion : `No existe ninguna venta generada para ese cliente`
+                //descripcion : `No existe ninguna venta generada para ese cliente`
             } ); 
 
 
@@ -248,7 +248,7 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se lograron obtener las Ventas para ese Cliente',
-                descipcion : `No existe ninguna venta generada para ese cliente`
+                descripcion : `No existe ninguna venta generada para ese cliente`
             } ); 
         }
 
@@ -259,7 +259,7 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
         res.status( 500 ).json(
             {
                 status : true,
-                msj : `Error al obtener las ventas para ese cliente ${ error }`,
+                msg : `Error al obtener las ventas para ese cliente ${ error }`,
                 //descripcion : "Ingrese correctamente su contraseña"
             }
         );

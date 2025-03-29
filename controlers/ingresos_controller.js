@@ -243,14 +243,14 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
             
             res.status( 200 ).json( {
                 status : true,
-                msj : `Ingresos de las fechas ${fechaDesde } y ${ fechaHasta }`,
+                msg : `Ingresos de las fechas ${fechaDesde } y ${ fechaHasta }`,
                 ingresosXFecha                        
             } );
         }else {
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se obtuvo ningun ingreso entre esas fechas',
-                descipcion : `No hay ningun ingreso para esas fechas`
+                descripcion : `No hay ningun ingreso para esas fechas`
             } ); 
         }
 
@@ -319,7 +319,7 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No se obtuvo ningun movimiento entre esas fechas',
-                descipcion : `No hay ningun movimientos para esas fechas`
+                descripcion : `No hay ningun movimientos para esas fechas`
             } ); 
         }     
 

@@ -43,7 +43,7 @@ const verificar_existe_talonario_vigente = async ( req = request, res = response
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Ya existe un talonario vigente',
-                descipcion : `Utilice todas las facturas del talonario vigente antes de generar un nuevo talonario`
+                descripcion : `Utilice todas las facturas del talonario vigente antes de generar un nuevo talonario`
             } ); 
         }else {
             next();
@@ -75,7 +75,7 @@ const verificar_numeracion_talonario = async ( req = request, res = response, ne
             res.status( 400 ).json( {
                 status : false,
                 msg : 'La numeracion es demasiado grande para continuar',
-                descipcion : `Debe reducir el margen de numeracion para continuar`
+                descripcion : `Debe reducir el margen de numeracion para continuar`
             } ); 
         }else{
             next();

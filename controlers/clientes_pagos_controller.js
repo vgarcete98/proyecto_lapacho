@@ -51,7 +51,7 @@ const realizar_pago_socio = async ( req = request, res = response ) => {
     
                 {
                     status : false,
-                    msj : 'No se pudo realizar el pago del socio',
+                    msg : 'No se pudo realizar el pago del socio',
                     pagoSocio : {
                         idCuotaSocio,
                         nombreSocio : nombre_cmp,
@@ -72,7 +72,7 @@ const realizar_pago_socio = async ( req = request, res = response ) => {
     
                 {
                     status : true,
-                    msj : 'Pago Realizado con exito',
+                    msg : 'Pago Realizado con exito',
                     pagoSocio : {
                         idCuotaSocio,
                         nombreSocio : nombre_cmp,
@@ -241,7 +241,7 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
             res.status( 200 ).json(
                 {
                     status : true,
-                    msj : 'Ventas de cuotas generadas con exito',
+                    msg : 'Ventas de cuotas generadas con exito',
                     descripcion : 'Todas las cuotas fueron generadas como ventas'
                 }
             );
@@ -249,7 +249,7 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
             res.status( 400 ).json(
                 {
                     status : true,
-                    msj : 'Solo algunas ventas de cuotas fueron generadas con exito',
+                    msg : 'Solo algunas ventas de cuotas fueron generadas con exito',
                     descripcion : `Cantidad de ventas de cuotas procesadas ${ ventas_de_cuotas }, cantidad enviada ${ cuotas.length }`
                 }
             );

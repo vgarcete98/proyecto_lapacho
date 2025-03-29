@@ -25,7 +25,7 @@ const verificar_existe_caja_abierta = async ( req = request, res = response, nex
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debe de realizar la apertura de una caja para procesar el pago',
-                descipcion : `No existe ninguna caja abierta para procesar el movimiento`
+                descripcion : `No existe ninguna caja abierta para procesar el movimiento`
             } ); 
         }
 
@@ -64,7 +64,7 @@ const verificar_existe_caja_vigente = async ( req = request, res = response, nex
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debe de realizar el cierre de la caja para realizar la apertura de otra',
-                descipcion : `Ya existe una caja abierta`
+                descripcion : `Ya existe una caja abierta`
             } ); 
         }else {
             next();

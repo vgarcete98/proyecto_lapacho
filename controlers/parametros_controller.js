@@ -28,7 +28,7 @@ const obtener_precios_de_cuotas = async ( req = request, res = response ) => {
             {
 
                 status : true,
-                msj : 'Datos de Cuotas de Tipo de Socio',
+                msg : 'Datos de Cuotas de Tipo de Socio',
                 preciosCuotas
             }
         );  
@@ -100,7 +100,7 @@ const editar_precio_de_cuotas = async ( req = request, res = response ) => {
         res.status( 200 ).json(
             {
                 status : true,
-                msj : 'Precios de cuotas Actualizado',
+                msg : 'Precios de cuotas Actualizado',
                 descripcion : `Precio de cuota actualizado para socio : ${ descTipoSocio }`
             }
         );      
@@ -131,7 +131,7 @@ const agregar_precio_de_cuota = async ( req = request, res = response ) => {
         res.status( 200 ).json(
             {
                 status : true,
-                msj : 'Accesos para usuarios',
+                msg : 'Accesos para usuarios',
                 accesosDisponibles
             }
         );      

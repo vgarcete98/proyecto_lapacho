@@ -35,7 +35,7 @@ const obtener_accesos = async ( req = request, res = response ) => {
         res.status( 200 ).json(
             {
                 status : true,
-                msj : 'Accesos para usuarios',
+                msg : 'Accesos para usuarios',
                 accesosDisponibles
             }
         );      
@@ -90,7 +90,7 @@ const obtener_accesos_rol = async ( req = request, res = response ) => {
         res.status( 200 ).json(
             {
                 status : true,
-                msj : 'Accesos para usuarios',
+                msg : 'Accesos para usuarios',
                 accesos
             }
         );      
@@ -125,7 +125,7 @@ const editar_modulos = async ( req = request, res = response ) => {
                                                                         );
         res.status( 200 ).json({
             status : true,
-            msj : 'Modulo Editado con exito',
+            msg : 'Modulo Editado con exito',
             modulo : {
                 idModulo : id_modulo, 
                 nombreModulo : nombre_modulo
@@ -160,7 +160,7 @@ const eliminar_modulos = async ( req = request, res = response ) => {
                                                                         );
         res.status( 200 ).json({
             status : true,
-            msj : 'Modulo Eliminado con exito',
+            msg : 'Modulo Eliminado con exito',
             modulo : {
                 idModulo : id_modulo, 
                 nombreModulo : nombre_modulo
@@ -200,7 +200,7 @@ const obtener_modulos = async ( req = request, res = response ) => {
 
         res.status( 200 ).json({
             status : true,
-            msj : 'Modulos del sistema',
+            msg : 'Modulos del sistema',
             modulos
 
         });
@@ -230,7 +230,7 @@ const crear_modulos = async ( req = request, res = response ) => {
         const { id_modulo, nombre_modulo } = await prisma.modulos.create( { data : { nombre_modulo : nombreModulo } } );
         res.status( 200 ).json({
             status : true,
-            msj : 'Acceso Creado',
+            msg : 'Acceso Creado',
             modulo : {
                 idModulo : id_modulo, 
                 nombreModulo : nombre_modulo
@@ -266,7 +266,7 @@ const crear_accesos = async ( req = request, res = response ) => {
 
         res.status( 200 ).json({
             status : true,
-            msj : 'Acceso Creado',
+            msg : 'Acceso Creado',
             acceso : {
                 idModulo : id_modulo, 
                 idRutaApp : id_ruta_app, 
@@ -324,7 +324,7 @@ const asignar_accesos = async ( req = request, res = response ) => {
 
         res.status( 200 ).json({
             status : true,
-            msj : 'Accesos Asignados',
+            msg : 'Accesos Asignados',
             acceso : {
                 idRolUsuario : Number( idRolUsuario ), 
                 accesosUsuario
@@ -352,7 +352,7 @@ const quitar_accesos = async ( req = request, res = response ) => {
 
         res.status( 200 ).json({
             status : true,
-            msj : 'Acceso quitado',
+            msg : 'Acceso quitado',
             acceso : {
                 idRolUsuario : id_rol_usuario, 
                 idRutaApp : id_ruta_app,
@@ -380,7 +380,7 @@ const eliminar_accesos = async ( req = request, res = response ) => {
 
         res.status( 200 ).json({
             status : true,
-            msj : 'Acceso Creado',
+            msg : 'Acceso Creado',
             acceso : {
                 idModulo : id_modulo, 
                 idRutaApp : id_ruta_app, 
@@ -415,7 +415,7 @@ const editar_accesos = async ( req = request, res = response ) => {
 
         res.status( 200 ).json({
             status : true,
-            msj : 'Acceso Creado',
+            msg : 'Acceso Creado',
             acceso : {
                 idModulo : id_modulo, 
                 idRutaApp : id_ruta_app, 

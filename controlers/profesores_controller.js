@@ -468,7 +468,7 @@ const eliminar_profesor = async ( req = request, res = response ) =>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No Se borro al profesor seleccionado',
-                descipcion : `Favor intente realizar el borrado de vuelta`
+                descripcion : `Favor intente realizar el borrado de vuelta`
             } ); 
         }
 

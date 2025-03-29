@@ -44,7 +44,7 @@ const verificar_inscripcion_a_evento = async ( req = request, res = response, ne
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Al menos una inscripcion ya se ha registrado en el sistema',
-                descipcion : `Ya se ha registrado la inscripcion a la categoria : ${ categorias_registradas }`
+                descripcion : `Ya se ha registrado la inscripcion a la categoria : ${ categorias_registradas }`
             } ); 
         }
 

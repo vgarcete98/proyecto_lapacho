@@ -58,7 +58,7 @@ const generar_documentos_factura = async ( req = request, res = response )=>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No Se borro al profesor seleccionado',
-                descipcion : `Favor intente realizar el borrado de vuelta`
+                descripcion : `Favor intente realizar el borrado de vuelta`
             } ); 
         }
 
@@ -123,7 +123,7 @@ const obtener_ultimo_nro_factura = async ( req = request, res = response )=>{
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No Se encontro una factura valida',
-                descipcion : `Favor intente realizar la consulta o registre un timbrado de vuelta`
+                descripcion : `Favor intente realizar la consulta o registre un timbrado de vuelta`
             } ); 
         }
 

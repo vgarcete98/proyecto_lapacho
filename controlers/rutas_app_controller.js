@@ -31,7 +31,7 @@ const obtener_rutas_aplicacion = async ( req = request, res = response )=>{
 
                 {
                     status : true,
-                    msj : 'Rutas de la aplicacion',
+                    msg : 'Rutas de la aplicacion',
                     rutas : rutasAplicacion
                 }
 
@@ -45,7 +45,7 @@ const obtener_rutas_aplicacion = async ( req = request, res = response )=>{
 
                 {
                     status : false,
-                    msj : 'No se encontraron rutas',
+                    msg : 'No se encontraron rutas',
                     //rutas : rutas_aplicacion_y_tipos
                 }
 
@@ -109,7 +109,7 @@ const obtener_rutas_de_usuario = async ( req = request, res = response )=>{
 
                 {
                     status : true,
-                    msj : 'Rutas de Usuario',
+                    msg : 'Rutas de Usuario',
                     rutas
                 }
 
@@ -123,7 +123,7 @@ const obtener_rutas_de_usuario = async ( req = request, res = response )=>{
 
                 {
                     status : false,
-                    msj : 'No se encontraron rutas',
+                    msg : 'No se encontraron rutas',
                     //rutas : rutas_aplicacion_y_tipos
                 }
 
@@ -175,7 +175,7 @@ const agregar_permiso_a_usuario = async ( req = request, res = response )=>{
 
             {
                 status : true,
-                msj : 'Permiso Agregado a usuario',
+                msg : 'Permiso Agregado a usuario',
                 permiso : {
                     idRutaApp : id_ruta_app,
                     idRutaHabilitada : id_ruta_habilitada,
@@ -234,7 +234,7 @@ const quitar_permiso_a_usuario = async ( req = request, res = response )=>{
 
             {
                 status : true,
-                msj : 'Permiso Borrado a usuario',
+                msg : 'Permiso Borrado a usuario',
                 permiso : {
                     idRutaApp : id_ruta_app,
                     idRutaBorrada : id_ruta_habilitada,
@@ -293,7 +293,7 @@ const obtener_rutas_de_usuario_faltantes = async ( req = request, res = response
             res.status( 200 ).json(
                 {
                     status : true,
-                    msj : 'Rutas de Usuario Faltantes',
+                    msg : 'Rutas de Usuario Faltantes',
                     rutas
                 }
             );  
@@ -303,7 +303,7 @@ const obtener_rutas_de_usuario_faltantes = async ( req = request, res = response
             res.status( 200 ).json(
                 {
                     status : false,
-                    msj : 'No le faltan permisos a ese usuario',
+                    msg : 'No le faltan permisos a ese usuario',
                     //rutas : rutas_aplicacion_y_tipos
                 }
             );  

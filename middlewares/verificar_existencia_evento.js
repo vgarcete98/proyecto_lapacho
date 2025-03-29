@@ -31,7 +31,7 @@ const verificar_existencia_evento = async ( req = request, res = response, next 
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debe realizar la creacion del evento para registrar la inscripcion',
-                descipcion : `El evento donde se quiere generar la inscripcion no existe`
+                descripcion : `El evento donde se quiere generar la inscripcion no existe`
             } ); 
         }
 

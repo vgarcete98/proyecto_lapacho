@@ -22,7 +22,7 @@ const verificar_cierre_inscripciones_evento = async ( req = request, res = respo
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debe de realizar el cierre de la caja para realizar la apertura de otra',
-                descipcion : `Ya existe una caja abierta`
+                descripcion : `Ya existe una caja abierta`
             } ); 
         }else {
             next();
@@ -60,7 +60,7 @@ const verificar_cierre_inscripciones_categoria = async ( req = request, res = re
             res.status( 400 ).json( {
                 status : false,
                 msg : 'Debe de realizar el cierre de la caja para realizar la apertura de otra',
-                descipcion : `Ya existe una caja abierta`
+                descripcion : `Ya existe una caja abierta`
             } ); 
         }else {
             next();
