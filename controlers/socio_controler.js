@@ -556,7 +556,7 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
-                        WHERE A.ESTADO_USUARIO = '${ estados_socio.activo.descripcion }'
+                        WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  NULL, '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }')
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
@@ -610,7 +610,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
-                        WHERE A.ESTADO_USUARIO = '${ estados_socio.activo.descripcion }'
+                        WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  NULL, '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }')
                         ${ ( cedula !== undefined && cedula !== '' )? `AND A.CEDULA LIKE '%${ cedula }%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
@@ -729,7 +729,7 @@ const obtener_socio_usuario = async ( req = request, res = response ) => {
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
-                        WHERE A.ESTADO_USUARIO = '${ estados_socio.activo.descripcion }' AND A.NOMBRE_USUARIO IS NOT NULL
+                        WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  NULL, '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') AND A.NOMBRE_USUARIO IS NOT NULL
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( Number(omitir)  === NaN ||  omitir === undefined ) ? `` : `OFFSET ${ Number(omitir) }` }`
