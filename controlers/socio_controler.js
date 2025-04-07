@@ -615,7 +615,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
 
-
+        console.log(query);
 
         let sociosFormateados = await prisma.$queryRawUnsafe( query ); 
         res.status(200).json({
