@@ -4,8 +4,11 @@ var expressWinston = require('express-winston');
 var winston = require('winston');
 
 const logger = winston.createLogger({
+    level: "info",
+    format: winston.format.simple(),
     transports: [
         //new winston.transports.Console(), // Para ver los logs en consola
+        new winston.transports.Console()
     ],
     format: winston.format.json(),
 });
@@ -79,10 +82,10 @@ const router_audit_api = require('../routes/auditoria_api_routes');
 //----------------------------------------------------------------------------
 const job = schedule.scheduleJob('0 1 0 1 1 *', cron_job_genera_cuotas_anio);
 const job_gastos_fijos = schedule.scheduleJob('0 0 1 * * *', cron_job_genera_gastos_fijos);
-//const job_cuotas_vencidas = schedule.scheduleJob( '0 0 0 0 1 *', cron_job_genera_venta_cuotas_vencidas );
+const job_cuotas_vencidas = schedule.scheduleJob( '0 0 0 0 1 *', cron_job_genera_venta_cuotas_vencidas );
 //PARA TEST DEL CRON JOB
 //const job = schedule.scheduleJob('40 * * * *', cron_job_genera_cuotas_anio);
-const job_cuotas_vencidas = schedule.scheduleJob( '* * 5 * * *', cron_job_genera_venta_cuotas_vencidas );
+//const job_cuotas_vencidas = schedule.scheduleJob( '* * 5 * * *', cron_job_genera_venta_cuotas_vencidas );
 //const job_gastos_fijos = schedule.scheduleJob('5 * * * * *', cron_job_genera_gastos_fijos);
 //----------------------------------------------------------------------------
 

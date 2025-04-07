@@ -46,9 +46,10 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
                         		A.hora_desde AS "horaDesde",
                         		A.hora_hasta AS "horaHasta",
                         		D.desc_mesa AS "descMesa",
-                        		CAST(D.id_mesa AS INTEGER) AS "idMesa"
+                        		CAST(D.id_mesa AS INTEGER) AS "idMesa",
+                                A.tipo_ingreso AS "tipoIngreso"
                         	FROM RESERVAS A JOIN CLIENTE B ON A.id_cliente = B.id_cliente
-                        	JOIN MESAS D ON D.id_mesa = A.id_mesa
+                        	LEFT JOIN MESAS D ON D.id_mesa = A.id_mesa
                         WHERE A.hora_desde BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
                                 ${ ( idUsuario === undefined ) ? `` : `AND B.id_cliente = ${ idUsuario }` }
                                 ${ ( nombre_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ nombre_socio }%'` }
@@ -94,7 +95,7 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
 
     try {
 
-        const { idCliente, horaDesde, horaHasta, idMesa, idPrecioReserva, montoReserva } = req.body;
+        const { idCliente, horaDesde, horaHasta, idMesa, idPrecioReserva, montoReserva, tipoIngreso } = req.body;
         
         //-----------------------------------------------------------------------------------------
         //PRIMERAMENTE VAMOS A BUSCAR EL PRECIO ESTABLECIDO PARA QUE SEA UN POCO MAS DINAMICO
@@ -103,21 +104,22 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
         //-----------------------------------------------------------------------------------------
 
         //console.log( montoReserva );
+        //console.log( tipoIngreso );
         const nueva_reserva = await prisma.reservas.create( { 
                                                                     data : {
                                                                         id_cliente : Number(idCliente),
                                                                         fecha_creacion : new Date(),
                                                                         //fecha_reserva : generar_fecha( fechaAgendamiento ),
                                                                         fecha_reserva : new Date(),
-                                                                        hora_desde : fecha_desde,
-                                                                        hora_hasta : fecha_hasta,
-                                                                        id_mesa : Number(idMesa),
+                                                                        hora_desde : (tipoIngreso !== 'RESERVA EXPRESS')? fecha_desde : new Date(),
+                                                                        hora_hasta : (tipoIngreso !== 'RESERVA EXPRESS')? fecha_hasta : null,
+                                                                        id_mesa : (tipoIngreso !== 'RESERVA EXPRESS')? Number(idMesa) : null,
                                                                         estado : 'PENDIENTE',
                                                                         monto : Number(montoReserva),
                                                                         creado_en : new Date(),
                                                                         id_precio_reserva : Number( idPrecioReserva ),
                                                                         creado_por : 1,
-                                                                        
+                                                                        tipo_ingreso : tipoIngreso
                                                                     } 
                                                                 });
         
@@ -125,12 +127,20 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
             const { id_mesa, id_cliente } = nueva_reserva;
             const mesa = await prisma.mesas.findUnique(  { where : { id_mesa : Number(id_mesa) } } );
             const cliente  = await prisma.cliente.findUnique( { where : { id_cliente : Number( id_cliente ) } } );
+            if (tipoIngreso !== 'RESERVA EXPRESS') {
 
-            res.status( 200 ).json( {
-                status : true,
-                msg : "Reserva creada exitosamente",
-                descripcion : `Reserva creada, horarios ${ horaDesde }, ${ horaHasta }, Cliente : ${ cliente.apellido }, ${ cliente.nombre }`
-            } );
+                res.status( 200 ).json( {
+                    status : true,
+                    msg : "Reserva creada exitosamente",
+                    descripcion : `Reserva creada, horarios ${ horaDesde }, ${ horaHasta }, Cliente : ${ cliente.apellido }, ${ cliente.nombre }`
+                } );
+            }else {
+                res.status( 200 ).json( {
+                    status : true,
+                    msg : "Reserva Express creada exitosamente",
+                    descripcion : `Reserva express creada, Cliente : ${ cliente.apellido }, ${ cliente.nombre }`
+                } );
+            }
 
         }else {
             res.status( 400 ).json( {

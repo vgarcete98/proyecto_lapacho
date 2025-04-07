@@ -35,7 +35,7 @@ const crear_cliente = async ( req = request, res = response ) => {
         //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `No se pudo actualizar al Socio  ${ error }`,
+            msg : `No se pudo crear al cliente  ${ error }`,
             //error
         } );
     }

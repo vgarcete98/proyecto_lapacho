@@ -1,7 +1,7 @@
 const Router = require( 'express' );
 
 const { obtener_data_socio, verificar_vista_usuario, verificar_acceso_usuario } = require( '../helpers/verficar_socio_carga' );
-const comprobar_disponibilidad_reserva = require( '../helpers/comprobar_disponibilidad_reserva' );
+const { comprobar_disponibilidad_reserva, comprobar_reserva_express_duplicada } = require( '../helpers/comprobar_disponibilidad_reserva' );
 
 const { borrar_reserva_en_club,
         crear_reserva_en_club,
@@ -20,7 +20,8 @@ const { verificar_reservas_generadas } = require('../middlewares/verificar_reser
 
 const { 
     verificar_existe_clase_agendada_para_reserva,
-    verificar_existe_evento_agendado_para_reservas
+    verificar_existe_evento_agendado_para_reservas,
+    verificar_existe_evento_agendado_para_reservas_express
 } = require( '../helpers/verificar_disponibilidad_para_servicios' )
 
 const router_reservas_club = Router();
@@ -39,6 +40,12 @@ router_reservas_club.post( '/crear_reserva_club', [     verificar_existe_clase_a
                                                         obtener_data_socio, 
                                                         verifica_precio_de_reservas 
                                                     ], crear_reserva_en_club );
+
+router_reservas_club.post( '/crear_reserva_club_express', [ verificar_existe_evento_agendado_para_reservas_express, 
+                                                        comprobar_reserva_express_duplicada,
+                                                        obtener_data_socio, 
+                                                        verifica_precio_de_reservas 
+                                                    ], crear_reserva_en_club );                                                    
 
 router_reservas_club.post( '/crear_reserva_club_administrador', [ comprobar_disponibilidad_reserva, obtener_data_socio ], crear_reserva_en_club_administrador );
 

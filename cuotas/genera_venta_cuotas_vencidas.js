@@ -20,7 +20,8 @@ const cron_job_genera_venta_cuotas_vencidas = async (  ) => {
                 id_tipo_ingreso : true
             } 
         } );
-        const cuotas_vencidas = await prisma.cuotas_socio.findMany( { 
+        //VOY A BUSCAR PRIMERO TODAS ESAS CUOTAS PENDIENTES
+        let cuotas_vencidas = await prisma.cuotas_socio.findMany( { 
                                                                         where : {  
                                                                             AND :[
 
@@ -73,6 +74,16 @@ const cron_job_genera_venta_cuotas_vencidas = async (  ) => {
 
         }
 
+        cuotas_vencidas = await prisma.cuotas_socio.update( {
+            data : { estado : 'PENDIENTE DE PAGO' }, 
+            where : {  
+                AND :[
+
+                    { fecha_vencimiento :  { lte : new Date() }  },
+                    { estado : 'PENDIENTE' }
+                ]
+            }
+        } );
         console.log( 'Procedimiento terminado' );
 
     } catch (error) {

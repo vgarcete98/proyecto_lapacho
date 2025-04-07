@@ -107,7 +107,7 @@ model mesas {
 model reservas {
   id_cliente_reserva Int              @id(map: "reservas_pk") @default(autoincrement())
   id_cliente         Int
-  id_mesa            Int
+  id_mesa            Int?
   id_precio_reserva  Int?
   monto              Int
   fecha_reserva      DateTime?        @db.Timestamp(6)
@@ -118,9 +118,10 @@ model reservas {
   editado_en         DateTime?        @db.Timestamp(6)
   fecha_creacion     DateTime         @db.Date
   hora_desde         DateTime         @db.Timestamp(6)
-  hora_hasta         DateTime         @db.Timestamp(6)
+  hora_hasta         DateTime?        @db.Timestamp(6)
   estado             String           @db.VarChar(50)
-  mesas              mesas            @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reservas_fk")
+  tipo_ingreso       String?          @db.VarChar(255)
+  mesas              mesas?           @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_reservas_fk")
   precio_reservas    precio_reservas? @relation(fields: [id_precio_reserva], references: [id_precio_reserva], onDelete: NoAction, onUpdate: NoAction, map: "precio_reservas_reservas_fk")
   cliente            cliente          @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_socio_reservas_fk")
   ventas             ventas[]
@@ -301,7 +302,6 @@ model cliente {
   nombre_usuario     String?              @db.VarChar(50)
   sexo               String?              @db.VarChar(10)
   nivel              Int?
-  contrasea          String?              @db.VarChar(50)
   agendamiento_clase agendamiento_clase[]
   caja               caja[]
   caja_chica         caja_chica[]

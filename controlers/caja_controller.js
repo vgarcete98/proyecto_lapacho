@@ -28,7 +28,7 @@ const crear_caja = async ( req = request, res = response ) =>{
 
             const { id_caja, monto_inicial } = nueva_caja;
             res.status( 200 ).json( {
-                status : false,
+                status : true,
                 msg : 'Caja Creada',
                 descripcion : `Caja creada con exito idCaja :  ${ id_caja }, montoInicial : ${ monto_inicial }`
             } );            
@@ -82,7 +82,10 @@ const cerrar_caja = async ( req = request, res = response ) =>{
 
         //const { idCaja } = req.body;
         //const { idCliente } = req.body;//TIENE QUE VENIR DEL TOKEN, ESTA PENDIENTE DE REALIZAR
+        const caja = await prisma.caja.findFirst( { orderBy : { id_caja : 'desc' } } );
 
+        //console.log( caja );
+        const { id_caja  } = caja;
         const cierre_caja = await prisma.caja.update( { 
                                                         data : {
                                                             fecha_cierre : new Date(),
@@ -90,13 +93,13 @@ const cerrar_caja = async ( req = request, res = response ) =>{
                                                             fecha_actualizacion : new Date(),
 
                                                         },
-                                                        where : { fecha_cierre : null  } //SIEMPRE CERRAMOS EL ULTIMO COSA QUE CONTROLAMOS QUE NO SE CREE UNO DEMAS CUANDO ESTA ACTIVO
+                                                        where : { id_caja : id_caja  } //SIEMPRE CERRAMOS EL ULTIMO COSA QUE CONTROLAMOS QUE NO SE CREE UNO DEMAS CUANDO ESTA ACTIVO
                                                     } );
         if ( cierre_caja !== null ) {
-
+            //console.log( cierre_caja );
             const { id_caja, monto_inicial, monto_cierre } = cierre_caja;
             res.status( 200 ).json( {
-                status : false,
+                status : true,
                 msg : 'Caja Cerrada',
                 descripcion : `Caja cerrada con exito idCaja :  ${ id_caja }, montoInicial : ${ monto_inicial }, montoFinal : ${ monto_cierre }`
             } );            

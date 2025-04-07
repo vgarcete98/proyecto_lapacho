@@ -44,7 +44,9 @@ const actualiza_datos_del_servicio = async ( id_venta = 0 ) => {
                     servicio = await prisma.reservas.update( { 
                                                                 where : { id_cliente_reserva : id_cliente_reserva },
                                                                 data : {
-                                                                    estado : 'PAGADO'
+                                                                    estado : 'PAGADO',
+                                                                    hora_hasta : new Date()
+
                                                                 }
                                                             } );                                                                        
                     break;
@@ -83,8 +85,6 @@ const actualiza_datos_del_servicio = async ( id_venta = 0 ) => {
     } catch (error) {
         console.log( error );
     }
-
-
 
 
 
