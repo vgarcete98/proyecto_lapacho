@@ -493,7 +493,7 @@ const obtener_socios = async ( req = request, res = response ) => {
                             FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         ${ ( nombre !== undefined && nombre !== '' )? `AND UPPER( CONCAT (A.NOMBRE, ' ', A.APELLIDO) ) LIKE '%${nombre.toUpperCase()}%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
-                        ${ ( Number(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
+                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
         //console.log( query );
         socios = await prisma.$queryRawUnsafe( query );
 
@@ -559,7 +559,7 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
                         WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  NULL, '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') )
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
-                        ${ ( Number(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
+                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
         console.log( query )
         let sociosFormateados = await prisma.$queryRawUnsafe( query ); 
         res.status(200).json({
