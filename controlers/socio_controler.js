@@ -555,7 +555,7 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
                                 C.DESC_TIPO_SOCIO AS "descTipoSocio", 
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
-                            FROM CLIENTE A RIGHT JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                            FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         WHERE A.ESTADO_USUARIO = '${ estados_socio.activo.descripcion }'
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
@@ -609,7 +609,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
                                 C.DESC_TIPO_SOCIO AS "descTipoSocio", 
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
-                            FROM CLIENTE A RIGHT JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                            FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         WHERE A.ESTADO_USUARIO = '${ estados_socio.activo.descripcion }'
                         ${ ( cedula !== undefined && cedula !== '' )? `AND A.CEDULA LIKE '%${ cedula }%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
@@ -665,7 +665,7 @@ const obtener_socio = async ( req = request, res = response ) => {
                                 C.DESC_TIPO_SOCIO AS "descTipoSocio", 
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
-                            FROM CLIENTE A RIGHT JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                            FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         ${ ( nombre !== undefined ) && (apellido === undefined )? `AND A.NOMBRE LIKE '%${nombre}%'` : `` }
                         ${ ( nombre === undefined ) && (apellido !== undefined )? `AND A.APELLIDO LIKE '%${apellido}%'` : `` }
                         ${ ( nombre !== undefined ) && (apellido !== undefined )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre} ${apellido}%'` : `` }
@@ -728,7 +728,7 @@ const obtener_socio_usuario = async ( req = request, res = response ) => {
                                 C.DESC_TIPO_SOCIO AS "descTipoSocio", 
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
-                            FROM CLIENTE A RIGHT JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                            FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         WHERE A.ESTADO_USUARIO = '${ estados_socio.activo.descripcion }' AND A.NOMBRE_USUARIO IS NOT NULL
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( Number(cantidad) === NaN  ||  cantidad === undefined) ? `` : `LIMIT ${Number(cantidad)}`} 
