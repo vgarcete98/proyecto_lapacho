@@ -556,7 +556,7 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
-                        WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  NULL, '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') )
+                        WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL )
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
@@ -610,7 +610,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
-                        WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  NULL, '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') )
+                        WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  NULL, '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL)
                         ${ ( cedula !== undefined && cedula !== '' )? `AND A.CEDULA LIKE '%${ cedula }%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
@@ -729,7 +729,7 @@ const obtener_socio_usuario = async ( req = request, res = response ) => {
                                 A.NUMERO_TELEFONO AS "numeroTelefono",
                                 A.ESTADO_USUARIO AS "estadoSocio" 
                             FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
-                        WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  NULL, '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') ) AND A.NOMBRE_USUARIO IS NOT NULL
+                        WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL) AND A.NOMBRE_USUARIO IS NOT NULL
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
