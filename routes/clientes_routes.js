@@ -21,7 +21,7 @@ router_clientes.post( '/crear_cliente',
                     [   async (req = request, res = response, next)=> { 
 
                         const { cedula } = req.body;
-                            ( comprobar_existe_cliente_no_socio(cedula) )? 
+                            ( comprobar_existe_cliente_no_socio(cedula) === true)? 
                                 res.status( 400 ).json( {
                                     status : false,
                                     msg : 'Ese cliente ya se encuentra registrado',
