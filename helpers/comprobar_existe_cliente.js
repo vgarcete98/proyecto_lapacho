@@ -45,8 +45,8 @@ const comprobar_existe_cliente_no_socio = async ( cedula = "" )=> {
         const cliente = await prisma.cliente.findFirst( { 
                                                             where : {
                                                                 AND : [
-                                                                    { cedula },
-                                                                    
+                                                                    { cedula : cedula},
+                                                                    { es_socio: false}
                                                                 ]      
                                                             }
                                                         } )
