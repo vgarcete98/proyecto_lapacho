@@ -149,17 +149,19 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
         const query = `SELECT X.nro_comprobante AS "nroComprobante", 
                                 X.tipo_comprobante AS "tipoComprobante",
                                 X.tipo_operacion AS "tipoOperacion",
-                                SUM(X.monto) :: INTEGER AS "monto"
+                                SUM(X.monto) :: INTEGER AS "monto",
+                                TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')  as "fechaEmision"
                                             FROM (SELECT CASE WHEN ( A.NRO_FACTURA IS NULL ) THEN A.NRO_COMPROBANTE ELSE A.NRO_FACTURA END AS "nro_comprobante",
                                                         CASE WHEN ( A.NRO_FACTURA IS NOT NULL ) THEN 'FACTURA' ELSE 'COMPROBANTE' END AS "tipo_comprobante",
                                                         CASE WHEN (A.ID_COMPRA IS NULL) THEN 'VENTA' ELSE 'COMPRA' END AS "tipo_operacion",
+                                                        A.FECHA_OPERACION,
                                                         CASE WHEN ( A.ID_COMPRA IS NOT NULL ) THEN F.MONTO ELSE D.MONTO END AS "monto"
                                                     FROM MOVIMIENTO_CAJA A JOIN CAJA B ON A.ID_CAJA = B.ID_CAJA
                                                     JOIN CLIENTE C ON C.ID_CLIENTE = A.ID_CLIENTE
                                                     LEFT JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
                                                     LEFT JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
                                                 WHERE (A.fecha_operacion :: DATE ) BETWEEN ('${fecha_desde}' :: DATE) AND ('${fecha_hasta}' :: DATE)) AS X
-                        GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion`;
+                        GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')`;
         console.log( query )
         const movimientos_de_caja = await prisma.$queryRawUnsafe(query)
 
@@ -761,7 +763,8 @@ const genera_factura = async ( datos_factura  = {}, ventas = [] ) => {
                 nroFactura : factura.nro_factura,
                 totalIva : monto_total/11,
                 condicionVenta : factura.condicion,
-                montoTotal : monto_total
+                montoTotal : monto_total,
+                fechaEmision : (new Date()).toLocaleDateString()
             }
         };
     } catch (error) {
@@ -780,6 +783,7 @@ const obtener_monto_total_ventas = async ( ventas = [] ) => {
         
         let monto_total = 0;
         let servicio;
+        console.log( ventas );
         for (let element of ventas) {
             
             let { idVenta , idSocioCuota, idAgendamiento,  idReserva, idInscripcion, fechaOperacion, monto, tipoServicio } = element;

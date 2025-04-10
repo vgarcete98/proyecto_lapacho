@@ -50,7 +50,7 @@ const { router_rutas_app } = require('../routes/rutas_app_routes');
 const router_tipo_cuota = require('../routes/tipo_cuota_routes');
 const router_cuotas = require('../routes/cuotas_routes');
 const router_clientes = require( '../routes/clientes_routes' );
-
+const router_graficos = require( '../routes/graficos_routes' );
 //----------------------------------------------------------------------------
 
 
@@ -252,6 +252,8 @@ class Server {
         this.app.use( rutas.facturacion.ruta, router_facturacion );
 
         this.app.use( rutas.auditoria.ruta, router_audit_api );
+
+        this.app.use( rutas.graficos.ruta, router_graficos );        
     
     }
 

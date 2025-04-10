@@ -241,6 +241,7 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
                             FROM CLIENTE A JOIN CUOTAS_SOCIO C ON C.ID_CLIENTE = A.ID_CLIENTE
                         WHERE EXTRACT(YEAR FROM C.FECHA_VENCIMIENTO) = ${annio}
                                 AND A.CEDULA = '${numero_cedula}'
+                                AND C.estado <> 'ANULADO'
                                 ${ ( nombre === undefined || nombre === '' ) ? `` : `AND A.NOMBRE LIKE '%${nombre}%'` }
                                 ${ ( apellido === undefined || apellido === '' ) ? `` : `AND A.APELLIDO LIKE '%${nombre}%'` }`;
         //console.log( query );

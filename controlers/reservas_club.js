@@ -96,7 +96,7 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
     try {
 
         const { idCliente, horaDesde, horaHasta, idMesa, idPrecioReserva, montoReserva, tipoIngreso } = req.body;
-        
+        //console.log( idCliente );
         //-----------------------------------------------------------------------------------------
         //PRIMERAMENTE VAMOS A BUSCAR EL PRECIO ESTABLECIDO PARA QUE SEA UN POCO MAS DINAMICO
         let fecha_desde = generar_fecha(horaDesde),
@@ -438,65 +438,6 @@ const obtener_mesas_reserva = async ( req = request, res = response ) =>{
 
 
 
-const realizar_reserva_via_bff = async ( req = request, res = response ) =>{
-
-
-    try {
-        
-        const { acceso } = req.body;
-        let data = {};
-
-        if ( acceso === 'ADMINISTRADOR' ){
-
-            const { id_socio } = req.body;
-            if ( id_socio === undefined || id_socio === null ) {
-                throw new Error('Debe proporcionar la clave de usuario para realizar la reserva');
-            }else {
-
-                //SE DEBE DE REALIZAR LA PETICION NORMALMENTE
-                await instance.post('/user', {
-                    firstName: 'Fred',
-                    lastName: 'Flintstone'
-                })
-                .then(function (response) {
-                  console.log(response);
-                })
-                .catch(function (error) {
-                  console.log(error);
-                });
-
-
-            }
-        }else{
-
-            //REALIZAR EL POST PERO HACIA OTRA RUTA
-            await instance.post('/user', {
-                firstName: 'Fred',
-                lastName: 'Flintstone'
-            })
-            .then(function (response) {
-              console.log(response);
-            })
-            .catch(function (error) {
-              console.log(error);
-            });
-
-        }    
-        
-    } catch (error) {
-        //console.log ( error );
-        res.status( 500 ).json( {
-            status : false,
-            msg : `Ha ocurrido un error al eliminar la reserva : ${ error }`,
-            //error
-        } );
-
-    }
-
-}
-
-
-
 const agregar_reserva_a_venta = async ( req = request, res = response ) =>{
 
 
@@ -519,8 +460,9 @@ const agregar_reserva_a_venta = async ( req = request, res = response ) =>{
                 
                 let reserva = await prisma.reservas.findUnique( { where : { id_cliente_reserva : Number( idReserva ) } } );
                 let  { id_cliente_reserva, id_cliente, id_mesa, monto, fecha_reserva } = reserva;
+                //console.log( reserva );
                 let cliente = await prisma.cliente.findUnique( { where : { id_cliente : id_cliente } } )
-
+                //console.log( cliente );
                 if ( reserva !== null  ) { 
 
                     let nueva_venta = await prisma.ventas.create( {
@@ -650,7 +592,6 @@ module.exports = {
     editar_reserva_en_club,
     obtener_mesas_reserva,
     obtener_mesas_disponibles_x_horario,
-    realizar_reserva_via_bff,
     crear_reserva_en_club_administrador,
     agregar_reserva_a_venta,
     setear_precio_reservas

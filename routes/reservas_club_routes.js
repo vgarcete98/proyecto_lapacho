@@ -9,7 +9,6 @@ const { borrar_reserva_en_club,
         obtener_reservas_en_club,
         obtener_mesas_reserva, 
         obtener_mesas_disponibles_x_horario,
-        realizar_reserva_via_bff,
         crear_reserva_en_club_administrador,
         agregar_reserva_a_venta,
         setear_precio_reservas} = require( '../controlers/reservas_club' );
@@ -55,8 +54,6 @@ router_reservas_club.put( '/editar_reserva_club', [ obtener_data_socio, verifica
 
 router_reservas_club.post( '/obtener_mesas_disponibles_x_horario',[ ], obtener_mesas_disponibles_x_horario );
 
-
-router_reservas_club.post( '/realizar_reserva_via_bff',[ verificar_acceso_usuario, ], realizar_reserva_via_bff );
 
 router_reservas_club.post( '/setear_precio_reservas',[ verificar_acceso_usuario, ], setear_precio_reservas );
 

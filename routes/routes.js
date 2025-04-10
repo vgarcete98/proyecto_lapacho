@@ -140,6 +140,10 @@ const rutas = {
 
     auditoria : {
         ruta : "/auditoria_api"
+    },
+
+    graficos : {
+        ruta : "/graficos"
     }
 
 }

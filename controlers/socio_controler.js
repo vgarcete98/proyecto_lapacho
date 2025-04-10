@@ -7,6 +7,7 @@ const { generar_fecha } = require('../helpers/generar_fecha');
 const { encriptar_password } = require( '../helpers/generar_encriptado' );
 const { sendMail } = require('../helpers/node_mailer_config');
 const { comprobar_existe_cliente } = require('../helpers/comprobar_existe_cliente');
+const { actualiza_datos_cuota_socio } = require('../helpers/actualiza_datos_cuota_socio');
 const prisma = new PrismaClient()
 
 
@@ -225,10 +226,32 @@ const actualizar_socio = async ( req = request, res = response ) => {
 
 
     try {
-        const { nombre, apellido, fechaNacimiento, cedula, estadoSocio, nroCedula,
+        const { nombre, apellido, fechaNacimiento, cedula, estadoSocio,
                 correo, numeroTel, direccion, ruc, tipoSocio, idCliente, esSocio} = req.body;
         //------------------------------------------------------------------------------------------
         const fecha_socio_actualizado = new Date();
+        const datos_viejos = await prisma.cliente.findUnique( 
+                                                                { 
+                                                                    where : { id_cliente : Number( idCliente ) },
+                                                                    select : { id_tipo_socio : true } 
+                                                                }
+                                                            );
+        //BUSCO LAS CUOTAS VIEJAS POR QUE UNA VEZ QUE SE ACTUALIZA EL SOCIO SE GENERAN LAS NUEVAS                                                    
+        const cuotas_viejas = await prisma.cuotas_socio.findMany( { 
+                                                                    where : {
+                                                                        AND : [
+                                                                            { id_cliente : Number(idCliente)},
+                                                                            { fecha_vencimiento : { gte : new Date() } },
+                                                                            { estado : 'PENDIENTE' }
+
+                                                                        ] 
+                                                                    },
+                                                                    select :{
+                                                                        id_cuota_socio : true
+                                                                    }
+                                                                } ); 
+                                                                
+                                                                
         const socio_actualizado = await prisma.cliente.update( { 
                                                                 where : {  id_cliente : Number ( idCliente )  },
                                                                 data : {
@@ -236,7 +259,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                                     apellido : apellido,
                                                                     direccion : direccion,
                                                                     fecha_nacimiento : generar_fecha( fechaNacimiento ),
-                                                                    cedula : nroCedula,
+                                                                    cedula : cedula,
                                                                     editadoen : fecha_socio_actualizado,
                                                                     correo_electronico : correo,
                                                                     ruc : ruc,
@@ -247,7 +270,11 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                                 }
                                                             } );
         //console.log( socio_actualizado );
-
+        const { id_tipo_socio, id_cliente } = datos_viejos;
+        //console.log( Number(tipoSocio), id_tipo_socio );
+        if ( Number(tipoSocio) !== id_tipo_socio) {
+            await actualiza_datos_cuota_socio(id_cliente, Number(tipoSocio), cuotas_viejas);
+        }
 
         if( socio_actualizado !== null ){
 
@@ -406,7 +433,7 @@ const actualizar_socio_usuario = async ( req = request, res = response ) => {
 const borrar_socio = async ( req = request, res = response ) => {
 
     // SE IMPLEMENTA EL BORRADO DEL SOCIO ACTUALIZANDO NADA MAS CIERTOS CAMPOS DE LA TABLA
-    
+    //SE LE ASCIENDE A CLIENTE AL SOCIO QUE SE BORRA YA QUE HAY QUE MANTENER LAS DEUDAS QUE EL MISMO TIENE PENDIENTE
     try {
         const { idCliente } = req.body;
 
@@ -416,7 +443,12 @@ const borrar_socio = async ( req = request, res = response ) => {
                                                                 data : {
                                                                     estado_usuario : estados_socio.eliminado.descripcion,
                                                                     editadoen : fecha_edicion,
-                                                                    es_socio : false
+                                                                    es_socio : false,
+                                                                    id_tipo_socio : null,
+                                                                    eliminadoen : new Date(),
+                                                                    password : null,
+                                                                    nombre_usuario : null
+
                                                                 },
                                                                 where : { id_cliente : Number(idCliente) }
                                                             } );
