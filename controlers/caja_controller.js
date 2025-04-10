@@ -786,65 +786,71 @@ const obtener_monto_total_ventas = async ( ventas = [] ) => {
         console.log( ventas );
         for (let element of ventas) {
             
-            let { idVenta , idSocioCuota, idAgendamiento,  idReserva, idInscripcion, fechaOperacion, monto, tipoServicio } = element;
-            console.log( idSocioCuota, idAgendamiento,  idReserva, idInscripcion );
-            if (idAgendamiento !== null) {
-
-                servicio = await prisma.agendamiento_clase.findUnique( { 
-                                                                        where : { id_agendamiento : Number(idAgendamiento) },
+            try {
+                
+                let { idVenta , idSocioCuota, idAgendamiento,  idReserva, idInscripcion, fechaOperacion, monto, tipoServicio } = element;
+                console.log( idSocioCuota, idAgendamiento,  idReserva, idInscripcion );
+                if (idAgendamiento !== null && idAgendamiento !== undefined) {
+    
+                    servicio = await prisma.agendamiento_clase.findUnique( { 
+                                                                            where : { id_agendamiento : Number(idAgendamiento) },
+                                                                            include : {
+                                                                                precio_clase : {
+                                                                                    select : {
+                                                                                        precio : true,
+                                                                                    }
+                                                                                }
+                                                                            }  
+                                                                        } );
+                    monto_total += servicio.precio_clase.precio;
+                }else if ( idReserva !== null && idReserva !== undefined) {
+    
+                    servicio = await prisma.reservas.findUnique( { 
+                                                                    where : { id_cliente_reserva : Number(idReserva) },
                                                                         include : {
-                                                                            precio_clase : {
+                                                                            precio_reservas : {
                                                                                 select : {
-                                                                                    precio : true,
+                                                                                    monto_reserva : true,
                                                                                 }
                                                                             }
-                                                                        }  
-                                                                    } );
-                monto_total += servicio.precio_clase.precio;
-            }else if ( idReserva !== null ) {
-
-                servicio = await prisma.reservas.findUnique( { 
-                                                                where : { id_cliente_reserva : Number(idReserva) },
-                                                                    include : {
-                                                                        precio_reservas : {
-                                                                            select : {
-                                                                                monto_reserva : true,
-                                                                            }
-                                                                        }
-                                                                    } 
-                                                            } );
-                monto_total += servicio.precio_reservas.monto_reserva;                                                                        
-            }else if( idSocioCuota !== null ) {
-                
-                servicio = await prisma.cuotas_socio.findUnique( { 
-                                                                    where : { id_cuota_socio : Number(idSocioCuota) },
-                                                                    include : {
-                                                                        precio_cuota : {
-                                                                            select : {
-                                                                                monto_cuota : true,
-                                                                            }
-                                                                        }
-                                                                    } 
-                                                                });
-                                                                    
-                monto_total += servicio.precio_cuota.monto_cuota;
-            }else if ( idInscripcion !== null )  {
-
-                servicio = await prisma.inscripciones.findUnique( { 
-                    where : { id_inscripcion : Number(idInscripcion) },
-                    select : {
-                        costo_inscripcion : true,
-                    }
+                                                                        } 
+                                                                } );
+                    monto_total += servicio.precio_reservas.monto_reserva;                                                                        
+                }else if( idSocioCuota !== null && idSocioCuota !== undefined) {
                     
-                });
-                monto_total += servicio.costo_inscripcion;
-            }else {
-
-                monto_total += 0;
+                    servicio = await prisma.cuotas_socio.findUnique( { 
+                                                                        where : { id_cuota_socio : Number(idSocioCuota) },
+                                                                        include : {
+                                                                            precio_cuota : {
+                                                                                select : {
+                                                                                    monto_cuota : true,
+                                                                                }
+                                                                            }
+                                                                        } 
+                                                                    });
+                                                                        
+                    monto_total += servicio.precio_cuota.monto_cuota;
+                }else if ( idInscripcion !== null && idInscripcion !== undefined)  {
+    
+                    servicio = await prisma.inscripciones.findUnique( { 
+                        where : { id_inscripcion : Number(idInscripcion) },
+                        select : {
+                            costo_inscripcion : true,
+                        }
+                        
+                    });
+                    monto_total += servicio.costo_inscripcion;
+                }else {
+    
+                    monto_total += 0;
+                }
+                
+                console.log( servicio );
+            } catch (error) {
+                console.log( error );
             }
-            
-            console.log( servicio );
-        }
+                
+            }
         console.log( monto_total )
         return monto_total;
 
