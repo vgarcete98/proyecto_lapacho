@@ -12,7 +12,9 @@ const {
     obtener_tipo_pagos,
     generar_movimientos_de_caja_ventas,
     generar_movimientos_de_caja_compras,
-    obtener_detalles_caja
+    obtener_detalles_caja,
+    obtener_movimientos_de_caja_al_cierre,
+    obtener_resumen_de_caja_al_cierre
 } = require( '../controlers/caja_controller' );
 const { verificar_existe_caja_abierta, verificar_existe_caja_vigente } = require('../middlewares/verificar_existe_caja_abierta');
 
@@ -45,6 +47,11 @@ router_caja.put( '/actualizar_caja', [  ],  actualizar_caja);
 router_caja.put( '/reabrir_caja', [  ],  reabrir_caja);
 
 router_caja.put( '/cerrar_caja', [  ],  cerrar_caja);
+
+router_caja.get( '/cerrar_caja/obtener_movimientos_caja_cierre', [  ],  obtener_movimientos_de_caja_al_cierre);
+
+
+router_caja.get( '/cerrar_caja/obtener_resumen_caja_cierre', [  ],  obtener_resumen_de_caja_al_cierre);
 
 router_caja.get( '/obtener_tipos_pago', [], obtener_tipo_pagos );
 

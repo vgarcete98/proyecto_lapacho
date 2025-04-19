@@ -201,6 +201,127 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
 }
 
 
+
+
+const obtener_movimientos_de_caja_al_cierre = async ( req = request, res = response ) =>{ 
+    try {
+
+
+        const { pagina } = req.query;
+
+
+        //ESTO ES PARA REALIZARLO DE UNA FORMA MAS RESUMIDA
+        const query = `SELECT X.nro_comprobante AS "nroComprobante", 
+                                X.tipo_comprobante AS "tipoComprobante",
+                                X.tipo_operacion AS "tipoOperacion",
+                                SUM(X.monto) :: INTEGER AS "monto",
+                                TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')  as "fechaEmision"
+                                            FROM (SELECT CASE WHEN ( A.NRO_FACTURA IS NULL ) THEN A.NRO_COMPROBANTE ELSE A.NRO_FACTURA END AS "nro_comprobante",
+                                                        CASE WHEN ( A.NRO_FACTURA IS NOT NULL ) THEN 'FACTURA' ELSE 'COMPROBANTE' END AS "tipo_comprobante",
+                                                        CASE WHEN (A.ID_COMPRA IS NULL) THEN 'VENTA' ELSE 'COMPRA' END AS "tipo_operacion",
+                                                        A.FECHA_OPERACION,
+                                                        CASE WHEN ( A.ID_COMPRA IS NOT NULL ) THEN F.MONTO ELSE D.MONTO END AS "monto"
+                                                    FROM MOVIMIENTO_CAJA A JOIN CAJA B ON A.ID_CAJA = B.ID_CAJA
+                                                    JOIN CLIENTE C ON C.ID_CLIENTE = A.ID_CLIENTE
+                                                    LEFT JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
+                                                    LEFT JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
+                                                WHERE  B.ID_CAJA = (SELECT MAX(ID_CAJA) FROM CAJA WHERE FECHA_CIERRE IS NOT NULL )) AS X
+                        GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')
+                        LIMIT 10 OFFSET ${Number(pagina) - 1 }`;
+        //console.log( query )
+        const movimientos_de_caja = await prisma.$queryRawUnsafe(query)
+
+        //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
+
+        if ( movimientos_de_caja.length === 0  ){
+
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No se obtuvo ningun movimiento de cierre de caja',
+                descripcion : `No hay ningun movimiento de cierre actual`
+            } ); 
+
+
+        }else {
+
+            res.status( 200 ).json( {
+                status : true,
+                msg : 'movimientos de caja',
+                movimientos_de_caja
+                //descripcion : `No existe ninguna venta generada para ese cliente`
+            } ); 
+        }
+
+
+
+        
+    } catch (error) {
+        console.log(error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'No se pudo realizar esa accion sobre la caja',
+            //error
+        } );
+        
+    }  
+}
+
+const obtener_resumen_de_caja_al_cierre = async ( req = request, res = response ) =>{ 
+    try {
+
+
+        //ESTO ES PARA REALIZARLO DE UNA FORMA MAS RESUMIDA
+        const query = `select a.id_caja as "idCaja",
+                            a.monto_inicial :: INTEGER as "montoInicial",
+                            X.cant_ventas :: INTEGER as "cantVentas",
+                            X.cant_compras :: INTEGER as "cantCompras"
+                        from caja a join (select mc.id_caja,
+                                                SUM ( case when (mc.id_venta is not null) then v.monto else 0 end ) as "cant_ventas",
+                                                SUM ( case when (mc.id_compra is not null) then v.monto else 0 end ) as "cant_compras"
+                                                from movimiento_caja mc left join ventas v on v.id_venta = mc.id_venta 
+                                                left join compras c  on c.id_compra = mc.id_compra 
+                                            WHERE  mc.ID_CAJA = (SELECT MAX(ID_CAJA) FROM CAJA WHERE FECHA_CIERRE IS NOT NULL )
+                                            group by mc.id_caja	) X on X.id_caja = a.id_caja `;
+        //console.log( query )
+        const resumen_caja = await prisma.$queryRawUnsafe(query)
+
+        //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
+
+        if ( resumen_caja.length === 0  ){
+
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No se obtuvo ningun resumen de cierre de caja',
+                descripcion : `No hay ningun resumen de cierre actual`
+            } ); 
+
+
+        }else {
+
+            res.status( 200 ).json( {
+                status : true,
+                msg : 'Resumen de caja al Cierre',
+                resumen_caja
+                //descripcion : `No existe ninguna venta generada para ese cliente`
+            } ); 
+        }
+
+
+
+        
+    } catch (error) {
+        console.log(error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'No se pudo realizar esa accion sobre la caja',
+            //error
+        } );
+        
+    }  
+}
+
+
+
 const obtener_detalle_movimiento_de_caja = async ( req = request, res = response ) =>{ 
     try {
       
@@ -881,5 +1002,7 @@ module.exports = {
     crear_tipo_pago,
     generar_movimientos_de_caja_ventas,
     generar_movimientos_de_caja_compras,
-    obtener_detalles_caja
+    obtener_detalles_caja,
+    obtener_movimientos_de_caja_al_cierre,
+    obtener_resumen_de_caja_al_cierre
 }
