@@ -279,6 +279,59 @@ const procesar_pago_por_compras_club = async () => {
 
 
 
+const agregar_tipo_egreso = async ( req = request, res = response ) =>{
+
+    try {
+
+        const { descripcion, esGastoFijo } = req.body;
+    
+
+        const gasto_fijo = await prisma.tipos_egreso.create( { 
+                                                                data : {
+                                                                    creado_en : new Date(),
+                                                                    creado_por : 1,
+                                                                    descripcion : descripcion,
+                                                                    gasto_fijo : (esGastoFijo === true)? true : false
+                                                                }
+                                                            } );
+
+        if ( gasto_fijo !== null ){
+
+            res.status( 200 ).json( {
+                status : true,
+                msg : 'Tipo de gasto generado',
+                descripcion : "Se ha generado el tipo de gasto para una compra"
+                //descripcion : `No existe ninguna venta generada para ese cliente`
+            } );
+        }else {
+
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No se creo el tipo de gasto',
+                descripcion : "No se ha generado el tipo de gasto para procesar las compras"
+                //descripcion : `No existe ninguna venta generada para ese cliente`
+            } );
+
+        }
+
+        
+    } catch (error) {
+
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'Ha ocurrido un error al comprobar las compras del club'
+        } );
+    }
+
+
+
+
+
+}
+
+
+
 
 
 
@@ -288,5 +341,6 @@ module.exports = {
 
     obtener_compras_club,
     generar_compras_club,
-    procesar_pago_por_compras_club
+    procesar_pago_por_compras_club,
+    agregar_tipo_egreso
 }

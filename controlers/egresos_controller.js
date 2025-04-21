@@ -427,8 +427,13 @@ const obtener_tipos_egreso = async ( req = request, res = response )=>{
         let tiposEgreso = []
 
         tipos_egreso.forEach( ( value )=>{
-            const { descripcion, id_tipo } = value;
-            tiposEgreso.push( { descripcion, idTipo : id_tipo } )
+            const { descripcion, id_tipo_egreso } = value;
+
+
+            tiposEgreso.push( { 
+                                descripcion, 
+                                idTipoEgreso : id_tipo_egreso 
+                            } );
         } );
         res.status( 200 ).json( {
             status : true,

@@ -119,21 +119,21 @@ const obtener_categorias_x_evento = async ( req = request, res = response ) =>{
     try {
         
         const { id_evento } = req.query;
-        const categorias = await prisma.categorias.findMany( { where : { id_evento_calendario : Number( id_evento ) } } )
+        const categorias = await prisma.categorias.findMany( { where : { id_evento : Number( id_evento ) } } )
 
         let categoriasEvento = [];
 
 
         categorias.forEach( ( element ) =>{
             const { descripcion, id_categoria, nombre_categoria, 
-                    id_evento_calendario, edad_maxima, edad_minima, 
+                    id_evento, edad_maxima, edad_minima, 
                     cierre_inscripciones, nivel_maximo, nivel_minimo, sexo, costo } = element;
 
             categoriasEvento.push( {
                 descripcion, 
                 idCategoria : id_categoria, 
                 nombreCategoria : nombre_categoria, 
-                idEventoCalendario : id_evento_calendario,
+                idEvento : id_evento,
                 edadMinima : edad_minima,
                 edadMaxima : edad_maxima,
                 cierreInscripciones : cierre_inscripciones,
@@ -147,7 +147,7 @@ const obtener_categorias_x_evento = async ( req = request, res = response ) =>{
         
         res.status( 200 ).json( {
             status : true,
-            msg : "Eventos registrados hasta el momento",
+            msg : "Categorias registradas hasta el momento",
             categoriasEvento,
             cantidad : categoriasEvento.length
 
@@ -158,7 +158,7 @@ const obtener_categorias_x_evento = async ( req = request, res = response ) =>{
         //console.log( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `
+            msg : `Ha ocurrido un error al obtener las categorias del evento ${error} `
             //error
         } );   
     }   
@@ -985,20 +985,20 @@ const obtener_requerimientos_x_evento = async ( req = request, res = response ) 
 
         const { id_requerimiento, id_evento } = req.query;
 
-        const requerimientos = await prisma.requerimientos.findMany( { where : { id_evento_calendario : Number( id_evento ) } } )
+        const requerimientos = await prisma.insumos.findMany( { where : { id_evento : Number( id_evento ) } } )
 
         let requerimientosEvento = [];
 
 
         requerimientos.forEach( ( element ) =>{
-            const { cantidad, costo_unidad, descripcion, id_requerimiento, id_evento_calendario } = element;
+            const { cantidad, costo, descripcion, id_requerimiento, id_evento } = element;
 
             requerimientosEvento.push( {
                 descripcion, 
                 cantidad,
                 idRequerimiento : id_requerimiento, 
-                costoUnidad : costo_unidad, 
-                idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
+                costo : costo, 
+                idEvento : (typeof id_evento=== 'bigint' ? Number(id_evento.toString()) : id_evento)
             } )
         } )
         
