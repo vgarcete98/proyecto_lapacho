@@ -265,10 +265,29 @@ const obtener_movimientos_de_caja_al_cierre = async ( req = request, res = respo
 
         }else {
 
+            const query_original = `SELECT X.nro_comprobante AS "nroComprobante", 
+                                X.tipo_comprobante AS "tipoComprobante",
+                                X.tipo_operacion AS "tipoOperacion",
+                                SUM(X.monto) :: INTEGER AS "monto",
+                                TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')  as "fechaEmision"
+                                            FROM (SELECT CASE WHEN ( A.NRO_FACTURA IS NULL ) THEN A.NRO_COMPROBANTE ELSE A.NRO_FACTURA END AS "nro_comprobante",
+                                                        CASE WHEN ( A.NRO_FACTURA IS NOT NULL ) THEN 'FACTURA' ELSE 'COMPROBANTE' END AS "tipo_comprobante",
+                                                        CASE WHEN (A.ID_COMPRA IS NULL) THEN 'VENTA' ELSE 'COMPRA' END AS "tipo_operacion",
+                                                        A.FECHA_OPERACION,
+                                                        CASE WHEN ( A.ID_COMPRA IS NOT NULL ) THEN F.MONTO ELSE D.MONTO END AS "monto"
+                                                    FROM MOVIMIENTO_CAJA A JOIN CAJA B ON A.ID_CAJA = B.ID_CAJA
+                                                    JOIN CLIENTE C ON C.ID_CLIENTE = A.ID_CLIENTE
+                                                    LEFT JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
+                                                    LEFT JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
+                                                WHERE  B.ID_CAJA = (SELECT MAX(ID_CAJA) FROM CAJA WHERE FECHA_CIERRE IS NOT NULL )) AS X
+                        GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')`;
+            const cantidad_registros = await obtener_cantidad_registros_query(query_original);
+
             res.status( 200 ).json( {
                 status : true,
                 msg : 'movimientos de caja',
-                movimientosDeCaja
+                movimientosDeCaja,
+                cantidad : cantidad_registros
                 //descripcion : `No existe ninguna venta generada para ese cliente`
             } ); 
         }
