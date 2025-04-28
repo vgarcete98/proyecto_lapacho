@@ -75,6 +75,7 @@ const router_parametros = require('../routes/parametros_routes');
 const router_caja = require('../routes/caja_routes');
 const { router_compras } = require('../routes/compras_routes');
 const router_audit_api = require('../routes/auditoria_api_routes');
+const { router_usuarios } = require('../routes/usuarios_routes');
 //----------------------------------------------------------------------------
 
 
@@ -253,7 +254,10 @@ class Server {
 
         this.app.use( rutas.auditoria.ruta, router_audit_api );
 
-        this.app.use( rutas.graficos.ruta, router_graficos );        
+        this.app.use( rutas.graficos.ruta, router_graficos );
+        
+        
+        this.app.use( rutas.usuarios.ruta, router_usuarios );
     
     }
 

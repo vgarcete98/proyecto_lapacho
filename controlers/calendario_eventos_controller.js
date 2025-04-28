@@ -4,6 +4,7 @@ var { format  } = require("date-fns");
 
 const { PrismaClient } = require('@prisma/client');
 const { generar_fecha } = require('../helpers/generar_fecha');
+const { obtener_cantidad_registros_query } = require('../helpers/obtener_cant_registros_query');
 
 const prisma = new PrismaClient();
 
@@ -111,6 +112,86 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
 
 
 }
+
+
+const obtener_todos_los_torneos_x_fecha = async ( req = request, res = response ) =>{
+
+    try {
+
+        //ENDPOINT QUE DEVUELVE TODO, EVENTOSS, RESERVAS Y CLASES DEL MES
+        const { fechaDesde, fechaHasta, pagina, idUsuario, cantidad } = req.body;
+        //console.log( fechaDesde, fechaHasta );
+        const fecha_desde_format = new Date ( fechaDesde );
+
+        const fecha_hasta_format = new Date ( fechaHasta );   
+        
+        //console.log( "query de eventos" );
+        //console.log( format( fecha_desde_format, 'yyyy-MM-dd' ), format( fecha_hasta_format, 'yyyy-MM-dd' ) )
+        const query_torneos = `SELECT A.id_evento AS "idEvento", 
+                                        B.id_tipo_evento AS "idTipoEvento", 
+                                        A.fecha_desde_evento AS "horaDesde", 
+                                        A.eventocreadoen AS "fechaCreacion", 
+                                        A.fecha_hasta_evento AS "horaHasta", 
+                                        --A.costo AS "costo", 
+                                        A.decripcion_evento AS "descripcion", 
+                                        A.nombre_evento AS "nombreCmp", 
+                                        A.todo_el_dia AS "todoEldia", 
+                                        --A.fechaagendamiento AS "fechaAgendamiento",
+                                        B.nombre_evento AS "descTipoEvento"
+                                    FROM eventos A JOIN EVENTOS B ON A.id_tipo_evento = B.id_tipo_evento
+                                    WHERE A.fecha_desde_evento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
+                                                                        AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }'
+                                    LIMIT ${cantidad} OFFSET ${(Number(pagina) - 1)*Number(cantidad) } `;
+
+        console.log( query_torneos );
+
+        const eventosMes =  await prisma.$queryRawUnsafe( query_torneos );  
+
+        //console.log(  eventosMes, clasesDelDia, reservasClub )
+        if ( eventosMes.length === 0 ) {
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No existen Eventos dentro de las fechas en el calendario',
+                descripcion : `No existe ningun evento dentro del calendario`
+            } );
+        }else {
+            const query_original = `SELECT A.id_evento AS "idEvento", 
+                                        B.id_tipo_evento AS "idTipoEvento", 
+                                        A.fecha_desde_evento AS "horaDesde", 
+                                        A.eventocreadoen AS "fechaCreacion", 
+                                        A.fecha_hasta_evento AS "horaHasta", 
+                                        --A.costo AS "costo", 
+                                        A.decripcion_evento AS "descripcion", 
+                                        A.nombre_evento AS "nombreCmp", 
+                                        A.todo_el_dia AS "todoEldia", 
+                                        --A.fechaagendamiento AS "fechaAgendamiento",
+                                        B.nombre_evento AS "descTipoEvento"
+                                    FROM eventos A JOIN EVENTOS B ON A.id_tipo_evento = B.id_tipo_evento
+                                    WHERE A.fecha_desde_evento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
+                                                                        AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }'`;
+            const cantidad_registros = await obtener_cantidad_registros_query(query_original);
+            res.status( 200 ).json( {
+                status : true, 
+                msg : 'Todos los eventos en las fechas',
+                torneos : eventosMes,
+                cantidad : cantidad_registros
+            } );
+        }
+        
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ha ocurrido un error al obtener todo lo del mes ${error} `,
+            //error
+        } );        
+    }
+
+
+
+}
+
+
 
 
 
@@ -793,8 +874,12 @@ const obtener_inscripciones_x_evento = async ( req = request, res = response ) =
         // ACA TENGO QUE OBTENER TODAS LAS INSCRIPCIONES, YA SEAN SOCIOS O NO
         const { id_evento } = req.params;
 
-        const query_inscripciones_socios = `SELECT A.id_inscripcion, A.id_socio, B.nombre_cmp, A.fecha_inscripcion, 
-                                                    A.desc_inscripcion, CASE A.abonado WHEN True THEN 'Si' ELSE 'No' END AS pagado
+        const query_inscripciones_socios = `SELECT A.id_inscripcion, 
+                                                    A.id_socio, 
+                                                    B.nombre_cmp, 
+                                                    A.fecha_inscripcion, 
+                                                    A.desc_inscripcion, 
+                                                    CASE A.abonado WHEN True THEN 'Si' ELSE 'No' END AS pagado
                                                     FROM INSCRIPCIONES A JOIN SOCIO B ON A.id_socio = B.id_socio
                                                     JOIN CALENDARIO_EVENTOS C ON A.id_evento_calendario = C.id_evento_calendario
                                                 WHERE A.id_evento_calendario = ${ Number( id_evento ) }`;
@@ -1203,6 +1288,7 @@ module.exports = {
     obtener_requerimientos_x_evento,
     eliminar_requerimientos_x_evento,
     editar_requerimientos_x_evento,
-    crear_requerimientos_x_evento
+    crear_requerimientos_x_evento,
+    obtener_todos_los_torneos_x_fecha
 
 }

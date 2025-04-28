@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 
 
 const { actualiza_datos_del_servicio } = require( '../helpers/actualiza_datos_servicio' );
+const { obtener_cantidad_registros_query } = require('../helpers/obtener_cant_registros_query');
 
 
 const crear_caja = async ( req = request, res = response ) =>{ 
@@ -160,10 +161,12 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
                                                     JOIN CLIENTE C ON C.ID_CLIENTE = A.ID_CLIENTE
                                                     LEFT JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
                                                     LEFT JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
-                                                WHERE (A.fecha_operacion :: DATE ) BETWEEN ('${fecha_desde}' :: DATE) AND ('${fecha_hasta}' :: DATE)) AS X
-                        GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')`;
+                                                WHERE (A.fecha_operacion :: DATE ) BETWEEN ('${fecha_desde.replaceAll('/','-')}' :: DATE) AND ('${fecha_hasta.replaceAll('/','-')}' :: DATE)) AS X
+                        GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')
+                        LIMIT ${cantidad} OFFSET ${(Number(pagina) - 1)*cantidad }`;
         console.log( query )
-        const movimientos_de_caja = await prisma.$queryRawUnsafe(query)
+        const movimientos_de_caja = await prisma.$queryRawUnsafe(query);
+
 
         //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
 
@@ -178,10 +181,28 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
 
         }else {
 
+            const registros_totales = `SELECT X.nro_comprobante AS "nroComprobante", 
+                                X.tipo_comprobante AS "tipoComprobante",
+                                X.tipo_operacion AS "tipoOperacion",
+                                SUM(X.monto) :: INTEGER AS "monto",
+                                TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')  as "fechaEmision"
+                                            FROM (SELECT CASE WHEN ( A.NRO_FACTURA IS NULL ) THEN A.NRO_COMPROBANTE ELSE A.NRO_FACTURA END AS "nro_comprobante",
+                                                        CASE WHEN ( A.NRO_FACTURA IS NOT NULL ) THEN 'FACTURA' ELSE 'COMPROBANTE' END AS "tipo_comprobante",
+                                                        CASE WHEN (A.ID_COMPRA IS NULL) THEN 'VENTA' ELSE 'COMPRA' END AS "tipo_operacion",
+                                                        A.FECHA_OPERACION,
+                                                        CASE WHEN ( A.ID_COMPRA IS NOT NULL ) THEN F.MONTO ELSE D.MONTO END AS "monto"
+                                                    FROM MOVIMIENTO_CAJA A JOIN CAJA B ON A.ID_CAJA = B.ID_CAJA
+                                                    JOIN CLIENTE C ON C.ID_CLIENTE = A.ID_CLIENTE
+                                                    LEFT JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
+                                                    LEFT JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
+                                                WHERE (A.fecha_operacion :: DATE ) BETWEEN ('${fecha_desde.replaceAll('/','-')}' :: DATE) AND ('${fecha_hasta.replaceAll('/','-')}' :: DATE)) AS X
+                        GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')`;
+            const cant_registros = await obtener_cantidad_registros_query(registros_totales);
             res.status( 200 ).json( {
                 status : true,
                 msg : 'movimientos de caja',
-                movimientos_de_caja
+                movimientosDeCaja : movimientos_de_caja,
+                cantidad : cant_registros
                 //descripcion : `No existe ninguna venta generada para ese cliente`
             } ); 
         }
@@ -207,7 +228,7 @@ const obtener_movimientos_de_caja_al_cierre = async ( req = request, res = respo
     try {
 
 
-        const { pagina } = req.query;
+        const { pagina, cantidad } = req.query;
 
 
         //ESTO ES PARA REALIZARLO DE UNA FORMA MAS RESUMIDA
@@ -227,13 +248,13 @@ const obtener_movimientos_de_caja_al_cierre = async ( req = request, res = respo
                                                     LEFT JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
                                                 WHERE  B.ID_CAJA = (SELECT MAX(ID_CAJA) FROM CAJA WHERE FECHA_CIERRE IS NOT NULL )) AS X
                         GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')
-                        LIMIT 10 OFFSET ${Number(pagina) - 1 }`;
+                        LIMIT ${cantidad} OFFSET ${(Number(pagina) - 1)*cantidad }`;
         //console.log( query )
-        const movimientos_de_caja = await prisma.$queryRawUnsafe(query)
+        const movimientosDeCaja = await prisma.$queryRawUnsafe(query)
 
         //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
 
-        if ( movimientos_de_caja.length === 0  ){
+        if ( movimientosDeCaja.length === 0  ){
 
             res.status( 400 ).json( {
                 status : false,
@@ -247,7 +268,7 @@ const obtener_movimientos_de_caja_al_cierre = async ( req = request, res = respo
             res.status( 200 ).json( {
                 status : true,
                 msg : 'movimientos de caja',
-                movimientos_de_caja
+                movimientosDeCaja
                 //descripcion : `No existe ninguna venta generada para ese cliente`
             } ); 
         }
@@ -357,7 +378,7 @@ const obtener_detalle_movimiento_de_caja = async ( req = request, res = response
             res.status( 200 ).json( {
                 status : true,
                 msg : 'movimientos de caja',
-                movimientos_de_caja
+                movimientosDeCaja : movimientos_de_caja
                 //descripcion : `No existe ninguna venta generada para ese cliente`
             } ); 
         }

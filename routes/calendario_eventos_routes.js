@@ -20,7 +20,8 @@ const {
         obtener_requerimientos_x_evento,
         crear_requerimientos_x_evento,
         editar_requerimientos_x_evento,
-        eliminar_requerimientos_x_evento} = require( '../controlers/calendario_eventos_controller' );
+        eliminar_requerimientos_x_evento,
+        obtener_todos_los_torneos_x_fecha} = require( '../controlers/calendario_eventos_controller' );
 const { obtener_ganancias_gastos_x_evento, obtener_grafico_inscriptos_x_evento_categoria, obtener_cantidad_inscriptos_x_evento } = require('../controlers/inscripciones_controller');
 //-------------------------------------------------------------------------
 
@@ -38,6 +39,10 @@ router_eventos.get( '/', [ ], obtener_eventos_x_fecha_calendario );
 router_eventos.get ( '/eventos_con_categoria', [ ], obtener_eventos_del_mes );
 
 router_eventos.post ( '/eventos_mes_todos', [ verificar_vista_usuario ], obtener_todos_los_eventos_calendario );
+
+
+router_eventos.post ( '/obtener_torneos_x_fecha', [ ], obtener_todos_los_torneos_x_fecha );
+
 
 
 router_eventos.get( '/obtener_tipos_evento', [ ], obtener_tipos_de_evento );

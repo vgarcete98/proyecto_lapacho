@@ -8,6 +8,7 @@ const { encriptar_password } = require( '../helpers/generar_encriptado' );
 const { sendMail } = require('../helpers/node_mailer_config');
 const { comprobar_existe_cliente } = require('../helpers/comprobar_existe_cliente');
 const { actualiza_datos_cuota_socio } = require('../helpers/actualiza_datos_cuota_socio');
+const { obtener_cantidad_registros_query } = require('../helpers/obtener_cant_registros_query');
 const prisma = new PrismaClient()
 
 
@@ -528,6 +529,7 @@ const obtener_socios = async ( req = request, res = response ) => {
                         ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
         //console.log( query );
         socios = await prisma.$queryRawUnsafe( query );
+        
 
         if ( socios.length === 0 ){
 
@@ -538,7 +540,24 @@ const obtener_socios = async ( req = request, res = response ) => {
             });   
 
         }else {
-
+            let total_registros_query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
+                                                --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
+                                                A.CEDULA AS "cedula",
+                                                A.CORREO_ELECTRONICO AS "correoElectronico", 
+                                                A.DIRECCION AS "direccion",
+                                                A.ID_CLIENTE AS "idCliente", 
+                                                A.RUC AS "ruc" ,
+                                                A.CREADOEN AS "creadoEn", 
+                                                --A.PASSWORD AS "contrasea",
+                                                A.NOMBRE_USUARIO AS "nombreUsuario",
+                                                A.FECHA_NACIMIENTO AS "fechaNacimiento",
+                                                CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
+                                                C.DESC_TIPO_SOCIO AS "descTipoSocio", 
+                                                A.NUMERO_TELEFONO AS "numeroTelefono",
+                                                A.ESTADO_USUARIO AS "estadoSocio" 
+                                            FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                                        ${ ( nombre !== undefined && nombre !== '' )? `AND UPPER( CONCAT (A.NOMBRE, ' ', A.APELLIDO) ) LIKE '%${nombre.toUpperCase()}%'` : `` }`
+            const cantidad = await obtener_cantidad_registros_query(total_registros_query);
             res.status(200).json({
                 status: true,
                 msg: 'Todos los Socios del club',
@@ -594,12 +613,43 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
                         ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
         console.log( query )
         let sociosFormateados = await prisma.$queryRawUnsafe( query ); 
-        res.status(200).json({
-            status: true,
-            msg: 'Socios del club',
-            cant : sociosFormateados.length,
-            sociosFormateados
-        });     
+
+
+        if ( sociosFormateados.length === 0 ){
+
+            res.status(200).json({
+                status: true,
+                msg: 'No hay Socios del club para mostrar',
+                data : []
+            }); 
+
+        }else {
+            const total_registros_query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
+                                                --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
+                                                A.CEDULA AS "cedula",
+                                                A.CORREO_ELECTRONICO AS "correoElectronico", 
+                                                A.DIRECCION AS "direccion",
+                                                A.ID_CLIENTE AS "idCliente", 
+                                                A.RUC AS "ruc" ,
+                                                A.CREADOEN AS "creadoEn", 
+                                                --A.PASSWORD AS "contrasea",
+                                                A.NOMBRE_USUARIO AS "nombreUsuario",
+                                                A.FECHA_NACIMIENTO AS "fechaNacimiento",
+                                                CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
+                                                C.DESC_TIPO_SOCIO AS "descTipoSocio", 
+                                                A.NUMERO_TELEFONO AS "numeroTelefono",
+                                                A.ESTADO_USUARIO AS "estadoSocio" 
+                                            FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                                        WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL )
+                                        ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }`
+            const cantidad = await obtener_cantidad_registros_query(total_registros_query);
+            res.status(200).json({
+                status: true,
+                msg: 'Socios del club',
+                cantidad,
+                sociosFormateados
+            });     
+        }
         
         
     } catch (error) {
@@ -650,12 +700,47 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
         console.log(query);
 
         let sociosFormateados = await prisma.$queryRawUnsafe( query ); 
-        res.status(200).json({
-            status: true,
-            msg: 'Socios del club',
-            cant : sociosFormateados.length,
-            sociosFormateados
-        });     
+
+        
+        if ( sociosFormateados.length === 0 ){
+
+            res.status(200).json({
+                status: true,
+                msg: 'No hay Socios del club para mostrar',
+                data : []
+            }); 
+
+        }else {
+
+            const total_registros_query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
+                                                    --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
+                                                    A.CEDULA AS "cedula",
+                                                    A.CORREO_ELECTRONICO AS "correoElectronico", 
+                                                    A.DIRECCION AS "direccion",
+                                                    A.ID_CLIENTE AS "idCliente", 
+                                                    A.RUC AS "ruc" ,
+                                                    A.CREADOEN AS "creadoEn", 
+                                                    --A.PASSWORD AS "contrasea",
+                                                    A.NOMBRE_USUARIO AS "nombreUsuario",
+                                                    A.FECHA_NACIMIENTO AS "fechaNacimiento",
+                                                    CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
+                                                    C.DESC_TIPO_SOCIO AS "descTipoSocio", 
+                                                    A.NUMERO_TELEFONO AS "numeroTelefono",
+                                                    A.ESTADO_USUARIO AS "estadoSocio" 
+                                                FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                                            WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  NULL, '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL)
+                                            ${ ( cedula !== undefined && cedula !== '' )? `AND A.CEDULA LIKE '%${ cedula }%'` : `` }`
+            const cantidad = await obtener_cantidad_registros_query(total_registros_query);
+            res.status(200).json({
+                status: true,
+                msg: 'Socios del club',
+                cantidad,
+                sociosFormateados
+            });     
+
+
+
+        }
 
 
     } catch (error) {
@@ -716,10 +801,29 @@ const obtener_socio = async ( req = request, res = response ) => {
             });
         }else {
 
+            const total_registros_query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
+                                                    --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
+                                                    A.CEDULA AS "cedula",
+                                                    A.CORREO_ELECTRONICO AS "correoElectronico", 
+                                                    A.DIRECCION AS "direccion",
+                                                    A.ID_CLIENTE AS "idCliente", 
+                                                    A.RUC AS "ruc" ,
+                                                    A.CREADOEN AS "creadoEn", 
+                                                    --A.PASSWORD AS "contrasea",
+                                                    A.NOMBRE_USUARIO AS "nombreUsuario",
+                                                    A.FECHA_NACIMIENTO AS "fechaNacimiento",
+                                                    CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
+                                                    C.DESC_TIPO_SOCIO AS "descTipoSocio", 
+                                                    A.NUMERO_TELEFONO AS "numeroTelefono",
+                                                    A.ESTADO_USUARIO AS "estadoSocio" 
+                                                FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                                            WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  NULL, '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL)
+                                            ${ ( cedula !== undefined && cedula !== '' )? `AND A.CEDULA LIKE '%${ cedula }%'` : `` }`
+            const cantidad = await obtener_cantidad_registros_query(total_registros_query);
             res.status(200).json({
                 status: true,
                 msg: 'Socio del club',
-                cant : socios.length,
+                cantidad,
                 socios
             });
         }        
@@ -767,12 +871,41 @@ const obtener_socio_usuario = async ( req = request, res = response ) => {
                         ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
         //console.log( query )
         let usuariosFormateados = await prisma.$queryRawUnsafe( query ); 
-        res.status(200).json({
-            status: true,
-            msg: 'Usuarios del club',
-            cant : usuariosFormateados.length,
-            usuariosFormateados
-        });     
+
+        if ( usuariosFormateados.length === 0 ){
+
+            res.status(200).json({
+                status: false,
+                msg: 'no existe ese socio en el club',
+            });
+        }else {
+            const total_registros_query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
+                                                --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
+                                                A.CEDULA AS "cedula",
+                                                A.CORREO_ELECTRONICO AS "correoElectronico", 
+                                                A.DIRECCION AS "direccion",
+                                                A.ID_CLIENTE AS "idCliente", 
+                                                A.RUC AS "ruc" ,
+                                                A.CREADOEN AS "creadoEn", 
+                                                --A.PASSWORD AS "contrasea",
+                                                A.NOMBRE_USUARIO AS "nombreUsuario",
+                                                A.FECHA_NACIMIENTO AS "fechaNacimiento",
+                                                CAST ( C.ID_TIPO_SOCIO AS INTEGER ) AS "idTipoSocio",
+                                                C.DESC_TIPO_SOCIO AS "descTipoSocio", 
+                                                A.NUMERO_TELEFONO AS "numeroTelefono",
+                                                A.ESTADO_USUARIO AS "estadoSocio" 
+                                            FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
+                                        WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL) AND A.NOMBRE_USUARIO IS NOT NULL
+                                        ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }`
+            const cantidad = await obtener_cantidad_registros_query(total_registros_query);
+            res.status(200).json({
+                status: true,
+                msg: 'Usuarios del club',
+                cantidad,
+                usuariosFormateados
+            });     
+
+        }
         
         
     } catch (error) {

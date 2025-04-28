@@ -189,33 +189,53 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
         //console.log( ventas_dependientes )
         let otros_clientes = ( ventas_dependientes.length !== 0  ) ? ventas_dependientes.map( element => element.id_cliente ) : [];
         //console.log( otros_clientes );
-        ventas = await prisma.ventas.findMany({
-            select: {
-              id_cuota_socio: true,
-              id_cliente_reserva: true,
-              id_agendamiento : true,
-              id_tipo_ingreso : true,
-              id_inscripcion : true,
-              descripcion_venta : true,
-              estado: true,
-              fecha_operacion: true,
-              monto: true,
-              movimiento_caja: true,
-              id_venta: true,
-            },
-            where: {
-                    AND : [
-                            // Si `id_cliente` está definido, se incluye esta condición
-                            nro_cedula ? { cedula : nro_cedula } : undefined,
-                            // Se verifica si `otros_clientes` no está vacío
-                            (ventas_dependientes.length !== 0 ) ? { id_cliente: { in: otros_clientes } } : undefined,
-                            { estado : { in : [ 'PENDIENTE', 'PENDIENTE DE PAGO' ] } }//que todavia no se pago o algo asi
+        let cantidad_ventas = 0;
+        [cantidad_ventas ,ventas] = await prisma.$transaction(
 
-                    ].filter(Boolean)
-                },  // Elimina valores indefinidos dentro del AND
-                skip : (Number(pagina) - 1) * Number(cantidad),
-                take : Number(cantidad),
-          });        
+            [
+                prisma.ventas.count({
+                    where: {
+                        AND : [
+                                // Si `id_cliente` está definido, se incluye esta condición
+                                nro_cedula ? { cedula : nro_cedula } : undefined,
+                                // Se verifica si `otros_clientes` no está vacío
+                                (ventas_dependientes.length !== 0 ) ? { id_cliente: { in: otros_clientes } } : undefined,
+                                { estado : { in : [ 'PENDIENTE', 'PENDIENTE DE PAGO' ] } }//que todavia no se pago o algo asi
+    
+                        ].filter(Boolean)
+                    }
+                }),
+        
+                prisma.ventas.findMany({
+                    select: {
+                      id_cuota_socio: true,
+                      id_cliente_reserva: true,
+                      id_agendamiento : true,
+                      id_tipo_ingreso : true,
+                      id_inscripcion : true,
+                      descripcion_venta : true,
+                      estado: true,
+                      fecha_operacion: true,
+                      monto: true,
+                      movimiento_caja: true,
+                      id_venta: true,
+                    },
+                    where: {
+                            AND : [
+                                    // Si `id_cliente` está definido, se incluye esta condición
+                                    nro_cedula ? { cedula : nro_cedula } : undefined,
+                                    // Se verifica si `otros_clientes` no está vacío
+                                    (ventas_dependientes.length !== 0 ) ? { id_cliente: { in: otros_clientes } } : undefined,
+                                    { estado : { in : [ 'PENDIENTE', 'PENDIENTE DE PAGO' ] } }//que todavia no se pago o algo asi
+        
+                            ].filter(Boolean)
+                        },  // Elimina valores indefinidos dentro del AND
+                        skip : (Number(pagina) - 1) * Number(cantidad),
+                        take : Number(cantidad),
+                  })
+            ]
+            
+        );        
 
         //console.log(  ventas )
         let ventaServicios = [];
@@ -239,7 +259,8 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
             res.status( 200 ).json( {
                 status : true,
                 msg : 'Ventas de ese cliente',
-                ventaServicios
+                ventaServicios,
+                cantidad : cantidad_ventas
                 //descripcion : `No existe ninguna venta generada para ese cliente`
             } ); 
 

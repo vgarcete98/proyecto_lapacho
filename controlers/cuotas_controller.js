@@ -259,12 +259,15 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
                 }
             );
         }else {
+            const cantidad = await obtener_cantidad_registros_query(query);
+
             res.status( 200 ).json(
 
                 {
                     status : true,
                     msg : 'Cuotas del socio',
-                    cuotas
+                    cuotas,
+                    cantidad
                 }
             );
         } 

@@ -7,8 +7,6 @@ const prisma = new PrismaClient();
 const { generar_fecha } = require( '../helpers/generar_fecha' );
 
 
-var { format  } = require("date-fns");
-
 const obtener_clases_del_dia = async ( req = request, res = response ) =>{
 
     // OBTENGO LAS CLASES POR LAS FECHAS INDICADAS 
@@ -121,7 +119,10 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
 
         const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
 
-        const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
+        const query = `SELECT A.id_agendamiento, 
+                                B.id_profesor, 
+                                B.nombre_profesor, 
+                                D.id_socio, 
                         		D.nombre_cmp, 
                                 --A.fecha_agendamiento, 
                                 C.id_mesa, C.desc_mesa, 
@@ -295,16 +296,20 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
         const { idCliente, idProfesor, /*fechaAgendamiento,*/ inicio, fin, idMesa } = req.body;
         const fecha_desde_format = new Date ( inicio );
 
-        const fecha_hasta_format = new Date ( fin );   
+        const fecha_hasta_format = new Date ( fin ); 
+        
+        
+        //AQUI BASICAMENTE HAY UN PROCESO EXTRA CUANDO SE TRATA DE ALGUIEN QUE NO ES SOCIO
+        //SE TIENE QUE GENERAR OBVIAMENTE UNA RESERVA CUANDO SE TRATA DE ALGUIEN QUE NO ES UN SOCIO
+        //POR QUE APARTE DE LO QUE HAY QUE PAGAR AL PROFESOR TAMBIEN HAY QUE PAGAR POR EL USO DE LA MESA
 
         const precio_clase = await prisma.precio_clase.findFirst( { 
                                                                     where : {
-                                                                        creado_en : { 
-                                                                            gte : fecha_desde_format
-                                                                        },
-                                                                        creado_en : {
-                                                                            lte : fecha_hasta_format
-                                                                        }
+                                                                        AND : [
+
+                                                                            { id_profesor : Number(idProfesor) },
+                                                                            { valido : true }
+                                                                        ]
                                                                     } 
                                                                 } );
         const clase_nueva = await prisma.agendamiento_clase.create( { 
@@ -322,6 +327,54 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
                                                                                     //clase_eliminada : false,
                                                                                 } 
                                                                     } );
+        const cliente = await prisma.cliente.findUnique( { 
+                                                            where : { 
+                                                                id_cliente : Number(idCliente) 
+                                                            },
+                                                            select : {
+                                                                es_socio : true,
+                                                                id_cliente : true
+
+                                                            }
+                                                        } );
+                                                        
+        if ( cliente !== null ){
+            const { es_socio, id_cliente } = cliente;
+
+            if ( es_socio === false ){
+                //QUIERE DECIR QUE SE TRATA DE UN CLIENTE POR LO TANTO HAY QUE CREARLE UNA RESERVA
+
+                const precio_reserva = await prisma.precio_reservas.findFirst( { 
+                                                                                    where : { 
+                                                                                        valido : true 
+                                                                                    },
+                                                                                    select : { 
+                                                                                        id_precio_reserva : true,
+                                                                                        monto_reserva : true
+                                                                                    } 
+                                                                            } );
+                const { id_precio_reserva, monto_reserva } = precio_reserva;
+                const nueva_reserva = await prisma.reservas.create( { 
+                    data : {
+                        id_cliente : Number(idCliente),
+                        fecha_creacion : new Date(),
+                        //fecha_reserva : generar_fecha( fechaAgendamiento ),
+                        fecha_reserva : fecha_desde_format,
+                        hora_desde : fecha_desde_format,
+                        hora_hasta : fecha_hasta_format,
+                        id_mesa : Number( idMesa ),
+                        estado : 'PENDIENTE',
+                        monto : monto_reserva,
+                        creado_en : new Date(),
+                        id_precio_reserva : id_precio_reserva,
+                        creado_por : 1,
+                        //tipo_ingreso : tipoIngreso
+                    } 
+                });
+            }
+
+        }
+
         if ( clase_nueva !== null ) {
             
             res.status( 200 ).json( {

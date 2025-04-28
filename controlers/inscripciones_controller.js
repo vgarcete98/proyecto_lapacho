@@ -332,7 +332,7 @@ const ver_inscripciones_x_evento_x_categoria = async ( req = request, res = resp
             res.status( 200 ).json( { 
                                         status : true,
                                         msg : "Inscripciones de ese evento",
-                                        cantInscripciones,
+                                        cantidad : cantInscripciones,
                                         inscripciones
                                     } );
 

@@ -50,39 +50,75 @@ const obtener_clientes = async ( req = request, res = response ) => {
     try {
 
         const { nombre, apellido, cedula, pagina, cantidad, es_socio } = req.query;
-        const cliente = await prisma.cliente.findMany( 
-                                                        {
-                                                            skip : (Number(pagina) - 1) * Number(cantidad),
-                                                            take : Number(cantidad),
-                                                            where : {
-                                                                AND :[
-                                                                    nombre ? { nombre: { contains: nombre, mode: 'insensitive' } } : undefined, 
-                                                                    apellido ? { apellido: { contains: apellido, mode: 'insensitive' } } : undefined,
-                                                                    cedula ? { cedula: { contains: cedula, mode: 'insensitive' } } : undefined,
-                                                                    es_socio ? { es_socio : ( es_socio === "true" ) } : undefined,
-                                                                ].filter( Boolean )
-                                                            }
-                                                        },
-                                                    );
 
-        const clientes = [];
-        cliente.forEach( (element) => { 
-                            const { id_cliente, nombre, apellido, cedula } = element;
-                            clientes.push( {
-                                idCliente : id_cliente,
-                                nombre,
-                                apellido,
-                                cedula
+
+        let cantidad_clientes = 0;
+        let cliente = [];
+
+        [ cliente, cantidad_clientes ] = await prisma.$transaction( [  
+            prisma.cliente.findMany( 
+                {
+                    skip : (Number(pagina) - 1) * Number(cantidad),
+                    take : Number(cantidad),
+                    where : {
+                        AND :[
+                            nombre ? { nombre: { contains: nombre, mode: 'insensitive' } } : undefined, 
+                            apellido ? { apellido: { contains: apellido, mode: 'insensitive' } } : undefined,
+                            cedula ? { cedula: { contains: cedula, mode: 'insensitive' } } : undefined,
+                            es_socio ? { es_socio : ( es_socio === "true" ) } : undefined,
+                        ].filter( Boolean )
+                    }
+                },
+            ),
+            prisma.cliente.count( 
+                {
+                    where : {
+                        AND :[
+                            nombre ? { nombre: { contains: nombre, mode: 'insensitive' } } : undefined, 
+                            apellido ? { apellido: { contains: apellido, mode: 'insensitive' } } : undefined,
+                            cedula ? { cedula: { contains: cedula, mode: 'insensitive' } } : undefined,
+                            es_socio ? { es_socio : ( es_socio === "true" ) } : undefined,
+                        ].filter( Boolean )
+                    }
+                },
+            )
+        ] );
+
+
+        if (cantidad_clientes == 0 ){
+            //HAY QUE RETORNAR UN STATUS 400 EN TODO CASO
+
+            res.status( 400 ).json( 
+                {
+                    status : false,
+                    msg : 'Clientes del Club',
+                    //clientes
+                } 
+            );
+
+
+        }else {
+
+            const clientes = [];
+            cliente.forEach( (element) => { 
+                                const { id_cliente, nombre, apellido, cedula } = element;
+                                clientes.push( {
+                                    idCliente : id_cliente,
+                                    nombre,
+                                    apellido,
+                                    cedula
+                                } );
                             } );
-                        } );
-
-        res.status( 200 ).json( 
-            {
-                status : true,
-                msg : 'Clientes del Club',
-                clientes
-            } 
-        );
+    
+            res.status( 200 ).json( 
+                {
+                    status : true,
+                    msg : 'Clientes del Club',
+                    clientes,
+                    cantidad : cantidad_clientes
+                } 
+            );
+        }
 
         
     } catch (error) {

@@ -12,25 +12,45 @@ const obtener_compras_club = async ( req = request, res = response ) =>{
     try {
 
         const { pagina, cantidad } = req.query;
+        let cantidad_compras = 0;
 
-        const compras_club = await prisma.compras.findMany( {  
-                                                                select : {
-                                                                    id_compra : true,
-                                                                    estado : true,
-                                                                    fecha_operacion : true,
-                                                                    descripcion : true,
-                                                                    cantidad : true,
-                                                                    creado_en : true,
-                                                                    id_tipo_egreso : true,
-                                                                    id_insumo : true
-                                                                },
-                                                                skip : (Number(pagina) - 1) * Number(cantidad),
-                                                                take : Number(cantidad),
-                                                                where : {
-                                                                    estado : { contains : 'PENDIENTE' }//que aun no se completo el circuito de compras
-                                                                }
+        [ compras_club, cantidad_compras ] = await prisma.$transaction( [ 
 
-                                                            } );
+            prisma.compras.findMany( {  
+                                        select : {
+                                            id_compra : true,
+                                            estado : true,
+                                            fecha_operacion : true,
+                                            descripcion : true,
+                                            cantidad : true,
+                                            creado_en : true,
+                                            id_tipo_egreso : true,
+                                            id_insumo : true
+                                        },
+                                        skip : (Number(pagina) - 1) * Number(cantidad),
+                                        take : Number(cantidad),
+                                        where : {
+                                            estado : { contains : 'PENDIENTE' }//que aun no se completo el circuito de compras
+                                        }
+                                    } ),
+            prisma.compras.count( {  
+                select : {
+                    id_compra : true,
+                    estado : true,
+                    fecha_operacion : true,
+                    descripcion : true,
+                    cantidad : true,
+                    creado_en : true,
+                    id_tipo_egreso : true,
+                    id_insumo : true
+                },
+                where : {
+                    estado : { contains : 'PENDIENTE' }//que aun no se completo el circuito de compras
+                }
+            } )
+        ] );
+
+
 
         if ( compras_club.length > 0 ) {
 
@@ -49,7 +69,8 @@ const obtener_compras_club = async ( req = request, res = response ) =>{
             res.status( 200 ).json( {
                 status : true,
                 msg : 'Ventas de ese cliente',
-                compras
+                compras,
+                cantidad : cantidad_compras
                 //descripcion : `No existe ninguna venta generada para ese cliente`
             } ); 
 

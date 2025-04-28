@@ -218,7 +218,7 @@ const obtener_mesas_disponibles_x_horario = async ( req = request, res = respons
     try {
         const { horaDesde, horaHasta } = req.body;
 
-        const reservas = await prisma.reservas.findMany( { 
+        let reservas = await prisma.reservas.findMany( { 
                                                             where : {  
                                                                 hora_desde : { gte : new Date( horaDesde ) },
                                                                 hora_hasta : { lte : new Date( horaHasta ) }
@@ -412,13 +412,18 @@ const obtener_mesas_reserva = async ( req = request, res = response ) =>{
                 } )
 
             } )
+        
+        
+        
+        
         }
 
         
         res.status( 200 ).json( {
             status : true,
             msg : "Mesas disponibles para reserva",
-            mesasDisponibles
+            mesasDisponibles,
+            cantidad: mesasDisponibles.length
         } );
         
         
