@@ -148,6 +148,10 @@ const rutas = {
 
     usuarios : {
         ruta : "/usuarios"
+    },
+
+    pruebas : {
+        ruta : "/pruebas"
     }
 
 }

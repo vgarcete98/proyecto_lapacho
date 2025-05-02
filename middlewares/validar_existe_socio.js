@@ -138,6 +138,49 @@ const comprobar_existe_socio = async ( req = request, res = response, next ) =>{
 }
 
 
+
+
+const comprobar_existe_socio_usuario = async ( req = request, res = response, next ) =>{
+
+    
+    try {
+        const { cedula, ruc } = req.body;
+        const persona = await prisma.cliente.findFirst( { 
+                                                            where : {
+                                                                         AND : [
+                                                                            { cedula : cedula },
+                                                                            { es_socio : true }
+                                                                         ] 
+                                                                    },
+                                                        } );
+        //console.log( persona );
+        
+        if ( persona === null || persona === undefined ) {
+            // QUIERE DECIR QUE NO SE ENCONTRO POR TANTO NO EXISTE
+            //const { nombre, apellido, fecha_nacimiento } = persona;
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No existe un socio con esos datos',
+                descripcion : `Datos del socio que no existe: cedula : ${cedula} `
+            } );
+        }else {
+            next();
+        }
+
+    } catch (error) {
+        console.log( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'No se pudo verificar que haya un socio repetido',
+            //persona
+        } );
+    }
+
+
+    
+}
+
+
 const comprobar_existe_socio_id = async ( req = request, res = response, next ) =>{
 
     
@@ -267,4 +310,4 @@ const validar_existe_socio_y_dependientes = async ( req = request, res = respons
 
 
 
-module.exports = { validar_existe_socio, comprobar_existe_socio, validar_existe_socio_y_dependientes, validar_existe_socio_usuario };
+module.exports = { validar_existe_socio, comprobar_existe_socio, validar_existe_socio_y_dependientes, validar_existe_socio_usuario, comprobar_existe_socio_usuario };

@@ -76,6 +76,8 @@ const router_caja = require('../routes/caja_routes');
 const { router_compras } = require('../routes/compras_routes');
 const router_audit_api = require('../routes/auditoria_api_routes');
 const { router_usuarios } = require('../routes/usuarios_routes');
+const { router_test } = require('../routes/test_routes');
+const { encriptar_password, encriptar_solicitud } = require('../helpers/generar_encriptado');
 //----------------------------------------------------------------------------
 
 
@@ -258,6 +260,8 @@ class Server {
         
         
         this.app.use( rutas.usuarios.ruta, router_usuarios );
+
+        this.app.use( rutas.pruebas.ruta, router_test );
     
     }
 
@@ -279,6 +283,9 @@ class Server {
     listen(){
 
         //actualizar_pass_clientes();
+
+        //console.log( encriptar_password('xxxxxxx') );
+        //console.log( encriptar_solicitud( { "usuario" : "sfernandez", "contraseña" : "xxxxxxx" } ) );
 
         this.app.listen( this.PUERTO, ()=>{
 

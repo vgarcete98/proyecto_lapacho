@@ -103,65 +103,45 @@ const crear_usuario = async ( req = request, res = response ) => {
     try {
         //OBTIENE TODOS LOS ACCESOS CON SUS ACCIONES CORRESPONDIENTES
 
-        const { nombre, apellido, cedula, pagina, cantidad, es_socio } = req.query;
+        const { cedula, contraseña, nombreUsuario, idCliente } = req.body;
 
-        let usuarios = [], 
-            cantidad_usuarios = 0;
+        let usuario = {};
+
+        usuario = await prisma.cliente.update( {
+                                                    data : {
+                                                        password : contraseña,
+                                                        nombre_usuario : nombreUsuario,
+                                                        id_rol_usuario : Number( idAcceso )
+                                                    },
+                                                    where : {
+                                                        cedula : cedula
+                                                    }
+                                                } );
         
-        [usuarios, cantidad_usuarios]= await prisma.$transaction([
-            prisma.cliente.findMany( 
+        if ( usuario !== null ) {
+
+            res.status( 200 ).json(
                 {
-                    select : {
-                        nombre_cmp : true,
-                        nombre_usuario : true,
-                        id_rol_usuario : true,
-                        correo_electronico :true,
-                        estado_usuario : true,
-
-                    },
-                    where : {
-                        AND : [
-
-                            { es_socio : true },
-                            { nombre_usuario : {
-                                not : null
-                                
-                            } }
-                        ]
-                    }
+                    status : true,
+                    msg : 'Usuario creado Exitosamente',
+                    descripcion : 'se ha creado al usuario exitosamente'
                 }
-            ),
-            prisma.cliente.count( 
+            );      
+        }else {
+            res.status( 400 ).json(
                 {
-
-                    where : {
-                        AND : [
-
-                            { es_socio : true },
-                            { nombre_usuario : {
-                                not : null
-                                
-                            } }
-                        ]
-                    }
+                    status : false,
+                    msg : 'No se logro crear al usuario',
+                    descripcion : 'Ha ocurrido un error al crear al usuario, favor intente de vuelta'
                 }
-            )
-            
-        ]);
-
-        res.status( 200 ).json(
-            {
-                status : true,
-                msg : 'Accesos para usuarios',
-                accesosDisponibles
-            }
-        );      
+            );
+        }
     } catch (error) {
         //console.log ( error );
 
         res.status( 500 ).json( { 
             status : false,
-            msg : `No se pudo obtener la lista de roles : ${error}`,
+            msg : `No se pudo crear al usuario : ${error}`,
             //error
         } );
         
@@ -178,65 +158,45 @@ const editar_usuario = async ( req = request, res = response ) => {
     try {
         //OBTIENE TODOS LOS ACCESOS CON SUS ACCIONES CORRESPONDIENTES
 
-        const { nombre, apellido, cedula, pagina, cantidad, es_socio } = req.query;
+        const { cedula, contraseña, nombreUsuario, idCliente, idAcceso } = req.body;
 
-        let usuarios = [], 
-            cantidad_usuarios = 0;
+        let usuario = {};
+
+        usuario = await prisma.cliente.update( {
+                                                    data : {
+                                                        password : contraseña,
+                                                        nombre_usuario : nombreUsuario,
+                                                        id_rol_usuario : Number( idAcceso )
+                                                    },
+                                                    where : {
+                                                        cedula : cedula
+                                                    }
+                                                } );
         
-        [usuarios, cantidad_usuarios]= await prisma.$transaction([
-            prisma.cliente.findMany( 
+        if ( usuario !== null ) {
+
+            res.status( 200 ).json(
                 {
-                    select : {
-                        nombre_cmp : true,
-                        nombre_usuario : true,
-                        id_rol_usuario : true,
-                        correo_electronico :true,
-                        estado_usuario : true,
-
-                    },
-                    where : {
-                        AND : [
-
-                            { es_socio : true },
-                            { nombre_usuario : {
-                                not : null
-                                
-                            } }
-                        ]
-                    }
+                    status : true,
+                    msg : 'Usuario actualizado Exitosamente',
+                    descripcion : 'se ha actualizado al usuario exitosamente'
                 }
-            ),
-            prisma.cliente.count( 
+            );      
+        }else {
+            res.status( 400 ).json(
                 {
-
-                    where : {
-                        AND : [
-
-                            { es_socio : true },
-                            { nombre_usuario : {
-                                not : null
-                                
-                            } }
-                        ]
-                    }
+                    status : false,
+                    msg : 'No se logro actualizar al usuario',
+                    descripcion : 'Ha ocurrido un error al actualizar al usuario, favor intente de vuelta'
                 }
-            )
-            
-        ]);
-
-        res.status( 200 ).json(
-            {
-                status : true,
-                msg : 'Accesos para usuarios',
-                accesosDisponibles
-            }
-        );      
+            );
+        }
     } catch (error) {
         //console.log ( error );
 
         res.status( 500 ).json( { 
             status : false,
-            msg : `No se pudo obtener la lista de roles : ${error}`,
+            msg : `No se pudo crear al usuario : ${error}`,
             //error
         } );
         

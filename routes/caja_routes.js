@@ -28,6 +28,7 @@ const {
 const { comprobar_factura_registrada, comprobar_salto_factura, comprobar_utilizacion_factura_registrada } = require( '../helpers/comprobar_salto_facturas' )
 
 const { verifica_ventas_existentes, verifica_compras_existentes } = require('../middlewares/verificar_movimientos_existentes');
+const { verificar_caja_abierta_y_disponible } = require('../middlewares/comprobar_caja_abierta_y_disponible');
 
 
 const router_caja = Router();
@@ -46,7 +47,7 @@ router_caja.put( '/actualizar_caja', [  ],  actualizar_caja);
 
 router_caja.put( '/reabrir_caja', [  ],  reabrir_caja);
 
-router_caja.put( '/cerrar_caja', [  ],  cerrar_caja);
+router_caja.put( '/cerrar_caja', [ verificar_caja_abierta_y_disponible ],  cerrar_caja);
 
 router_caja.get( '/cerrar_caja/obtener_movimientos_caja_cierre', [  ],  obtener_movimientos_de_caja_al_cierre);
 

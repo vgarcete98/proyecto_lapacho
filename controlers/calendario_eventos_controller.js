@@ -3,10 +3,11 @@ const { request, response } = require('express')
 var { format  } = require("date-fns");
 
 const { PrismaClient } = require('@prisma/client');
+const { withOptimize } = require("@prisma/extension-optimize");
 const { generar_fecha } = require('../helpers/generar_fecha');
-const { obtener_cantidad_registros_query } = require('../helpers/obtener_cant_registros_query');
+const { obtener_cantidad_registros_query, excluir_campos_resultado } = require('../helpers/obtener_cant_registros_query');
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
 
 const estados_evento = [ 'ACTIVO', 'ELIMINADO', 'SUSPENDIDO' ]
 
@@ -137,7 +138,8 @@ const obtener_todos_los_torneos_x_fecha = async ( req = request, res = response 
                                         A.nombre_evento AS "nombreCmp", 
                                         A.todo_el_dia AS "todoEldia", 
                                         --A.fechaagendamiento AS "fechaAgendamiento",
-                                        B.nombre_evento AS "descTipoEvento"
+                                        B.nombre_evento AS "descTipoEvento",
+                                        (COUNT(*) OVER() ) :: integer AS cantidad
                                     FROM eventos A JOIN EVENTOS B ON A.id_tipo_evento = B.id_tipo_evento
                                     WHERE A.fecha_desde_evento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
                                                                         AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }'
@@ -155,26 +157,13 @@ const obtener_todos_los_torneos_x_fecha = async ( req = request, res = response 
                 descripcion : `No existe ningun evento dentro del calendario`
             } );
         }else {
-            const query_original = `SELECT A.id_evento AS "idEvento", 
-                                        B.id_tipo_evento AS "idTipoEvento", 
-                                        A.fecha_desde_evento AS "horaDesde", 
-                                        A.eventocreadoen AS "fechaCreacion", 
-                                        A.fecha_hasta_evento AS "horaHasta", 
-                                        --A.costo AS "costo", 
-                                        A.decripcion_evento AS "descripcion", 
-                                        A.nombre_evento AS "nombreCmp", 
-                                        A.todo_el_dia AS "todoEldia", 
-                                        --A.fechaagendamiento AS "fechaAgendamiento",
-                                        B.nombre_evento AS "descTipoEvento"
-                                    FROM eventos A JOIN EVENTOS B ON A.id_tipo_evento = B.id_tipo_evento
-                                    WHERE A.fecha_desde_evento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
-                                                                        AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }'`;
-            const cantidad_registros = await obtener_cantidad_registros_query(query_original);
+
+            const { cantidad } = eventosMes;
             res.status( 200 ).json( {
                 status : true, 
                 msg : 'Todos los eventos en las fechas',
-                torneos : eventosMes,
-                cantidad : cantidad_registros
+                torneos : excluir_campos_resultado( eventosMes, ["cantidad"]),
+                cantidad
             } );
         }
         

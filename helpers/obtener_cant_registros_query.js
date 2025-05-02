@@ -25,8 +25,18 @@ const obtener_cantidad_registros_query = async ( query = '' )=>{
 }
 
 
+const excluir_campos_resultado = (objeto, campos) => {
+    return objeto.map( elemento => excluir_campo(elemento, campos) );
+}
+
+const excluir_campo = (objeto, campos)=> {
+    return Object.fromEntries(
+        Object.entries(objeto).filter(([key]) => !campos.includes(key))
+    );
+}
 
 
 module.exports = {  
-    obtener_cantidad_registros_query
+    obtener_cantidad_registros_query,
+    excluir_campos_resultado
 }

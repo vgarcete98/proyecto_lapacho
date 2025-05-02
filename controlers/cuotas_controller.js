@@ -1,10 +1,11 @@
 const { request, response } = require('express')
 
 const { PrismaClient } = require('@prisma/client')
-
+const { withOptimize } = require("@prisma/extension-optimize");
 const ExcelJS = require('exceljs');
 
 const path = require( 'path' );
+const { excluir_campos_resultado } = require('../helpers/obtener_cant_registros_query');
 const prisma = new PrismaClient();
 
 
@@ -237,7 +238,8 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
                                 C.FECHA_VENCIMIENTO AS "fechaVencimiento",
                                 C.fecha_pago_realizado as "fechaPago",
                                 C.monto_cuota AS "montoCuota",
-                                C.estado AS "estado"
+                                C.estado AS "estado",
+                                (COUNT(*) OVER() ) :: integer AS cantidad
                             FROM CLIENTE A JOIN CUOTAS_SOCIO C ON C.ID_CLIENTE = A.ID_CLIENTE
                         WHERE EXTRACT(YEAR FROM C.FECHA_VENCIMIENTO) = ${annio}
                                 AND A.CEDULA = '${numero_cedula}'
@@ -259,15 +261,16 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
                 }
             );
         }else {
-            const cantidad = await obtener_cantidad_registros_query(query);
+
+            const { cantidad } = cuotas[0];
 
             res.status( 200 ).json(
 
                 {
                     status : true,
                     msg : 'Cuotas del socio',
-                    cuotas,
-                    cantidad
+                    cuotas : excluir_campos_resultado( cuotas, ["cantidad"] ),
+                    cantidad : cantidad
                 }
             );
         } 
