@@ -38,6 +38,6 @@
   },
   "devDependencies": {
     "@prisma/extension-optimize": "^1.1.8",
-    "prisma": "^5.11.0"
+    "prisma": "^6.7.0"
   }
 }
