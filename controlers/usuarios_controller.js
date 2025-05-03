@@ -103,7 +103,7 @@ const crear_usuario = async ( req = request, res = response ) => {
     try {
         //OBTIENE TODOS LOS ACCESOS CON SUS ACCIONES CORRESPONDIENTES
 
-        const { cedula, contraseña, nombreUsuario, idCliente } = req.body;
+        const { cedula, contraseña, nombreUsuario, idCliente, idAcceso } = req.body;
 
         let usuario = {};
 
