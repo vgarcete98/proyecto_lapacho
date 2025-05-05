@@ -2,8 +2,8 @@
 const { request, response, query } = require('express')
 
 const { PrismaClient } = require('@prisma/client')
-
-const prisma = new PrismaClient();
+const { withOptimize } = require("@prisma/extension-optimize");
+const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
 
 
 
@@ -17,18 +17,23 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
 
         let cat = [];
         let inscripciones_registradas = 0;
-
-        const cliente = await prisma.cliente.findUnique( { where : { id_cliente : Number( idCliente ) } } );
         for (const element of categorias) {
             
             try {
 
 
-                let { idCategoria, idEventoCalendario, montoAbonado, descInscripcion, idEvento } = element;
+                let { idCategoria, descInscripcion, idEvento } = element;
                 //console.log( req.body );
-                let categoria = await prisma.categorias.findUnique( { where : { id_categoria : Number( idCategoria ) } } );
+                let categoria = await prisma.categorias.findUnique( { 
+                                                                        where : { id_categoria : Number( idCategoria ) },
+                                                                        select : {
+                                                                            id_categoria : true,
+                                                                            costo : true,
 
-                console.log( categoria );
+                                                                        }
+                                                                    } );
+
+                //console.log( categoria );
                 
                 let inscripcion  = await prisma.inscripciones.create( { 
                                                                         data : {
@@ -40,7 +45,11 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
                                                                             desc_inscripcion : descInscripcion,
                                                                             costo_inscripcion : Number( categoria.costo ),
                                                                             estado : 'AGREGAR A VENTA'
-                                                                        } 
+                                                                        },
+                                                                        select : {
+                                                                            id_categoria : true,
+                                                                            id_evento : true 
+                                                                        }
                                                                     } );
                 let nueva_venta = null;
                 if ( inscripcion !== null ){

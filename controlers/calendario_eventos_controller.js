@@ -35,8 +35,8 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
                                         A.nombre_evento AS "nombreCmp", 
                                         A.todo_el_dia AS "todoEldia", 
                                         --A.fechaagendamiento AS "fechaAgendamiento",
-                                        B.nombre_evento AS "descTipoEvento"
-                                    FROM eventos A JOIN EVENTOS B ON A.id_tipo_evento = B.id_tipo_evento
+                                        A.nombre_evento AS "descTipoEvento"
+                                    FROM eventos A JOIN tipos_evento B ON A.id_tipo_evento = B.id_tipo_evento
                                     WHERE A.fecha_desde_evento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
                                                                         AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }';`
         const eventosMes =  await prisma.$queryRawUnsafe( query_eventos );  
@@ -208,7 +208,7 @@ const obtener_categorias_x_evento = async ( req = request, res = response ) =>{
                 edadMaxima : edad_maxima,
                 cierreInscripciones : cierre_inscripciones,
                 nivelMaximo : nivel_maximo,
-                nivel_minimo : nivel_minimo,
+                nivelMinimo : nivel_minimo,
                 sexoPermitido : sexo,
                 costo : costo
             } )
@@ -243,24 +243,28 @@ const crear_categorias_x_evento = async ( req = request, res = response ) =>{
 
         //VOY A AGREGAR LA POSIBILIDAD DE CREAR VARIAS CATEGORIAS POR EVENTO
         
-        const { categorias }  = req.body;
+        const { categorias, idEvento }  = req.body;
 
         let categorias_creadas = 0;
         for (const element of categorias) {
 
             try {
-                let { descripcionCategoria, nombreCategoria, idEventoCalendario, 
+                let { descripcionCategoria, nombreCategoria,
                         costoCategoria, edadMaxima, edadMinima, nivelMaximo, nivelMinimo, sexoPermitido   } = element;
                 let categoria = await prisma.categorias.create( {
                                                                 data : { 
                                                                     descripcion : descripcionCategoria,  
                                                                     nombre_categoria : nombreCategoria, 
-                                                                    id_evento : Number(idEventoCalendario),
+                                                                    id_evento : Number(idEvento),
                                                                     costo : Number( costoCategoria ),
                                                                     edad_maxima : Number( edadMaxima),
                                                                     edad_minima : Number( edadMinima ),
                                                                     nivel_maximo : Number( nivelMaximo ),
-                                                                    nivel_minimo : Number( nivelMinimo )
+                                                                    nivel_minimo : Number( nivelMinimo ),
+                                                                    sexo : sexoPermitido
+                                                                },
+                                                                select : {
+                                                                    id_categoria : true
                                                                 } 
                                                             } );
                 if (categoria !== null){
@@ -437,18 +441,12 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                                                                 todo_el_dia : (todoEldia  === "S") ? true : false,
                                                                 nombre_evento : nombreEvento,
                                                                 //fechaagendamiento : generar_fecha( fechaAgendamiento )
-                                                            } 
+                                                            },
+                                                            select  : {
+                                                                id_evento : true
+                                                            }
                                                         } );
-        const { fecha_desde_evento, 
-                fecha_hasta_evento, 
-                costo, 
-                decripcion_evento,
-                id_tipo_evento,
-                todo_el_dia,
-                nombre_evento,
-                id_evento,
-                eventocreadoen,
-                fechaagendamiento } = nuevo_evento;
+        const { id_evento } = nuevo_evento;
         
         let categorias_creadas = 0;
         let requerimientos_creados = 0;
@@ -475,6 +473,17 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                                                                                                 nivel_maximo : ( nivelMaximo !== null && nivelMaximo !== undefined ) ? Number( nivelMaximo ) : null,
                                                                                                 nivel_minimo : ( nivelMinimo !== null && nivelMinimo !== undefined ) ? Number( nivelMinimo ) : null,
                                                                                                 sexo : ( sexoPermitido !== null && sexoPermitido !== undefined ) ? sexoPermitido : null,
+                                                                                            },
+                                                                                            omit : {
+                                                                                                descripcion : true,
+                                                                                                nombre_categoria : true,
+                                                                                                id_evento : true,
+                                                                                                costo : true,
+                                                                                                edad_minima : true,
+                                                                                                edad_maxima : true,
+                                                                                                nivel_maximo : true,
+                                                                                                nivel_minimo : true,
+                                                                                                sexo : true
                                                                                             } 
                                                                                         } );
                         if ( nuevo_categoria !== null ){
@@ -504,7 +513,10 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                                                                                                 id_evento : Number( id_evento ),
                                                                                                 creado_en : new Date(),
                                                                                                 creado_por : 1 //req.query.idUsuario
-                                                                                            } 
+                                                                                            },
+                                                                                            select :{
+                                                                                                id_insumo : true
+                                                                                            }
                                                                                         } );
     
                         if ( nuevo_requerimiento !== null ){
@@ -526,7 +538,9 @@ const asignar_evento_calendario = async ( req = request, res = response ) =>{
                                                                                 }
 
                                                                             } );
-
+                            if ( compra_nueva !== null ) { 
+                                console.log( `Compra nueva insertada para evento` );
+                            }                                          
 
                         }
     
@@ -861,10 +875,10 @@ const obtener_inscripciones_x_evento = async ( req = request, res = response ) =
 
     try {
         // ACA TENGO QUE OBTENER TODAS LAS INSCRIPCIONES, YA SEAN SOCIOS O NO
-        const { id_evento } = req.params;
+        const { id_evento, cantidad, pagina } = req.params;
 
-        const query_inscripciones_socios = `SELECT A.id_inscripcion, 
-                                                    A.id_socio, 
+        const query_inscripciones_socios = `SELECT A.id_inscripcion AS "idInscripcion", 
+                                                    A.idCliente AS "idCliente", 
                                                     B.nombre_cmp, 
                                                     A.fecha_inscripcion, 
                                                     A.desc_inscripcion, 
@@ -875,7 +889,7 @@ const obtener_inscripciones_x_evento = async ( req = request, res = response ) =
         let inscripciones_socios, inscripcionesSocios = [];
 
 
-        inscripciones_socios = await prisma.$queryRawUnsafe( query );
+        inscripciones_socios = await prisma.$queryRawUnsafe( query_inscripciones_socios );
         
         if ( inscripciones_socios.length > 0 ) {
 
@@ -920,25 +934,38 @@ const obtener_tipos_de_evento = async (req = request, res = response)=>{
 
     try {
 
-        const tipos_evento = await prisma.eventos.findMany();
+        const tipos_evento = await prisma.tipos_evento.findMany( { 
+                                                                    select : {
+                                                                        color_evento : true,
+                                                                        id_tipo_evento : true,
+                                                                        desc_tipo_evento : true
+                                                                    } 
+                                                                } );
+        if ( tipos_evento.length !== 0  ){
 
-        const { id_tipo_evento, desc_tipo_evento, color } = tipos_evento;
-
-        const tiposEventos = tipos_evento.map( ( element )=>{
-            const { id_tipo_evento, desc_tipo_evento, color } = element;
-
-            return { 
-                idTipoEvento : (typeof(id_tipo_evento) ==='bigint') ? Number(id_tipo_evento.toString()) : id_tipo_evento ,
-                descTipoEvento : desc_tipo_evento,
-                color
-            };
-        } );
-
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Tipos de evento disponibles",
-            tiposEventos
-        } );
+            const tiposEventos = tipos_evento.map( ( element )=>{
+                const { id_tipo_evento, desc_tipo_evento, color_evento } = element;
+                //console.log( element )
+                return { 
+                    idTipoEvento : (typeof(id_tipo_evento) ==='bigint') ? Number(id_tipo_evento.toString()) : id_tipo_evento ,
+                    descTipoEvento : desc_tipo_evento,
+                    //color : color_evento
+                };
+            } );
+    
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Tipos de evento disponibles",
+                tiposEventos
+            } );
+        }else {
+            
+            res.status( 400 ).json( {
+                status : true,
+                msg : "No se encuentran tipos de evento disponibles",
+                descripcion : "Favor Genere los tipos de evento disponibles"
+            } );
+        }
 
         
     } catch (error) {
@@ -1103,38 +1130,66 @@ const crear_requerimientos_x_evento = async ( req = request, res = response ) =>
     try {
 
 
-        const { requerimientos } = req.body;
+        const { requerimientos, idEvento } = req.body;
         let requerimientoEvento = [];
-
+        let requerimientos_creados = 0;
+        let nuevo_requerimiento = {};
+        let compra_insertada 
         for (const element of requerimientos) {
-            
-            const { cantidadRequerida, costoUnidad, descripcionRequerimiento, idEventoCalendario } = requerimientos[element];
-            const { cantidad, costo_unidad, descripcion, id_requerimiento, id_evento_calendario } = await prisma.requerimientos.create( {
-                                                                                                                            data : { 
-                                                                                                                                descripcion : descripcionRequerimiento, 
-                                                                                                                                cantidad : cantidadRequerida, 
-                                                                                                                                costo_unidad : costoUnidad, 
-                                                                                                                                id_evento_calendario : idEventoCalendario
-                                                                                                                            } 
-                                                                                                                        } );
+            try {
+                
+                let { cantidad, costo, descripcion } = requerimientos[element];
+                nuevo_requerimiento = await prisma.insumos.create( {
+                                                                            data : { 
+                                                                                descripcion : descripcion, 
+                                                                                cantidad : Number(cantidad), 
+                                                                                costo : Number(costo), 
+                                                                                id_evento : Number(idEvento)
+                                                                            },
+                                                                            select : {
+                                                                                id_evento : true
+                                                                            }
+                                                                        } );
+                if (nuevo_requerimiento !== null ){
+                    requerimientos_creados++;
 
-            requerimientoEvento.push( {
-
-                descripcion, 
-                cantidad,
-                idRequerimiento : id_requerimiento, 
-                costoUnidad : costo_unidad, 
-                idEventoCalendario : (typeof id_evento_calendario === 'bigint' ? Number(id_evento_calendario.toString()) : id_evento_calendario)
-
-            } )
+                    compra_insertada = await prisma.compras.create( {
+                                                                        data : {
+                                                                            creado_en : new Date(),
+                                                                            creado_por : 1,
+                                                                            descripcion : descripcion,
+                                                                            estado : 'PENDIENTE DE PAGO',
+                                                                            monto : Number( costo ),
+                                                                            cantidad : cantidad,
+                                                                            id_insumo : id_insumo,
+                                                                            id_cliente : 1,
+                                                                            id_tipo_egreso : 4 //TIENE QUE HABER UN TIPO DE GASTO COMPRAS_TORNEOS O ALGO ASI 
+                                                                                                // DE MOMENTO LE DEJO ASI NOMAS 09/01/2025
+                                                                        }
+                                                                    } );
+    
+                }
+            } catch (error2) {
+                console.log( error2 );
+            }
         }
-                            
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Requerimientos para evento creado con exito",
-            requerimientoEvento
+                         
+        if ( requerimientos_creados ===  requerimientos.length){
 
-        } );
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Requerimientos para evento creados con exito",
+                descripcion : "Todos los requerimientos han sido creados con exito"
+    
+            } );
+        }else {
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Requerimientos para evento creados con exito",
+                descripcion : `Fueron creados ${ requerimientos_creados } de ${ requerimientos.length } requerimientos`
+    
+            } );
+        }
 
 
     } catch (error) {
@@ -1161,7 +1216,7 @@ const editar_requerimientos_x_evento = async ( req = request, res = response ) =
             const { cantidadRequerida, costoUnidad, descripcionRequerimiento, idEventoCalendario, idRequerimiento } = element;
 
             const { cantidad, costo_unidad, descripcion,
-                    id_evento_calendario, id_requerimiento } = await prisma.requerimientos.update( { 
+                    id_evento_calendario, id_requerimiento } = await prisma.in.update( { 
                                                                                                         data : { 
                                                                                                             costo_unidad : Number( costoUnidad ),
                                                                                                             descripcion : descripcionRequerimiento,
