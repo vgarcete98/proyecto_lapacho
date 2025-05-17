@@ -8,7 +8,9 @@ const { abonar_una_clase,
         obtener_clases_x_profesor_dia, 
         obtener_clases_del_dia_x_socio,
         obtener_mesas_disponibles_x_horario,
-        agendar_una_clase_no_cliente} = require( '../controlers/agendamiento_clases_controller' );
+        generar_venta_pago_profesor,
+        obtener_periodos_de_clase_generados,
+    } = require( '../controlers/agendamiento_clases_controller' );
 const { comprobar_horario_profesor } = require('../helpers/comprobar_disponibilidad_profesor');
 const { obtener_data_socio, verificar_vista_usuario } = require('../helpers/verficar_socio_carga');
 const { verificar_existe_clase } = require('../helpers/verificar_existe_clase');
@@ -17,7 +19,10 @@ const { verificar_requerimientos_usuario } = require('../middlewares/verficar_re
 const { 
         verificar_existe_reserva_agendada_para_clases,
         verificar_existe_evento_agendado_para_clases
-    } = require( '../helpers/verificar_disponibilidad_para_servicios' )
+    } = require( '../helpers/verificar_disponibilidad_para_servicios' );
+const comprobar_profesor_existe = require('../helpers/comprobar_profesor_existe');
+const { controlar_clases_en_periodo } = require('../helpers/controlar_clases_en_periodo');
+const { verificar_precio_clase_profesor } = require('../middlewares/verficar_precio_seteado_para_clases');
 
 
 
@@ -47,26 +52,16 @@ router_agendamientos_clase.post( '/agendar_clase',
                                                         verificar_existe_evento_agendado_para_clases,
                                                         comprobar_horario_profesor, 
                                                         obtener_data_socio,
-                                                        verificar_requerimientos_usuario 
+                                                        verificar_requerimientos_usuario,
+                                                        verificar_precio_clase_profesor,
+                                                        
                                                     ]
-                                                    ,agendar_una_clase_no_cliente
-                                                    //( req = request, res = response ) => {
-//
-                                                    //    const { acceso } = req.body;
-                                                    //    //console.log( acceso )
-                                                    //    if ( acceso === 'ADMINISTRADOR' || acceso === 'PROFESOR') { 
-                                                    //        return agendar_una_clase_no_cliente( req, res );
-                                                    //    }else {
-                                                    //            //return agendar_una_clase( req , res )
-                                                    //            return res.status( 200 ).json({
-                                                    //                    msg : 'El usuario no posee el rol adecuado'
-                                                    //            })
-                                                    //    }
-                                                    //} 
+                                                    ,agendar_una_clase
                                 );
 
+router_agendamientos_clase.post( 'agregar_venta_clases_profesor', [ comprobar_profesor_existe, controlar_clases_en_periodo  ], generar_venta_pago_profesor );
 
-
+router_agendamientos_clase.post( 'obtener_periodos_de_clase', [ comprobar_profesor_existe, controlar_clases_en_periodo  ], obtener_periodos_de_clase_generados );
 
 
 

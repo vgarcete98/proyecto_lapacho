@@ -29,13 +29,23 @@ const { comprobar_factura_registrada, comprobar_salto_factura, comprobar_utiliza
 
 const { verifica_ventas_existentes, verifica_compras_existentes } = require('../middlewares/verificar_movimientos_existentes');
 const { verificar_caja_abierta_y_disponible } = require('../middlewares/comprobar_caja_abierta_y_disponible');
+const { verificar_datos_tipo_movimiento } = require('../middlewares/verificar_datos_tipo_movimiento');
 
 
 const router_caja = Router();
 
 router_caja.get( '/obtener_movimientos_caja', [  ],  obtener_movimientos_de_caja);
 
-router_caja.post( '/generar_movimientos_de_caja/ventas', [ verificar_existe_caja_abierta, verifica_ventas_existentes, verificar_ventas_a_caja, verificar_ventas_procesadas, comprobar_utilizacion_factura_registrada, comprobar_factura_registrada, comprobar_salto_factura ], generar_movimientos_de_caja_ventas );
+router_caja.post( '/generar_movimientos_de_caja/ventas', [ 
+                                                            verificar_existe_caja_abierta, 
+                                                            verifica_ventas_existentes, 
+                                                            verificar_ventas_a_caja, 
+                                                            verificar_ventas_procesadas, 
+                                                            comprobar_utilizacion_factura_registrada, 
+                                                            comprobar_factura_registrada, 
+                                                            comprobar_salto_factura,
+                                                            verificar_datos_tipo_movimiento
+                                                        ], generar_movimientos_de_caja_ventas );
 
 router_caja.post( '/generar_movimientos_de_caja/compras', [ verificar_existe_caja_abierta, verifica_compras_existentes, verificar_compras_a_caja, verificar_compras_procesadas ], generar_movimientos_de_caja_compras );
 

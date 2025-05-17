@@ -248,6 +248,7 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                 { descripcion : "DONACION", creado_en : new Date(), creado_por : 1  },
                                                                 { descripcion : "ACTIVIDADES", creado_en : new Date(), creado_por : 1  },
                                                                 { descripcion : "ALQUILER CLUB MESAS", creado_en : new Date(), creado_por : 1  },
+                                                                { descripcion: "INGRESO_X_CLASES_PROFESORES", creado_en : new Date(), creado_por : 1 }
                                                               ]
                                                             });
 
@@ -503,7 +504,7 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                               contacto_profesor : 'XXXX-XXXXXX',
                                                                               costo_x_hora : 80000,
                                                                               estado_profesor : 'ACTIVO',
-                                                                              cedula : '3768266'
+                                                                              cedula : '37682669'
                                                                             },
 
                                                                             { 
@@ -544,6 +545,20 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
                                                                           ] 
                                                                 } );
 
+  const precio_x_clase_profesores = await prisma.precio_clase.createMany( {
+                                                                            data : [
+                                                                              { id_profesor : 1, precio : 70000, creado_en : new Date(), porc_descuento : 0, valido : true },
+                                                                              { id_profesor : 2, precio : 80000, creado_en : new Date(), porc_descuento : 0, valido : true },
+                                                                              { id_profesor : 3, precio : 80000, creado_en : new Date(), porc_descuento : 0, valido : true }
+                                                                            ]
+                                                                        } );
+  const clientes_profesores = await prisma.cliente.createMany( { 
+                                                                    data : [
+                                                                      { apellido : '', nombre : 'ECHAGUE', cedula : '3768266', creadoen : new Date(), es_socio : false },
+                                                                      { apellido : '', nombre : 'AXEL', cedula : '37682669', creadoen : new Date(), es_socio : false },
+                                                                      { apellido : '', nombre : 'JUANMA', cedula : '2126262', creadoen : new Date(), es_socio : false }
+                                                                    ]
+                                                               } )
   //--------------------------------------------------------------------------------------------------------------
   const mesas_disponibles = await prisma.mesas.createMany( { 
                                                               data : [

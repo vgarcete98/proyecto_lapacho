@@ -4,6 +4,7 @@ const { request, response } = require('express')
 const { withOptimize } = require("@prisma/extension-optimize");
 const { PrismaClient } = require('@prisma/client');
 const { obtener_cantidad_registros_query } = require('../helpers/obtener_cant_registros_query');
+const { subir_imagen } = require('../models/subir_imagen_cloud');
 
 
 //ESTO ES LO QUE HAY QUE AÑADIR A MEDIDA QUE REALIZAMOS LAS PRUEBAS
@@ -252,6 +253,20 @@ const router_test = Router();
 
 //ESTO ES TODO CON PAGINACION NAMBRENA LUEGO
 router_test.get( '/socios_detalle',[ ], obtener_socios_detallados_test );
+
+
+router_test.post( '/subir_imagen', [], async (  req = request, res = response ) => {
+                                            
+                                            console.log( req.files )
+                                            const { archivo } = req.files;
+                                            const resultado = await subir_imagen( archivo.tempFilePath  );
+                                            console.log( resultado )
+                                            res.status(200).json({
+                                                status: true,
+                                                msg: 'Subida de imagen'
+                                            });   
+                                        } 
+                ) 
 
 //ESTO ES SIN PAGINACION NAMBRENA LUEGO
 router_test.get( '/socios_detalle_sin_paginacion',[ ], obtener_socios_detallados_test2 );

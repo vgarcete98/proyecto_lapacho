@@ -1,8 +1,9 @@
 const { request, response } = require('express')
 
 const { PrismaClient } = require('@prisma/client')
+const { withOptimize } = require("@prisma/extension-optimize");
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
 
 const { generar_fecha } = require( '../helpers/generar_fecha' );
 
@@ -299,6 +300,17 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
         const fecha_hasta_format = new Date ( fin ); 
         
         
+        const cliente = await prisma.cliente.findUnique( { 
+            where : { 
+                id_cliente : Number(idCliente) 
+            },
+            select : {
+                es_socio : true,
+                id_cliente : true
+
+            }
+        } );
+
         //AQUI BASICAMENTE HAY UN PROCESO EXTRA CUANDO SE TRATA DE ALGUIEN QUE NO ES SOCIO
         //SE TIENE QUE GENERAR OBVIAMENTE UNA RESERVA CUANDO SE TRATA DE ALGUIEN QUE NO ES UN SOCIO
         //POR QUE APARTE DE LO QUE HAY QUE PAGAR AL PROFESOR TAMBIEN HAY QUE PAGAR POR EL USO DE LA MESA
@@ -310,33 +322,30 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
                                                                             { id_profesor : Number(idProfesor) },
                                                                             { valido : true }
                                                                         ]
-                                                                    } 
+                                                                    },
+                                                                    select : {
+                                                                        id_profesor : true,
+                                                                        precio : true,
+                                                                        id_precio_clase : true
+                                                                    }
                                                                 } );
+
         const clase_nueva = await prisma.agendamiento_clase.create( { 
                                                                         data : { 
-                                                                                    id_cliente : Number( idCliente ),
+                                                                                    id_cliente : cliente.id_cliente,
                                                                                     id_profesor : Number(idProfesor),
                                                                                     id_mesa : Number( idMesa ),
                                                                                     //fecha_agendamiento : generar_fecha( fechaAgendamiento ),
                                                                                     horario_inicio : fecha_desde_format,
                                                                                     horario_hasta : fecha_hasta_format,
-
+                                                                                    
                                                                                     creadoen : new Date(),
                                                                                     id_precio_clase : precio_clase.id_precio_clase,
-                                                                                    monto_abonado : precio_clase.precio
+                                                                                    //monto_abonado : precio_clase.precio,
+                                                                                    //precio_clase : precio_clase.precio
                                                                                     //clase_eliminada : false,
                                                                                 } 
                                                                     } );
-        const cliente = await prisma.cliente.findUnique( { 
-                                                            where : { 
-                                                                id_cliente : Number(idCliente) 
-                                                            },
-                                                            select : {
-                                                                es_socio : true,
-                                                                id_cliente : true
-
-                                                            }
-                                                        } );
                                                         
         if ( cliente !== null ){
             const { es_socio, id_cliente } = cliente;
@@ -646,62 +655,213 @@ const obtener_mesas_disponibles_x_horario = async ( req = request, res = respons
 
 
 
-const agendar_una_clase_no_cliente = async ( req = request, res = response ) =>{
 
-    // VOY A COMPROBAR LAS CLASES QUE HAY EN EL DIA PRIMERO PARA PODER VER SI SE PUEDE RESERVAR O NO
+
+const generar_venta_pago_profesor = async (req = request, res = response)=>{
+
     try {
-        const { idCliente, idProfesor, /*fechaAgendamiento,*/ inicio, fin, idMesa } = req.body;
-        const fecha_desde_format = new Date ( inicio );
 
-        const fecha_hasta_format = new Date ( fin );   
+        const { inicio, fin, idProfesor } = req.body;
 
-        const precio_clase = await prisma.precio_clase.findFirst( { 
-                                                                    where : {
-                                                                        valido : true
-                                                                    } 
-                                                                } );
-        const clase_nueva = await prisma.agendamiento_clase.create( { 
-                                                                        data : { 
-                                                                                    id_cliente : Number( idCliente ),
-                                                                                    id_profesor : Number(idProfesor),
-                                                                                    id_mesa : Number( idMesa ),
-                                                                                    //fecha_agendamiento : generar_fecha( fechaAgendamiento ),
-                                                                                    horario_inicio : fecha_desde_format,
-                                                                                    horario_hasta : fecha_hasta_format,
-                                                                                    
-                                                                                    creadoen : new Date(),
-                                                                                    id_precio_clase : precio_clase.id_precio_clase,
-                                                                                    monto_abonado : precio_clase.precio
-                                                                                    //clase_eliminada : false,
-                                                                                } 
+        //VAMOS A CONTAR LA CANTIDAD DE CLASES QUE TUVO ESE PROFESOR DENTRO DEL PERIODO
+
+        const clases_profesor = await prisma.agendamiento_clase.count( { 
+                                                                            where : {
+                                                                                AND : [
+                                                                                    { inicio : { gte : new Date( inicio ) } },
+                                                                                    { fin : { lte : new Date( fin ) } },
+                                                                                    { id_profesor : Number( idProfesor ) }
+                                                                                ]
+                                                                            } 
                                                                     } );
-        if ( clase_nueva !== null ) {
-            
-            res.status( 200 ).json( {
-                status : true,
-                msg : "Clase Creada",
-                descripcion : "Clase Agendada"
-            } );
-        }else {
-            res.status( 400 ).json( {
-                status : false,
-                msg : "La clase no logro ser generada",
-                descripcion : "Favor verifique que la clase fue generada"
-            } );
+        const datos_profesor = await prisma.profesores.findUnique( { 
+                                                                        where : { id_profesor : Number(idProfesor) },
+                                                                        select : { 
+                                                                            id_profesor : true,
+                                                                            porc_facturacion : true,
+                                                                            precio_clase : true,
+                                                                            cedula : true
+                                                                        }
+                                                                    } );
+
+
+        const { id_profesor, porc_facturacion, precio_clase } = datos_profesor;
+
+
+
+        const periodo_facturacion_clase = await prisma.periodos_facturacion.create( {  
+                                                                                        data : {
+                                                                                            creado_en : new Date(),
+                                                                                            creado_por : 1,
+                                                                                            fin : new Date( fin ),
+                                                                                            inicio : new Date( inicio ),
+                                                                                            monto_total : ( precio_clase*clases_profesor )*porc_facturacion
+                                                                                        },
+                                                                                        select : { 
+                                                                                            monto_total : true,
+                                                                                            id_periodo_fact : true
+                                                                                        }
+                                                                                    } )
+
+        if ( periodo_facturacion_clase !== null ){
+            const { monto_total, id_periodo_fact } = periodo_facturacion_clase;
+            //ESO SE AGREGA DIRECTO A UNA VENTA PARA EL PROFESOR QUE TIENE QUE ABONAR
+
+            const cliente = await prisma.cliente.findUnique( { 
+                                                                where : { cedula : cedula }, 
+                                                                select : { 
+                                                                    id_cliente : true
+                                                                }
+                                                            } );
+
+            const { id_cliente } = cliente;
+
+            const descripcion = `COBRO POR USO DEL CLUB, CLASES PARTICULARES`;
+
+            const nueva_venta = await prisma.ventas.create( { 
+                                                                data : {
+                                                                    creado_en : new Date( ),
+                                                                    creado_por : 1,
+                                                                    estado : 'PENDIENTE DE PAGO',
+                                                                    descripcion_venta : descripcion,
+                                                                    monto : monto_total,
+                                                                    cedula : cedula,
+                                                                    id_agendamiento : null,
+                                                                    id_periodo_fact : id_periodo_fact,
+                                                                    id_cliente_reserva : null,
+                                                                    id_cuota_socio : null,
+                                                                    id_cliente : id_cliente,
+                                                                    id_inscripcion : null,
+                                                                    fecha_operacion : new Date(),
+                                                                    id_tipo_ingreso : ingreso_por_cuota.id_tipo_ingreso
+
+                                                                },
+                                                                select : { 
+                                                                    id_venta : true
+                                                                }
+                                                            } );
+
+            if (nueva_venta !== null){
+                console.log( `VENTA GENERADA CON EXITO PARA CLASES DE PROFESORES` );
+                
+                res.status( 200 ).json(
+                    {
+                        status : true,
+                        msg : 'Ventas periodo de clases generadas con exito',
+                        descripcion : 'El periodo de Clases ingresado fueron generadas como ventas'
+                    }
+                );
+            }else {
+                res.status( 400 ).json(
+                    {
+                        status : true,
+                        msg : 'El periodo Seleccionado de Clases no fue agregado a la venta',
+                        descripcion : `El periodo Seleccionado de Clases ${inicio} a ${fin} no fue agregado a ventas`
+                    }
+                );
+            }
+
+        
+
         }
-
-
+        
     } catch (error) {
-        console.log ( error );
         res.status( 500 ).json( {
             status : false,
-            msg : `Ocurrio un error al agendar la clase, favor intente de vuelta : ${error}`,
+            msg : `Ocurrio un error al generar la venta para cobro de clases del profesor ${ error }`,
             //error
         } );
-
     }
 
+
 }
+
+
+
+
+const obtener_periodos_de_clase_generados = async (req = request, res = response)=>{
+
+    try {
+
+        const { inicio, fin, idProfesor } = req.body;
+
+        //VAMOS A CONTAR LA CANTIDAD DE CLASES QUE TUVO ESE PROFESOR DENTRO DEL PERIODO
+
+        const periodos_facturacion = await prisma.periodos_facturacion.findMany( {  
+                                                                                    where : {
+                                                                                        AND : [
+                                                                                            { inicio : { gte :  new Date(inicio) } },
+                                                                                            { fin : { lte: new Date( fin ) } },
+                                                                                            { id_profesor : Number( idProfesor ) }
+                                                                                        ]
+                                                                                    },
+                                                                                    include : {
+                                                                                        profesores : true
+                                                                                    }
+                                                                                    ,
+                                                                                    select : {
+                                                                                        id_periodo_fact : true,
+                                                                                        id_profesor : true,
+                                                                                        profesores : {
+                                                                                            select : {
+                                                                                                nombre_profesor : true,
+                                                                                                porc_facturacion : true
+                                                                                            }
+                                                                                        },
+                                                                                        inicio : true,
+                                                                                        fin : true,
+                                                                                        monto_total : true
+                                                                                    }
+
+                                                                                } );
+
+        if ( periodos_facturacion !== null ){
+
+            const periodosClase = periodos_facturacion.map( ( element )=>{
+                const { id_periodo_fact, id_profesor, nombre_profesor, porc_facturacion, inicio, fin, monto_total  } = element;
+                return {
+                    idPeriodoClase : id_periodo_fact, 
+                    inicio : inicio, 
+                    fin : fin,
+                    nombreProfesor : nombre_profesor,
+                    idProfesor : id_profesor,
+                    montoTotal : monto_total,
+                    porcFacturacion : porc_facturacion
+                    //----------------------------------------------------------------------------------------
+                }
+            } );            
+                
+            res.status( 200 ).json(
+                {
+                    status : true,
+                    msg : 'Periodos de clase obtenidos para facturar',
+                    periodosClase
+                }
+            );
+
+        }else {
+            res.status( 400 ).json(
+                {
+                    status : false,
+                    msg : 'No existen periodos de clase dentro de ese rango de fechas',
+                    descripcion : `El periodo Seleccionado ${inicio} a ${fin} no tiene clases`
+                }
+            );
+        }
+
+        
+    } catch (error) {
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ocurrio un error al obtener los periodos para cobro de clases del profesor ${ error }`,
+            //error
+        } );
+    }
+
+
+}
+
+
 
 module.exports = {
 
@@ -713,6 +873,7 @@ module.exports = {
     eliminar_clase_con_profesor,
     obtener_clases_del_dia_x_socio,
     obtener_mesas_disponibles_x_horario,
-    agendar_una_clase_no_cliente
+    generar_venta_pago_profesor,
+    obtener_periodos_de_clase_generados
 
 }

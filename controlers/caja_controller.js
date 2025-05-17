@@ -4,7 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const { generar_fecha } = require('../helpers/generar_fecha');
 const { withOptimize } = require("@prisma/extension-optimize");
 
-const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));;
+const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
 
 
 const { actualiza_datos_del_servicio } = require( '../helpers/actualiza_datos_servicio' );
@@ -541,8 +541,15 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                                 } 
                                                             } );
                     //----------------------------------------------------------------------------------------------------------------------------
+                    let imagen_comprobante = '';
+                    if ( Number(tipoPago) === 2 ){
 
-
+                        const { archivo } = req.files;
+                        let imagen_comprobante = await subir_imagen( archivo );
+    
+                        let { url } = imagen_comprobante;
+                        imagen_comprobante = url
+                    }
                     //SERIA COMO EL DETALLE DE LA FACTURA
                     //----------------------------------------------------------------------------------------------------------------------------
                     let movimientos_de_caja = await prisma.movimiento_caja.create( { 
@@ -552,7 +559,7 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                                                             id_cliente : Number( idCliente ),
                                                                                             id_tipo_pago : Number( tipoPago ),
                                                                                             id_caja : caja.id_caja,
-                                                                                            nro_comprobante : nroComprobante,
+                                                                                            nro_comprobante : ( Number( tipoPago ) !== 2 )? nroComprobante : imagen_comprobante,
                                                                                             nro_factura : nroFactura,
                                                                                             id_venta : Number( idVenta ),
                                                                                             id_compra : null,
@@ -930,7 +937,7 @@ const obtener_monto_total_ventas = async ( ventas = [] ) => {
             
             try {
                 
-                let { idVenta , idSocioCuota, idAgendamiento,  idReserva, idInscripcion, fechaOperacion, monto, tipoServicio } = element;
+                let { idVenta , idSocioCuota, idAgendamiento,  idReserva, idInscripcion, idPeriodo, fechaOperacion, monto, tipoServicio } = element;
                 console.log( idSocioCuota, idAgendamiento,  idReserva, idInscripcion );
                 if (idAgendamiento !== null && idAgendamiento !== undefined) {
     
@@ -982,6 +989,18 @@ const obtener_monto_total_ventas = async ( ventas = [] ) => {
                         
                     });
                     monto_total += servicio.costo_inscripcion;
+
+                }else if ( idPeriodo !== null && idPeriodo !== undefined ){
+
+                    servicio = await prisma.periodos_facturacion.findUnique( { 
+                        where : { id_periodo_fact : Number(idPeriodo) },
+                        select : {
+                            monto_total : true,
+                        }
+                        
+                    });
+                    monto_total += servicio.monto_total;
+
                 }else {
     
                     monto_total += 0;

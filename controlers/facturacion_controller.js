@@ -143,6 +143,87 @@ const obtener_ultimo_nro_factura = async ( req = request, res = response )=>{
 
 
 
+const anular_documento_factura = async ( req = request, res = response ) =>{
+
+    try {
+
+        const { nroTimbrado, nroFactura, motivoAnulacion, idCaja } = req.body;
+
+        const numero = nroFactura.split( '-' ).pop(); 
+
+
+        const factura_anulada = await prisma.facturas.findFirst( { 
+                                                                    where : {
+                                                                        numero : Number( numero ),
+                                                                        nro_timbrado : Number( nroTimbrado )
+                                                                    },
+                                                                    select : {
+                                                                        id_factura : true
+                                                                    } 
+                                                                } );
+
+        const { id_factura } = factura_anulada;
+
+        const utilizacion_factura = await prisma.facturas.update( { 
+                                                                    where : { id_factura : id_factura },
+                                                                    data : {  
+                                                                        fecha_emision : new Date()
+                                                                    }
+                                                                } );
+
+
+        const movimiento_anulacion = await prisma.movimiento_caja.create( {  
+                                                                            data : {
+                                                                                                                                                                            creado_por : 1,
+                                                                                cedula : cedula,
+                                                                                id_cliente : 1,
+                                                                                id_tipo_pago : 1,
+                                                                                id_caja : Number( idCaja ),
+                                                                                nro_comprobante : null,
+                                                                                nro_factura : nroFactura,
+                                                                                id_venta : null,
+                                                                                id_compra : null,
+                                                                                descripcion : motivoAnulacion,
+                                                                                creado_en : new Date(),
+                                                                                id_tipo_ingreso : null,
+                                                                                fecha_operacion : new Date(),
+                                                                                timbrado : Number( nroTimbrado )
+                                                                            },
+                                                                            select : { 
+                                                                                id_movimiento_caja : true
+                                                                            }
+                                                                        } );
+        if ( movimiento_anulacion !== null ){
+
+            res.status( 200 ).json( {
+                status : true,
+                msg : 'Factura anulada con exito',
+                descripcion : `Se ha anulado la factura seleccionada`
+            } );
+
+
+        }else {
+            res.status( 400 ).json( {
+                status : true,
+                msg : 'Algo fallo durante el proceso de anulacion',
+                descripcion : `No se genero el movimiento que anula la factura`
+            } );
+        }
+        
+    } catch (error) {
+        console.log( error );
+                res.status( 400 ).json( {
+            status : true,
+            msg : `No se pudo anular la factura solicitada : ${error}`,
+            //data
+        } );
+    }
+
+
+}
+
+
+
 const registrar_datos_factura = async ( req = request, res = response )=>{
 
     try {
@@ -168,6 +249,7 @@ const registrar_datos_factura = async ( req = request, res = response )=>{
 module.exports = {
     generar_documentos_factura,
     obtener_ultimo_nro_factura,
-    registrar_datos_factura
+    registrar_datos_factura,
+    anular_documento_factura
 
 }

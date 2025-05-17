@@ -1,11 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["tracing"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://user_db_tronco:udRthKlk1F2VYGP@18.231.157.225:5432/proyecto_tronco?schema=public"
+  url      = env("DATABASE_URL")
 }
 
 model accesos_usuario {
@@ -151,17 +151,19 @@ model tipo_socio {
 }
 
 model profesores {
-  id_profesor        Int                  @id(map: "profesores_pk") @default(autoincrement())
-  creadoen           DateTime             @db.Date
-  editadoen          DateTime?            @db.Date
-  estado_profesor    String?              @db.VarChar(50)
-  nombre_profesor    String               @db.VarChar(50)
-  costo_x_hora       Int?
-  contacto_profesor  String?              @db.VarChar
-  cedula             String               @db.VarChar(30)
-  profesor_borrado   Boolean?
-  agendamiento_clase agendamiento_clase[]
-  precio_clase       precio_clase[]
+  id_profesor          Int                    @id(map: "profesores_pk") @default(autoincrement())
+  creadoen             DateTime               @db.Date
+  editadoen            DateTime?              @db.Date
+  estado_profesor      String?                @db.VarChar(50)
+  nombre_profesor      String                 @db.VarChar(50)
+  costo_x_hora         Int?
+  contacto_profesor    String?                @db.VarChar
+  cedula               String                 @db.VarChar(30)
+  profesor_borrado     Boolean?
+  porc_facturacion     Float?                 @db.Real
+  agendamiento_clase   agendamiento_clase[]
+  periodos_facturacion periodos_facturacion[]
+  precio_clase         precio_clase[]
 }
 
 model rutas_app {
@@ -390,29 +392,31 @@ model movimiento_caja {
 }
 
 model ventas {
-  id_venta           Int                 @id(map: "ventas_pk") @default(autoincrement())
-  id_cliente         Int
-  id_cuota_socio     Int?
-  id_cliente_reserva Int?
-  id_agendamiento    Int?
-  id_tipo_ingreso    Int?
-  id_inscripcion     Int?
-  estado             String              @db.VarChar(50)
-  monto              Int
-  fecha_operacion    DateTime?           @db.Timestamp(6)
-  creado_en          DateTime            @db.Timestamp(6)
-  descripcion_venta  String              @db.VarChar(255)
-  creado_por         Int
-  editado_por        Int?
-  editado_en         DateTime?           @db.Timestamp(6)
-  cedula             String?             @db.VarChar(255)
-  movimiento_caja    movimiento_caja[]
-  agendamiento_clase agendamiento_clase? @relation(fields: [id_agendamiento], references: [id_agendamiento], onDelete: NoAction, onUpdate: NoAction, map: "agendamiento_clase_ventas_fk")
-  cliente            cliente             @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_ventas_fk")
-  cuotas_socio       cuotas_socio?       @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
-  inscripciones      inscripciones?      @relation(fields: [id_inscripcion], references: [id_inscripcion], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_ventas_fk")
-  reservas           reservas?           @relation(fields: [id_cliente_reserva], references: [id_cliente_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
-  tipos_ingreso      tipos_ingreso?      @relation(fields: [id_tipo_ingreso], references: [id_tipo_ingreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_ingreso_ventas_fk")
+  id_venta             Int                   @id(map: "ventas_pk") @default(autoincrement())
+  id_cliente           Int
+  id_cuota_socio       Int?
+  id_cliente_reserva   Int?
+  id_agendamiento      Int?
+  id_periodo_fact      Int?
+  id_tipo_ingreso      Int?
+  id_inscripcion       Int?
+  estado               String                @db.VarChar(50)
+  monto                Int
+  fecha_operacion      DateTime?             @db.Timestamp(6)
+  creado_en            DateTime              @db.Timestamp(6)
+  descripcion_venta    String                @db.VarChar(255)
+  creado_por           Int
+  editado_por          Int?
+  editado_en           DateTime?             @db.Timestamp(6)
+  cedula               String?               @db.VarChar(255)
+  movimiento_caja      movimiento_caja[]
+  agendamiento_clase   agendamiento_clase?   @relation(fields: [id_agendamiento], references: [id_agendamiento], onDelete: NoAction, onUpdate: NoAction, map: "agendamiento_clase_ventas_fk")
+  cliente              cliente               @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_ventas_fk")
+  cuotas_socio         cuotas_socio?         @relation(fields: [id_cuota_socio], references: [id_cuota_socio], onDelete: NoAction, onUpdate: NoAction, map: "cuotas_socio_ventas_fk")
+  inscripciones        inscripciones?        @relation(fields: [id_inscripcion], references: [id_inscripcion], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_ventas_fk")
+  periodos_facturacion periodos_facturacion? @relation(fields: [id_periodo_fact], references: [id_periodo_fact], onDelete: NoAction, onUpdate: NoAction, map: "periodos_facturacion_ventas_fk")
+  reservas             reservas?             @relation(fields: [id_cliente_reserva], references: [id_cliente_reserva], onDelete: NoAction, onUpdate: NoAction, map: "reservas_ventas_fk")
+  tipos_ingreso        tipos_ingreso?        @relation(fields: [id_tipo_ingreso], references: [id_tipo_ingreso], onDelete: NoAction, onUpdate: NoAction, map: "tipos_ingreso_ventas_fk")
 
   @@index([cedula], map: "ventas_cedula_cliente_index")
 }
@@ -567,4 +571,18 @@ model api_logs {
   type_request    String    @db.VarChar(10)
   fecha_solicitud DateTime? @db.Timestamp(6)
   ruta_solicitud  String    @db.VarChar(255)
+}
+
+model periodos_facturacion {
+  id_periodo_fact Int        @id(map: "periodos_facturacion_pk") @default(autoincrement())
+  id_profesor     Int
+  inicio          DateTime   @db.Timestamp(6)
+  fin             DateTime   @db.Timestamp(6)
+  editado_por     Int?
+  creado_en       DateTime   @db.Timestamp(6)
+  creado_por      Int
+  editado_en      DateTime?  @db.Timestamp(6)
+  monto_total     Int
+  profesores      profesores @relation(fields: [id_profesor], references: [id_profesor], onDelete: NoAction, onUpdate: NoAction, map: "profesores_periodos_facturacion_fk")
+  ventas          ventas[]
 }

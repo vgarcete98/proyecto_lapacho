@@ -25,8 +25,7 @@ const comprobar_horario_profesor = async ( req = request, res = response, next)=
                                 	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                                 	JOIN mesas C ON C.id_mesa = A.id_mesa
                                 	JOIN cliente D ON D.id_cliente = A.id_cliente
-                                WHERE  A.horario_inicio = TIMESTAMP '${inicio}' 
-                                        AND A.horario_hasta = TIMESTAMP '${fin}'
+                                WHERE  ( A.horario_inicio, horario_hasta) overlaps ( TIMESTAMP '${inicio}', TIMESTAMP '${fin}' )
                                         AND B.id_profesor = ${ Number( idProfesor ) }
                                         AND C.id_mesa = ${ Number( idMesa ) }
                                 ORDER BY A.fecha_agendamiento DESC`;

@@ -27,7 +27,7 @@ const verificar_caja_abierta_y_disponible = async (req = request, res = response
         console.log( error );
         res.status(500).json({
             status: false,
-            msg: 'No se lograron verificar las ventas, favor intente de nuevo',
+            msg: 'No se lograron verificar la ultima caja abierta, favor intente de nuevo',
         });
     }
 

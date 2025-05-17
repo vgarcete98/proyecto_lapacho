@@ -322,6 +322,7 @@ const actualizar_profesor = async ( req = request, res = response ) =>{
         const { idProfesor, nombreProfe, precioXHora, contactoProfesor, 
                 numeroCedula, crearUsuario, nombreUsuario, password } = req.body;
         const fecha_edicion = new Date();
+
         
         const profesor_editado = await prisma.profesores.update( {
             where : {
@@ -334,8 +335,42 @@ const actualizar_profesor = async ( req = request, res = response ) =>{
                 editadoen : fecha_edicion,
                 cedula : numeroCedula,
                 nombre_profesor : nombreProfe
+            },
+            select :{
+                id_profesor : true
             }
         } );
+
+
+        //NUEVO PARAMETRO, AHORA SETEAMOS LOS PRECIOS DE LOS PROFESORES PARA TENER UN HISTORICO
+        const { id_profesor } = profesor_editado;
+        //----------------------------------------------------------------------
+        const editar_precios = await prisma.precio_clase.updateMany( {
+            where : { 
+                AND :[
+                    { id_profesor : id_profesor },
+                    { valido : true }
+                ]
+
+            },
+            data : { 
+                valido : false,
+            }
+        } );
+        //----------------------------------------------------------------------
+        const precio_nuevo = await prisma.precio_clase.create( {
+            data : {
+                precio : Number(precioXHora),
+                creado_en : new Date(),
+                valido : true,
+                id_profesor : id_profesor,
+                porc_descuento : 0,
+                
+            }
+        } )
+
+
+
 
         if (profesor_editado !== null ){ 
             // OPCIONAL SERIA EL PRECIO X HORA

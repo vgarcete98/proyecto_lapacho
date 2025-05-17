@@ -44,7 +44,7 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
                                                                             fecha_inscripcion : new Date(),
                                                                             desc_inscripcion : descInscripcion,
                                                                             costo_inscripcion : Number( categoria.costo ),
-                                                                            estado : 'AGREGAR A VENTA'
+                                                                            estado : 'PENDIENTE DE COBRO'
                                                                         },
                                                                         select : {
                                                                             id_categoria : true,
