@@ -299,17 +299,20 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
 
         const fecha_hasta_format = new Date ( fin ); 
         
-        
-        const cliente = await prisma.cliente.findUnique( { 
-            where : { 
-                id_cliente : Number(idCliente) 
-            },
-            select : {
-                es_socio : true,
-                id_cliente : true
+        let cliente = null;
+        if ( idCliente !== null && idCliente !== undefined ){
 
-            }
-        } );
+            cliente = await prisma.cliente.findUnique( { 
+                where : { 
+                    id_cliente : Number(idCliente) 
+                },
+                select : {
+                    es_socio : true,
+                    id_cliente : true
+    
+                }
+            } );
+        }
 
         //AQUI BASICAMENTE HAY UN PROCESO EXTRA CUANDO SE TRATA DE ALGUIEN QUE NO ES SOCIO
         //SE TIENE QUE GENERAR OBVIAMENTE UNA RESERVA CUANDO SE TRATA DE ALGUIEN QUE NO ES UN SOCIO
@@ -332,7 +335,6 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
 
         const clase_nueva = await prisma.agendamiento_clase.create( { 
                                                                         data : { 
-                                                                                    id_cliente : cliente.id_cliente,
                                                                                     id_profesor : Number(idProfesor),
                                                                                     id_mesa : Number( idMesa ),
                                                                                     //fecha_agendamiento : generar_fecha( fechaAgendamiento ),
@@ -344,14 +346,30 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
                                                                                     //monto_abonado : precio_clase.precio,
                                                                                     //precio_clase : precio_clase.precio
                                                                                     //clase_eliminada : false,
-                                                                                } 
+                                                                                },
+                                                                        select : {
+                                                                            id_agendamiento : true
+                                                                        } 
                                                                     } );
                                                         
         if ( cliente !== null ){
             const { es_socio, id_cliente } = cliente;
+            //QUIERE DECIR QUE SE TRATA DE UN CLIENTE POR LO TANTO HAY QUE AGREGARLE A LA CLASE
+
+            const { id_agendamiento } = clase_nueva;
+            const agrega_a_clase = await prisma.clases_alumnos.create( { 
+                                                                            data : {  
+                                                                                id_agendamiento : id_agendamiento,
+                                                                                id_cliente : id_cliente
+                                                                            },
+                                                                            select : {
+                                                                                id_clase_alumno : true
+                                                                            } 
+                                                                    } );
+
 
             if ( es_socio === false ){
-                //QUIERE DECIR QUE SE TRATA DE UN CLIENTE POR LO TANTO HAY QUE CREARLE UNA RESERVA
+                //QUIERE DECIR QUE SE TRATA DE UN CLIENTE POR LO TANTO HAY QUE CREARLE UNA RESERVA ADEMAS DE AGREGARLE A LA CLASE
 
                 const precio_reserva = await prisma.precio_reservas.findFirst( { 
                                                                                     where : { 
@@ -395,6 +413,136 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
             res.status( 400 ).json( {
                 status : false,
                 msg : "La clase no logro ser generada",
+                descripcion : "Favor verifique que la clase fue generada"
+            } );
+        }
+
+
+    } catch (error) {
+        console.log ( error );
+        res.status( 500 ).json( {
+            status : false,
+            msg : `Ocurrio un error al agendar la clase, favor intente de vuelta : ${error}`,
+            //error
+        } );
+
+    }
+
+
+
+}
+
+
+
+
+const agendar_alumno_a_clase = async ( req = request, res = response ) =>{
+
+    // VOY A COMPROBAR LAS CLASES QUE HAY EN EL DIA PRIMERO PARA PODER VER SI SE PUEDE RESERVAR O NO
+    try {
+        const { idCliente, idProfesor, idAgendamientoClase } = req.body;
+        
+        let cliente = null;
+        if ( idCliente !== null && idCliente !== undefined ){
+
+            cliente = await prisma.cliente.findUnique( { 
+                where : { 
+                    id_cliente : Number(idCliente) 
+                },
+                select : {
+                    es_socio : true,
+                    id_cliente : true
+    
+                }
+            } );
+        }
+
+        //AQUI BASICAMENTE HAY UN PROCESO EXTRA CUANDO SE TRATA DE ALGUIEN QUE NO ES SOCIO
+        //SE TIENE QUE GENERAR OBVIAMENTE UNA RESERVA CUANDO SE TRATA DE ALGUIEN QUE NO ES UN SOCIO
+        //POR QUE APARTE DE LO QUE HAY QUE PAGAR AL PROFESOR TAMBIEN HAY QUE PAGAR POR EL USO DE LA MESA
+
+        const precio_clase = await prisma.precio_clase.findFirst( { 
+                                                                    where : {
+                                                                        AND : [
+
+                                                                            { id_profesor : Number(idProfesor) },
+                                                                            { valido : true }
+                                                                        ]
+                                                                    },
+                                                                    select : {
+                                                                        id_profesor : true,
+                                                                        precio : true,
+                                                                        id_precio_clase : true
+                                                                    }
+                                                                } );
+
+        const clase_nueva = await prisma.agendamiento_clase.findUnique( { 
+                                                                            where: {  id_agendamiento : Number( idAgendamientoClase )},
+                                                                            select : {
+                                                                                id_agendamiento : true
+                                                                            }
+                                                                    } );
+                                                        
+        if ( cliente !== null && clase_nueva !== null){
+            const { es_socio, id_cliente } = cliente;
+            //QUIERE DECIR QUE SE TRATA DE UN CLIENTE POR LO TANTO HAY QUE AGREGARLE A LA CLASE
+
+            const { id_agendamiento } = clase_nueva;
+            const agrega_a_clase = await prisma.clases_alumnos.create( { 
+                                                                            data : {  
+                                                                                id_agendamiento : id_agendamiento,
+                                                                                id_cliente : id_cliente
+                                                                            },
+                                                                            select : {
+                                                                                id_clase_alumno : true
+                                                                            } 
+                                                                    } );
+
+
+            if ( es_socio === false ){
+                //QUIERE DECIR QUE SE TRATA DE UN CLIENTE POR LO TANTO HAY QUE CREARLE UNA RESERVA ADEMAS DE AGREGARLE A LA CLASE
+
+                const precio_reserva = await prisma.precio_reservas.findFirst( { 
+                                                                                    where : { 
+                                                                                        valido : true 
+                                                                                    },
+                                                                                    select : { 
+                                                                                        id_precio_reserva : true,
+                                                                                        monto_reserva : true
+                                                                                    } 
+                                                                            } );
+                const { id_precio_reserva, monto_reserva } = precio_reserva;
+                const nueva_reserva = await prisma.reservas.create( { 
+                    data : {
+                        id_cliente : Number(idCliente),
+                        fecha_creacion : new Date(),
+                        //fecha_reserva : generar_fecha( fechaAgendamiento ),
+                        fecha_reserva : fecha_desde_format,
+                        hora_desde : fecha_desde_format,
+                        hora_hasta : fecha_hasta_format,
+                        id_mesa : Number( idMesa ),
+                        estado : 'PENDIENTE',
+                        monto : monto_reserva,
+                        creado_en : new Date(),
+                        id_precio_reserva : id_precio_reserva,
+                        creado_por : 1,
+                        //tipo_ingreso : tipoIngreso
+                    } 
+                });
+            }
+
+        }
+
+        if ( clase_nueva !== null ) {
+            
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Alumno agregado a la clase",
+                descripcion : "Se agrego a l alumno a la clase"
+            } );
+        }else {
+            res.status( 400 ).json( {
+                status : false,
+                msg : "No se logro agregar al alumno a la clase",
                 descripcion : "Favor verifique que la clase fue generada"
             } );
         }
@@ -874,6 +1022,7 @@ module.exports = {
     obtener_clases_del_dia_x_socio,
     obtener_mesas_disponibles_x_horario,
     generar_venta_pago_profesor,
-    obtener_periodos_de_clase_generados
+    obtener_periodos_de_clase_generados,
+    agendar_alumno_a_clase
 
 }

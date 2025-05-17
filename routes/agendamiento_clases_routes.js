@@ -10,6 +10,7 @@ const { abonar_una_clase,
         obtener_mesas_disponibles_x_horario,
         generar_venta_pago_profesor,
         obtener_periodos_de_clase_generados,
+        agendar_alumno_a_clase,
     } = require( '../controlers/agendamiento_clases_controller' );
 const { comprobar_horario_profesor } = require('../helpers/comprobar_disponibilidad_profesor');
 const { obtener_data_socio, verificar_vista_usuario } = require('../helpers/verficar_socio_carga');
@@ -58,6 +59,19 @@ router_agendamientos_clase.post( '/agendar_clase',
                                                     ]
                                                     ,agendar_una_clase
                                 );
+
+router_agendamientos_clase.post( '/agregar_alumno_a_clase', 
+                                                    [ 
+                                                        verificar_existe_reserva_agendada_para_clases,
+                                                        verificar_existe_evento_agendado_para_clases,
+                                                        comprobar_horario_profesor, 
+                                                        obtener_data_socio,
+                                                        verificar_requerimientos_usuario,
+                                                        verificar_precio_clase_profesor,   
+                                                    ]
+                                                    ,agendar_alumno_a_clase
+                                );
+
 
 router_agendamientos_clase.post( 'agregar_venta_clases_profesor', [ comprobar_profesor_existe, controlar_clases_en_periodo  ], generar_venta_pago_profesor );
 
