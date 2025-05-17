@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://user_db_tronco:udRthKlk1F2VYGP@18.231.157.225:5432/proyecto_tronco?schema=public"
 }
 
 model accesos_usuario {

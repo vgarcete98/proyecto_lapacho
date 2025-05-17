@@ -283,7 +283,7 @@ class Server {
         cargar_rutas_rol();
     }
 
-    async listen(){
+    listen(){
 
         //actualizar_pass_clientes();
 
