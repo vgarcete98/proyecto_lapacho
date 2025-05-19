@@ -78,7 +78,7 @@ const { router_compras } = require('../routes/compras_routes');
 const router_audit_api = require('../routes/auditoria_api_routes');
 const { router_usuarios } = require('../routes/usuarios_routes');
 const { router_test } = require('../routes/test_routes');
-const { encriptar_password, encriptar_solicitud } = require('../helpers/generar_encriptado');
+const { encriptar_password, encriptar_solicitud, desencriptar_password } = require('../helpers/generar_encriptado');
 const { subir_imagen, obtener_imagen } = require('./subir_imagen_cloud');
 //----------------------------------------------------------------------------
 
@@ -291,6 +291,8 @@ class Server {
         //console.log( encriptar_solicitud( { "usuario" : "sfernandez", "contraseña" : "xxxxxxx" } ) );
         //await subir_imagen(`C:\Users\vgarcete_facu\Pictures\Screenshots\test_subida_mini.png`);
         //await obtener_imagen('test_subida_imagen', {});
+        //console.log( desencriptar_password("U2FsdGVkX18+UCKA/IXIYL7Hey3WaQXODCS0Rp7VfITzPefn4v4HX7ia4q5+jr5fJCQmQdwbF97o1cbqxTcE3b13RHB0XLhEIrqXfIZfO9I="))
+        //console.log( desencriptar_password("U2FsdGVkX1+I7MDOaxedAbB/D0SLgEmd6HRaZzZK5CDsbWIz8Ei8VBRadPrGPc+DDSuZr1bCdB7aE/xXl5Bp1UuHlXHf+HynyvKajalCu9I="))
         this.app.listen( this.PUERTO, ()=>{
 
             console.log ( `BACKEND CLUB LAPACHO\n` );
@@ -309,10 +311,6 @@ class Server {
 
 
 }
-
-
-
-
 
 
 

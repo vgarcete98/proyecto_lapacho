@@ -24,6 +24,8 @@ const {
 const comprobar_profesor_existe = require('../helpers/comprobar_profesor_existe');
 const { controlar_clases_en_periodo } = require('../helpers/controlar_clases_en_periodo');
 const { verificar_precio_clase_profesor } = require('../middlewares/verficar_precio_seteado_para_clases');
+const { verificar_existe_clase_profesor } = require('../middlewares/verificar_existe_clase_profesor');
+const { verificar_existe_alumno_asignado_a_clase } = require('../middlewares/verificar_existe_alumno_asignado _a_clase');
 
 
 
@@ -54,20 +56,18 @@ router_agendamientos_clase.post( '/agendar_clase',
                                                         comprobar_horario_profesor, 
                                                         obtener_data_socio,
                                                         verificar_requerimientos_usuario,
-                                                        verificar_precio_clase_profesor,
-                                                        
+                                                        verificar_precio_clase_profesor
                                                     ]
                                                     ,agendar_una_clase
                                 );
 
 router_agendamientos_clase.post( '/agregar_alumno_a_clase', 
-                                                    [ 
-                                                        verificar_existe_reserva_agendada_para_clases,
-                                                        verificar_existe_evento_agendado_para_clases,
-                                                        comprobar_horario_profesor, 
+                                                    [
                                                         obtener_data_socio,
                                                         verificar_requerimientos_usuario,
-                                                        verificar_precio_clase_profesor,   
+                                                        verificar_precio_clase_profesor,
+                                                        verificar_existe_clase_profesor,
+                                                        verificar_existe_alumno_asignado_a_clase
                                                     ]
                                                     ,agendar_alumno_a_clase
                                 );

@@ -7,13 +7,15 @@ const subir_imagen =  async ( archivo ) =>{
     
     console.log( archivo )
     try {
-        let resultado = await cloudinary.uploader.upload( archivo );          
+        const { tempFilePath  } = archivo;
+        let resultado = await cloudinary.uploader.upload( tempFilePath );          
         console.log(resultado, '---> test Subida');
     
         return resultado;
         
     } catch (error) {
         console.log( error )
+        return '';
     }
     
  }

@@ -8,19 +8,14 @@ const verificar_existe_clase_agendada_para_reserva = async ( req = request, res 
 
     try {
         
-        const { horaDesde, horaHasta } = req.body;
-
-        const clase = await prisma.agendamiento_clase.findFirst( { 
-                                                                    where : {
-                                                                        
-                                                                        AND :[
-                                                                            { horario_hasta : { lte : new Date ( horaHasta ) } },
-                                                                            { horario_inicio : { lte : new Date( horaDesde ) } }
-                                                                        ] 
-                                                                    } 
-                                                                } );
-        
-        if ( clase !== null){
+        const { horaDesde, horaHasta, idMesa } = req.body;
+        const test_clase_query = `SELECT 1 
+                                        FROM AGENDAMIENTO_CLASE A 
+                                    WHERE (A.horario_inicio, A.horario_hasta) overlaps ('${ horaDesde }'::TIMESTAMP, '${ horaHasta }'::TIMESTAMP)
+                                    AND  A.id_mesa = ${ idMesa }`;
+        console.log( test_clase_query )                           
+        const clases_query = await prisma.$queryRawUnsafe(test_clase_query);       
+        if ( clases_query.length > 0 ){
             res.status( 400 ).json( {
                 status : false,
                 msg : "Hay una clase existente en ese horario",
@@ -36,7 +31,7 @@ const verificar_existe_clase_agendada_para_reserva = async ( req = request, res 
         //console.log( error );
         res.status( 400 ).json( {
             status : false,
-            msg : `No se pudo verificar si existe la clase, error : ${error}`,
+            msg : `No se pudo verificar si existe una clase en el horario, error : ${error}`,
             //nuevoIngreso
         } );
     }
@@ -53,18 +48,14 @@ const verificar_existe_evento_agendado_para_reservas = async ( req = request, re
     try {
         
         const { horaDesde, horaHasta } = req.body;
-
-        const evento = await prisma.eventos.findFirst( { 
-                                                                    where : {
-                                                                        
-                                                                        AND :[
-                                                                            { fecha_desde_evento : { lte : new Date ( horaHasta ) } },
-                                                                            { fecha_hasta_evento : { lte : new Date( horaDesde ) } }
-                                                                        ] 
-                                                                    } 
-                                                                } );
-        
-        if ( evento !== null){
+        const test_evento_query = `SELECT 1 
+                                                        FROM EVENTOS A 
+                                                    WHERE ( A.FECHA_DESDE_EVENTO, A.FECHA_HASTA_EVENTO ) 
+                                                        OVERLAPS ('${ horaDesde }'::TIMESTAMP, '${ horaHasta }'::TIMESTAMP) `;
+        console.log( test_evento_query )
+        const evento_query = await prisma.$queryRawUnsafe(test_evento_query);
+        //console.log( evento )
+        if ( evento_query.length > 0){
             res.status( 400 ).json( {
                 status : false,
                 msg : "Hay un evento existente en ese horario",

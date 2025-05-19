@@ -7,7 +7,6 @@ const { request, response } = require('express');
 const verifica_ventas_existentes = async ( req = request, res = response, next ) =>{
 
     try {
-        
         const { ventas } = req.body;
 
         if ( ventas.length === 0 || ventas === null || ventas === undefined ) {

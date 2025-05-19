@@ -22,22 +22,21 @@ model accesos_usuario {
 }
 
 model agendamiento_clase {
-  id_agendamiento    Int          @id(map: "agendamiento_clase_pk") @default(autoincrement())
-  id_cliente         Int
+  id_agendamiento    Int              @id(map: "agendamiento_clase_pk") @default(autoincrement())
   id_profesor        Int
   id_precio_clase    Int
   id_mesa            Int
-  fecha_agendamiento DateTime?    @db.Date
-  horario_inicio     DateTime     @db.Timestamp(6)
-  horario_hasta      DateTime     @db.Timestamp(6)
-  creadoen           DateTime     @db.Timestamp(6)
-  editadoen          DateTime?    @db.Timestamp(6)
+  fecha_agendamiento DateTime?        @db.Date
+  horario_inicio     DateTime         @db.Timestamp(6)
+  horario_hasta      DateTime         @db.Timestamp(6)
+  creadoen           DateTime         @db.Timestamp(6)
+  editadoen          DateTime?        @db.Timestamp(6)
   clase_abonada      Boolean?
   monto_abonado      Int?
-  mesas              mesas        @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_agendamiento_clase_fk")
-  precio_clase       precio_clase @relation(fields: [id_precio_clase], references: [id_precio_clase], onDelete: NoAction, onUpdate: NoAction, map: "precio_clase_agendamiento_clase_fk")
-  profesores         profesores   @relation(fields: [id_profesor], references: [id_profesor], onDelete: NoAction, onUpdate: NoAction, map: "profesores_agendamiento_clase_fk")
-  cliente            cliente      @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "socio_agendamiento_clase_fk")
+  mesas              mesas            @relation(fields: [id_mesa], references: [id_mesa], onDelete: NoAction, onUpdate: NoAction, map: "mesas_agendamiento_clase_fk")
+  precio_clase       precio_clase     @relation(fields: [id_precio_clase], references: [id_precio_clase], onDelete: NoAction, onUpdate: NoAction, map: "precio_clase_agendamiento_clase_fk")
+  profesores         profesores       @relation(fields: [id_profesor], references: [id_profesor], onDelete: NoAction, onUpdate: NoAction, map: "profesores_agendamiento_clase_fk")
+  clases_alumnos     clases_alumnos[]
   ventas             ventas[]
 }
 
@@ -283,35 +282,35 @@ model reposiciones_caja_chica {
 }
 
 model cliente {
-  id_cliente         Int                  @id(map: "cliente_pk") @default(autoincrement())
+  id_cliente         Int               @id(map: "cliente_pk") @default(autoincrement())
   id_tipo_socio      Int?
   parent_id_cliente  Int?
   id_rol_usuario     Int?
-  password           String?              @db.VarChar(255)
-  estado_usuario     String?              @db.VarChar(50)
-  apellido           String               @db.VarChar(255)
-  nombre             String               @db.VarChar(255)
-  cedula             String               @unique(map: "cliente_cedula_index") @db.VarChar(255)
-  creadoen           DateTime             @default(now()) @db.Timestamp(6)
-  fecha_nacimiento   DateTime?            @db.Date
-  nombre_cmp         String?              @default("") @db.VarChar(255)
-  correo_electronico String?              @default("") @db.VarChar(255)
-  numero_telefono    String?              @db.VarChar(255)
-  direccion          String?              @default("") @db.VarChar(255)
-  ruc                String?              @default("") @db.VarChar(255)
-  editadoen          DateTime?            @db.Timestamp(6)
-  es_socio           Boolean?             @default(true)
-  eliminadoen        DateTime?            @db.Timestamp(6)
-  nombre_usuario     String?              @db.VarChar(50)
-  sexo               String?              @db.VarChar(10)
+  password           String?           @db.VarChar(255)
+  estado_usuario     String?           @db.VarChar(50)
+  apellido           String            @db.VarChar(255)
+  nombre             String            @db.VarChar(255)
+  cedula             String            @unique(map: "cliente_cedula_index") @db.VarChar(255)
+  creadoen           DateTime          @default(now()) @db.Timestamp(6)
+  fecha_nacimiento   DateTime?         @db.Date
+  nombre_cmp         String?           @default("") @db.VarChar(255)
+  correo_electronico String?           @default("") @db.VarChar(255)
+  numero_telefono    String?           @db.VarChar(255)
+  direccion          String?           @default("") @db.VarChar(255)
+  ruc                String?           @default("") @db.VarChar(255)
+  editadoen          DateTime?         @db.Timestamp(6)
+  es_socio           Boolean?          @default(true)
+  eliminadoen        DateTime?         @db.Timestamp(6)
+  nombre_usuario     String?           @db.VarChar(50)
+  sexo               String?           @db.VarChar(10)
   nivel              Int?
-  agendamiento_clase agendamiento_clase[]
   caja               caja[]
   caja_chica         caja_chica[]
-  cliente            cliente?             @relation("clienteTocliente", fields: [parent_id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_cliente_fk")
-  other_cliente      cliente[]            @relation("clienteTocliente")
-  roles_usuario      roles_usuario?       @relation(fields: [id_rol_usuario], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_socio_fk")
-  tipo_socio         tipo_socio?          @relation(fields: [id_tipo_socio], references: [id_tipo_socio], onDelete: NoAction, onUpdate: NoAction, map: "tipo_socio_socio_fk")
+  clases_alumnos     clases_alumnos[]
+  cliente            cliente?          @relation("clienteTocliente", fields: [parent_id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_cliente_fk")
+  other_cliente      cliente[]         @relation("clienteTocliente")
+  roles_usuario      roles_usuario?    @relation(fields: [id_rol_usuario], references: [id_rol_usuario], onDelete: NoAction, onUpdate: NoAction, map: "roles_usuario_socio_fk")
+  tipo_socio         tipo_socio?       @relation(fields: [id_tipo_socio], references: [id_tipo_socio], onDelete: NoAction, onUpdate: NoAction, map: "tipo_socio_socio_fk")
   compras            compras[]
   cuotas_socio       cuotas_socio[]
   inscripciones      inscripciones[]
@@ -397,6 +396,7 @@ model ventas {
   id_cuota_socio       Int?
   id_cliente_reserva   Int?
   id_agendamiento      Int?
+  id_periodo_fact      Int?
   id_tipo_ingreso      Int?
   id_inscripcion       Int?
   estado               String                @db.VarChar(50)
@@ -408,7 +408,6 @@ model ventas {
   editado_por          Int?
   editado_en           DateTime?             @db.Timestamp(6)
   cedula               String?               @db.VarChar(255)
-  id_periodo_fact      Int?
   movimiento_caja      movimiento_caja[]
   agendamiento_clase   agendamiento_clase?   @relation(fields: [id_agendamiento], references: [id_agendamiento], onDelete: NoAction, onUpdate: NoAction, map: "agendamiento_clase_ventas_fk")
   cliente              cliente               @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_ventas_fk")
@@ -585,4 +584,12 @@ model periodos_facturacion {
   monto_total     Int
   profesores      profesores @relation(fields: [id_profesor], references: [id_profesor], onDelete: NoAction, onUpdate: NoAction, map: "profesores_periodos_facturacion_fk")
   ventas          ventas[]
+}
+
+model clases_alumnos {
+  id_clase_alumno    Int                @id(map: "clases_alumnos_pk") @default(autoincrement())
+  id_agendamiento    Int
+  id_cliente         Int
+  agendamiento_clase agendamiento_clase @relation(fields: [id_agendamiento], references: [id_agendamiento], onDelete: NoAction, onUpdate: NoAction, map: "agendamiento_clase_clases_alumnos_fk")
+  cliente            cliente            @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "cliente_clases_alumnos_fk")
 }

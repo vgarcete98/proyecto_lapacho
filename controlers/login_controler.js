@@ -41,7 +41,8 @@ const login = async ( req = request, res = response )=> {
             );
         }else {
 
-            if ( contraseña === desencriptar_password( socio.password ) ) { 
+            const desencriptado = JSON.parse(desencriptar_password( socio.password ));
+            if ( contraseña ===  desencriptado.contraseña) { 
 
                 const { id_cliente, id_rol_usuario,  } = socio;
                 

@@ -4,6 +4,8 @@ const { PrismaClient } = require('@prisma/client');
 const { generar_fecha } = require('../helpers/generar_fecha');
 const { withOptimize } = require("@prisma/extension-optimize");
 
+const { subir_imagen } = require( '../models/subir_imagen_cloud' );
+
 const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
 
 
@@ -513,7 +515,9 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
         //----------------------------------------------------------------------------------------------------------------------------
         let monto_total = 0;
         let factura = {};
+        let imagen_comprobante = '';
         let detalleFactura = [];
+        let subida_comprobante = false;
         //----------------------------------------------------------------------------------------------------------------------------
         if ( ventas.length > 0  ){
             //GENERO O COMPLETO LAS CABECERAS DE MI FACTURA
@@ -542,13 +546,21 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                             } );
                     //----------------------------------------------------------------------------------------------------------------------------
                     let imagen_comprobante = '';
-                    if ( Number(tipoPago) === 2 ){
+                    if ( Number(tipoPago) === 2 && subida_comprobante === true){
+                        try {
+                            const { archivo } = req.files;
+                            let comprobante = await subir_imagen( archivo );
+                            console.log( comprobante );
+                            if ( comprobante !== '' ){
+                                let { url } = comprobante;
+                                imagen_comprobante = url;
+                                subida_comprobante = true;
+                            }
+                            
+                        } catch (error) {
+                            
+                        }
 
-                        const { archivo } = req.files;
-                        let imagen_comprobante = await subir_imagen( archivo );
-    
-                        let { url } = imagen_comprobante;
-                        imagen_comprobante = url
                     }
                     //SERIA COMO EL DETALLE DE LA FACTURA
                     //----------------------------------------------------------------------------------------------------------------------------

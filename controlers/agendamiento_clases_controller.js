@@ -332,7 +332,8 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
                                                                         id_precio_clase : true
                                                                     }
                                                                 } );
-
+        //console.log( precio_clase )
+        const { id_profesor, precio, id_precio_clase } = precio_clase
         const clase_nueva = await prisma.agendamiento_clase.create( { 
                                                                         data : { 
                                                                                     id_profesor : Number(idProfesor),
@@ -340,9 +341,11 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
                                                                                     //fecha_agendamiento : generar_fecha( fechaAgendamiento ),
                                                                                     horario_inicio : fecha_desde_format,
                                                                                     horario_hasta : fecha_hasta_format,
-                                                                                    
+                                                                                    clase_abonada : false,
+                                                                                    monto_abonado : precio,
+                                                                                    fecha_agendamiento : new Date(),
                                                                                     creadoen : new Date(),
-                                                                                    id_precio_clase : precio_clase.id_precio_clase,
+                                                                                    id_precio_clase : id_precio_clase,
                                                                                     //monto_abonado : precio_clase.precio,
                                                                                     //precio_clase : precio_clase.precio
                                                                                     //clase_eliminada : false,

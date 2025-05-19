@@ -14,8 +14,10 @@ const verificar_edad = async ( req = request, res = response, next )=>{
 
 
         let inscripciones_validas = false;
-        const cliente = await prisma.cliente.findUnique( { where : { id_cliente : Number(idCliente) } } )
-        const cliente_edad = (new Date()).getFullYear - cliente.fecha_nacimiento.getFullYear();
+        const cliente = await prisma.cliente.findUnique( { where : { id_cliente : Number(idCliente) }, select : { fecha_nacimiento : true } } );
+        console.log( (new Date()).getFullYear, cliente.fecha_nacimiento.getFullYear());
+        const cliente_edad = (new Date()).getFullYear() - cliente.fecha_nacimiento.getFullYear();
+        console.log( cliente_edad )
         for (const element of categorias) {
             let { idCategoria } = element;
             let reglas_categoria = await prisma.categorias.findUnique( { where : { 
@@ -27,14 +29,17 @@ const verificar_edad = async ( req = request, res = response, next )=>{
                                                                         } 
                                                                     } );
             if ( reglas_categoria !== null ) {
-                if (  cliente_edad >= reglas_categoria.edad  && cliente_edad <= reglas_categoria.edad) {
+                const { edad_maxima, edad_minima } = reglas_categoria;
+                console.log( reglas_categoria );
+                console.log( cliente_edad >= edad_minima, ( (edad_maxima === null )? true : cliente_edad <= edad_maxima ) )
+                if (  cliente_edad >= edad_minima  && ( (edad_maxima === null )? true : cliente_edad <= edad_maxima ) ) {
                     inscripciones_validas = true;
                     break;
                 }
             }
         }
         
-        if ( inscripciones_validas === true ){
+        if ( inscripciones_validas === false ){
 
             res.status( 400 ).json( {
                 status : false,
@@ -80,7 +85,8 @@ const verificar_sexo = async ( req = request, res = response, next )=>{
                                                                     } );
             if( reglas_categoria !== null ) {
                 console.log( cliente_sexo )
-                if ( cliente_sexo !== reglas_categoria.sexo ) {
+                const { sexo } = reglas_categoria
+                if ( (cliente_sexo !== sexo) && (sexo !== null) ) {
                     inscripciones_validas = true;
                     break;
                 }
