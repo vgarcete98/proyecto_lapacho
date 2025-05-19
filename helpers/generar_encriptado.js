@@ -39,10 +39,11 @@ const encriptar_password = ( password = "" )=> {
 
 const desencriptar_password = ( password_encriptado = "" ) =>{
     // Desencriptado
+    //console.log( password_encriptado )
     var bytes  = AES.decrypt(password_encriptado, process.env.ENCRYPTS3CR3TEDK3Y);
     var decryptedData = bytes.toString(CryptoJS.enc.Utf8);
     
-    //console.log(decryptedData); // 
+    console.log(decryptedData); // 
 
     return decryptedData;
 }

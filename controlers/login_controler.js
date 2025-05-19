@@ -41,8 +41,18 @@ const login = async ( req = request, res = response )=> {
             );
         }else {
 
-            const desencriptado = JSON.parse(desencriptar_password( socio.password ));
-            if ( contraseña ===  desencriptado.contraseña) { 
+            //console.log( `hasta aca llegue` )
+
+            const desencriptado = desencriptar_json(socio.password) ;
+            let real ;
+
+            if ( (desencriptado !== "") ){
+                real = desencriptado.contraseña;
+            }else {
+                real = desencriptar_password( socio.password )
+            }
+            //console.log( desencriptado )
+            if ( contraseña ===  real ) { 
 
                 const { id_cliente, id_rol_usuario,  } = socio;
                 
@@ -100,6 +110,21 @@ const login = async ( req = request, res = response )=> {
 
 }
 
+
+
+const desencriptar_json = ( objeto_json = "" )=>{
+
+
+    try {
+        const json = JSON.parse(desencriptar_password( socio.password ));
+        return json;
+    } catch (error) {
+
+        return "";
+        
+    }
+
+}
 
 
 module.exports = {
