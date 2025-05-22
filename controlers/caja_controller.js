@@ -158,13 +158,17 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
         const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`; 
 
         //ESTO ES PARA REALIZARLO DE UNA FORMA MAS RESUMIDA
-        const query = `SELECT X.nro_comprobante AS "nroComprobante", 
+        const query = `SELECT  X.nro_factura AS "nroFactura",
+                                X.timbrado AS "timbrado",
+                                X.nro_comprobante AS "nroComprobante", 
                                 X.tipo_comprobante AS "tipoComprobante",
                                 X.tipo_operacion AS "tipoOperacion",
                                 SUM(X.monto) :: INTEGER AS "monto",
                                 TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')  as "fechaEmision",
                                 (COUNT(*) OVER() ) :: integer AS cantidad
-                                            FROM (SELECT CASE WHEN ( A.NRO_FACTURA IS NULL ) THEN A.NRO_COMPROBANTE ELSE A.NRO_FACTURA END AS "nro_comprobante",
+                                            FROM (SELECT A.NRO_FACTURA AS "nro_factura",
+                                                        A.TIMBRADO AS "timbrado",
+                                                        A.NRO_COMPROBANTE  AS "nro_comprobante",
                                                         CASE WHEN ( A.NRO_FACTURA IS NOT NULL ) THEN 'FACTURA' ELSE 'COMPROBANTE' END AS "tipo_comprobante",
                                                         CASE WHEN (A.ID_COMPRA IS NULL) THEN 'VENTA' ELSE 'COMPRA' END AS "tipo_operacion",
                                                         A.FECHA_OPERACION,
@@ -174,7 +178,7 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
                                                     LEFT JOIN VENTAS D ON A.ID_VENTA = D.ID_VENTA 
                                                     LEFT JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
                                                 WHERE (A.fecha_operacion :: DATE ) BETWEEN ('${fecha_desde_format}' :: DATE) AND ('${fecha_hasta_format}' :: DATE)) AS X
-                        GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')
+                        GROUP BY X.nro_factura,X.timbrado, X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')
                         LIMIT ${cantidad} OFFSET ${(Number(pagina) - 1)*cantidad }`;
         console.log( query )
         const movimientos_de_caja = await prisma.$queryRawUnsafe(query);
@@ -504,6 +508,75 @@ const crear_tipo_pago = async ( req = request, res = response ) => {
 
 }
 
+
+
+
+const adjuntar_comprobante_venta = async ( req = request, res = response ) => {
+
+    try {
+
+        const { nro_factura, timbrado } = req.query;
+        const { archivo } = req.files;
+        let imagen_comprobante = '';
+        let detalleFactura = [];
+        let subida_comprobante = false;
+
+        let comprobante = await subir_imagen( archivo );
+        console.log( comprobante );
+        if ( comprobante !== '' ){
+            let { url } = comprobante;
+            imagen_comprobante = url;
+
+            const actualiza_movimiento = await prisma.movimiento_caja.updateMany( { 
+                                                                                where : { 
+                                                                                    AND :[
+
+                                                                                        { nro_factura : nro_factura },
+                                                                                        { timbrado : Number(timbrado) }
+                                                                                    ]
+                                                                                },
+                                                                                data : { 
+                                                                                    nro_comprobante : imagen_comprobante
+                                                                                }
+                                                                            } );
+            if ( actualiza_movimiento.count > 0 ){
+
+                subida_comprobante = true;
+            }
+
+        }
+
+        if ( subida_comprobante === true ){
+
+            res.status( 200 ).json( {
+                status : true,
+                msg : 'Se ha adjuntado el comprobante a la venta',
+                descripcion : `Se adjunto el comprobante con exito a la venta`
+            } ); 
+
+
+        }else { 
+            res.status( 400 ).json( {
+                status : false,
+                msg : 'No se adjunto el comprobante a la venta',
+                descripcion : `Ocurrio algo al adjuntar el comprobante a la venta intente de nuevo`
+            } );   
+        }
+        
+    } catch (error) {
+        console.log(error);
+        res.status( 500 ).json( {
+            status : false,
+            msg : 'Error al adjuntar el comprobante a la venta',
+            //error
+        } );
+        
+    } 
+
+
+
+}
+
 const generar_movimientos_de_caja_ventas = async ( req = request, res = response ) =>{ 
 
     try {
@@ -515,9 +588,11 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
         //----------------------------------------------------------------------------------------------------------------------------
         let monto_total = 0;
         let factura = {};
-        let imagen_comprobante = '';
         let detalleFactura = [];
-        let subida_comprobante = false;
+        //const detallesFactura = {
+        //    nroTimbrado,
+        //    nroFactura
+        //}
         //----------------------------------------------------------------------------------------------------------------------------
         if ( ventas.length > 0  ){
             //GENERO O COMPLETO LAS CABECERAS DE MI FACTURA
@@ -545,23 +620,6 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                                 } 
                                                             } );
                     //----------------------------------------------------------------------------------------------------------------------------
-                    let imagen_comprobante = '';
-                    if ( Number(tipoPago) === 2 && subida_comprobante === true){
-                        try {
-                            const { archivo } = req.files;
-                            let comprobante = await subir_imagen( archivo );
-                            console.log( comprobante );
-                            if ( comprobante !== '' ){
-                                let { url } = comprobante;
-                                imagen_comprobante = url;
-                                subida_comprobante = true;
-                            }
-                            
-                        } catch (error) {
-                            
-                        }
-
-                    }
                     //SERIA COMO EL DETALLE DE LA FACTURA
                     //----------------------------------------------------------------------------------------------------------------------------
                     let movimientos_de_caja = await prisma.movimiento_caja.create( { 
@@ -579,8 +637,13 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                                                             creado_en : new Date(),
                                                                                             id_tipo_ingreso : Number(tipoServicio),
                                                                                             fecha_operacion : new Date(),
-                                                                                            timbrado : Number( nroTimbrado )
-                                                                                        } 
+                                                                                            timbrado : Number( nroTimbrado ),
+                                                                                        },
+                                                                                        select : {
+                                                                                            timbrado : true,
+                                                                                            nro_factura : true
+
+                                                                                        }
                                                                                 } );
                     //OK ACTUALIZO EL ESTADO DE LA VENTA A PAGADO
                     let actualiza_venta = await prisma.ventas.update( { 
@@ -645,7 +708,8 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
             msg : 'Ventas Procesadas con exito',
             descripcion : `Se han procesado todas las ventas que se tenian disponibles`,
             factura,
-            detalleFactura
+            detalleFactura,
+            //detallesFactura
         } );
 
     }else { 
@@ -1056,5 +1120,6 @@ module.exports = {
     generar_movimientos_de_caja_compras,
     obtener_detalles_caja,
     obtener_movimientos_de_caja_al_cierre,
-    obtener_resumen_de_caja_al_cierre
+    obtener_resumen_de_caja_al_cierre,
+    adjuntar_comprobante_venta
 }

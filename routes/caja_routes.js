@@ -14,7 +14,8 @@ const {
     generar_movimientos_de_caja_compras,
     obtener_detalles_caja,
     obtener_movimientos_de_caja_al_cierre,
-    obtener_resumen_de_caja_al_cierre
+    obtener_resumen_de_caja_al_cierre,
+    adjuntar_comprobante_venta
 } = require( '../controlers/caja_controller' );
 const { verificar_existe_caja_abierta, verificar_existe_caja_vigente } = require('../middlewares/verificar_existe_caja_abierta');
 
@@ -37,24 +38,18 @@ const router_caja = Router();
 router_caja.get( '/obtener_movimientos_caja', [  ],  obtener_movimientos_de_caja);
 
 router_caja.post( '/generar_movimientos_de_caja/ventas', [ 
-                                                            async ( req = request, res = response, next )=>{
-
-                                                                //console.log( req.body )
-                                                                const { data } = req.body;
-                                                                req.body = JSON.parse( data )
-                                                                //console.log( req.body )
-                                                                //console.log( data )
-                                                                next()
-                                                            },
                                                             verificar_existe_caja_abierta, 
                                                             verifica_ventas_existentes, 
                                                             verificar_ventas_a_caja, 
                                                             verificar_ventas_procesadas, 
                                                             comprobar_utilizacion_factura_registrada, 
                                                             comprobar_factura_registrada, 
-                                                            comprobar_salto_factura,
-                                                            verificar_datos_tipo_movimiento
+                                                            comprobar_salto_factura
                                                         ], generar_movimientos_de_caja_ventas );
+
+router_caja.put( '/adjuntar_comprobante_venta', [ 
+                                                    verificar_datos_tipo_movimiento
+                                                ], adjuntar_comprobante_venta );                                                        
 
 router_caja.post( '/generar_movimientos_de_caja/compras', [ verificar_existe_caja_abierta, verifica_compras_existentes, verificar_compras_a_caja, verificar_compras_procesadas ], generar_movimientos_de_caja_compras );
 
