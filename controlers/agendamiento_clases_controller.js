@@ -16,7 +16,7 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
 
         const { fechaDesde, fechaHasta, pagina, nombreProfesor, apellidoProfesor,
                 nombreSocio, apellidoSocio, cedulaSocio, cedulaProfesor, idUsuario } = req.query;
-
+        console.log( cedulaSocio );
         const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
 
         const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
@@ -25,17 +25,25 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
 
         const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
 
-        const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
-                        		D.nombre_cmp, 
-                                --A.fecha_agendamiento,
-                                C.id_mesa, C.desc_mesa, 
-                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado,
+        const query = `SELECT A.id_agendamiento AS "idAgendamiento", 
+                                B.id_profesor AS "idProfesor", 
+                                B.nombre_profesor AS "nombreProfesor", 
+                                D.id_cliente AS "idCliente", 
+                        		D.nombre_cmp AS "nombreCmp", 
+                                --A.fecha_agendamiento AS "fechaAgendamiento", 
+                                C.id_mesa AS "idMesa", 
+                                C.desc_mesa AS "descMesa", 
+                        		A.horario_inicio AS "horaDesde", 
+                                A.horario_hasta AS "horaHasta", 
+                                A.clase_abonada AS "claseAgendada", 
+                                A.monto_abonado AS "montoAbonado",
                                 A.creadoen AS "fechaCreacion"
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
-                        	JOIN socio D ON D.id_socio = A.id_socio
+                            JOIN clases_alumnos F on F.id_agendamiento = A.id_agendamiento
+                        	JOIN cliente D ON D.id_cliente = F.id_cliente
                         WHERE A.fecha_agendamiento BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
-                        ${ ( idUsuario === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
+                        ${ ( idUsuario === undefined ) ? `` : `AND D.id_cliente = ${ idUsuario }` }
                         ${ ( nombreProfesor === undefined ) ? `` : `AND B.nombre_profesor LIKE '%${ nombreProfesor }%'` }                        
                         ${ ( apellidoProfesor === undefined ) ? `` : `AND B.nombre_profesor = '%${ apellidoProfesor }%'` }
                         ${ ( nombreSocio === undefined ) ? `` : `AND D.nombre_cmp LIKE '%${ nombreSocio }%'` }
@@ -43,7 +51,7 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
                         ${ ( cedulaProfesor === undefined ) ? `` : `AND B.cedula = ${ cedulaProfesor }` }
                         ${ ( cedulaSocio === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
                         ORDER BY A.fecha_agendamiento DESC
-                        LIMIT 20 OFFSET ${Number(pagina) - 1 }`;
+                        LIMIT 20 OFFSET ${Number(pagina) }`;
         //console.log( query );
         let clases_del_dia, clasesDelDia = [];
         clases_del_dia = await prisma.$queryRawUnsafe( query );  
@@ -120,18 +128,23 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
 
         const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
 
-        const query = `SELECT A.id_agendamiento, 
-                                B.id_profesor, 
-                                B.nombre_profesor, 
-                                D.id_socio, 
-                        		D.nombre_cmp, 
-                                --A.fecha_agendamiento, 
-                                C.id_mesa, C.desc_mesa, 
-                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado,
+        const query = `SELECT A.id_agendamiento AS "idAgendamiento", 
+                                B.id_profesor AS "idProfesor", 
+                                B.nombre_profesor AS "nombreProfesor", 
+                                D.id_cliente AS "idCliente", 
+                        		D.nombre_cmp AS "nombreCmp", 
+                                --A.fecha_agendamiento AS "fechaAgendamiento", 
+                                C.id_mesa AS "idMesa", 
+                                C.desc_mesa AS "descMesa", 
+                        		A.horario_inicio AS "horaDesde", 
+                                A.horario_hasta AS "horaHasta", 
+                                A.clase_abonada AS "claseAgendada", 
+                                A.monto_abonado AS "montoAbonado",
                                 A.creadoen AS "fechaCreacion"
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
-                        	JOIN socio D ON D.id_socio = A.id_socio
+                            JOIN clases_alumnos F on F.id_agendamiento = A.id_agendamiento
+                        	JOIN cliente D ON D.id_cliente = F.id_cliente
                         WHERE A.fecha_agendamiento BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
                         ${ ( idUsuario === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
                         ${ ( nombreProfesor === undefined ) ? `` : `AND B.nombre_profesor LIKE '%${ nombreProfesor }%'` }                        
@@ -217,15 +230,23 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
     
         const fecha_hasta_format = `${annio_hasta}-${mes_hasta}-${dia_hasta}`;   
 
-        const query = `SELECT A.id_agendamiento, B.id_profesor, B.nombre_profesor, D.id_socio, 
-                        		D.nombre_cmp, 
-                                --A.fecha_agendamiento, 
-                                C.id_mesa, C.desc_mesa, 
-                        		A.horario_inicio, A.horario_hasta, A.clase_abonada, A.monto_abonado,
+        const query = `SELECT SELECT A.id_agendamiento AS "idAgendamiento", 
+                                B.id_profesor AS "idProfesor", 
+                                B.nombre_profesor AS "nombreProfesor", 
+                                D.id_cliente AS "idCliente", 
+                        		D.nombre_cmp AS "nombreCmp", 
+                                --A.fecha_agendamiento AS "fechaAgendamiento", 
+                                C.id_mesa AS "idMesa", 
+                                C.desc_mesa AS "descMesa", 
+                        		A.horario_inicio AS "horaDesde", 
+                                A.horario_hasta AS "horaHasta", 
+                                A.clase_abonada AS "claseAgendada", 
+                                A.monto_abonado AS "montoAbonado",
                                 A.creadoen AS "fechaCreacion"
                         	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
                         	JOIN mesas C ON C.id_mesa = A.id_mesa
-                        	JOIN socio D ON D.id_socio = A.id_socio
+                            JOIN clases_alumnos F on F.id_agendamiento = A.id_agendamiento
+                        	JOIN cliente D ON D.id_cliente = F.id_cliente
                         WHERE A.fecha_agendamiento BETWEEN  TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
                                 AND B.id_profesor = ${ Number( id_profesor ) }
                                 ${ ( nombreProfesor === undefined ) ? `` : `AND B.nombre_profesor LIKE '%${ nombreProfesor }%'` }                        

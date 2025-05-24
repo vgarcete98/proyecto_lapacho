@@ -156,12 +156,15 @@ const obtener_profesor_cedula_nombre = async ( req = request, res = response ) =
                 const { costo_x_hora, precio_clase, cedula, 
                         id_profesor, porc_facturacion, contacto_profesor,
                         nombre_profesor, estado_profesor} = element;
-                return { cedula,
+                return { 
+                        cedula,
                         contactoProfesor : contacto_profesor,
                         costoXHora : costo_x_hora,
                         estadoProfesor : estado_profesor,
                         idProfesor : id_profesor,
-                        nombreProfe : nombre_profesor
+                        nombreProfesor : nombre_profesor,
+                        precioClase : precio_clase,
+                        porcFacturacion : porc_facturacion
                     };
             });
             res.status( 200 ).json( {
