@@ -43,7 +43,7 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
                             JOIN clases_alumnos F on F.id_agendamiento = A.id_agendamiento
                         	JOIN cliente D ON D.id_cliente = F.id_cliente
                         WHERE A.fecha_agendamiento BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
-                        ${ ( idUsuario === undefined ) ? `` : `AND D.id_cliente = ${ idUsuario }` }
+                        --${ ( idUsuario === undefined ) ? `` : `AND D.id_cliente = ${ idUsuario }` }
                         ${ ( nombreProfesor === undefined ) ? `` : `AND B.nombre_profesor LIKE '%${ nombreProfesor }%'` }                        
                         ${ ( apellidoProfesor === undefined ) ? `` : `AND B.nombre_profesor = '%${ apellidoProfesor }%'` }
                         ${ ( nombreSocio === undefined ) ? `` : `AND D.nombre_cmp LIKE '%${ nombreSocio }%'` }
@@ -61,36 +61,14 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
             res.status( 200 ).json( {
                 status : false,
                 msg : "No se encontraron clases en esas fechas",
-                clasesDelDia
+                clasesDelDia : []
             } );
         }else {
 
-            const clasesDelDia = clases_del_dia.map( ( element )=>{
-                const { id_agendamiento, id_profesor, nombre_profesor, id_socio, nombre_cmp,
-                        id_mesa, desc_mesa, clase_abonada, monto_abonado,
-                        /*fechaAgendamiento,*/ horario_inicio, horario_hasta, fechaCreacion } = element;
-                return {
-                    idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
-                    nombreCmp : nombre_cmp,
-                    //fechaAgendamiento : fecha_agendamiento, 
-                    fechaCreacion,
-                    horaDesde : horario_inicio, 
-                    horaHasta : horario_hasta,
-                    descMesa : desc_mesa,
-                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
-                    //----------------------------------------------------------------------------------------
-                    idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                    nombreProfesor : nombre_profesor,
-                    idProfesor : id_profesor,
-                    claseAgendada : clase_abonada,
-                    montoAbonado : monto_abonado
-                    //----------------------------------------------------------------------------------------
-                }
-            } );
             res.status( 200 ).json( {
                 status : true,
                 msg : "Clases de esas fechas",
-                clasesDelDia
+                clasesDelDia : clases_del_dia
             } );
         }
     } catch (error) {
@@ -146,7 +124,7 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
                             JOIN clases_alumnos F on F.id_agendamiento = A.id_agendamiento
                         	JOIN cliente D ON D.id_cliente = F.id_cliente
                         WHERE A.fecha_agendamiento BETWEEN TIMESTAMP '${fecha_desde_format}' AND TIMESTAMP '${fecha_hasta_format}'
-                        ${ ( idUsuario === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
+                        --${ ( idUsuario === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
                         ${ ( nombreProfesor === undefined ) ? `` : `AND B.nombre_profesor LIKE '%${ nombreProfesor }%'` }                        
                         ${ ( apellidoProfesor === undefined ) ? `` : `AND B.nombre_profesor = '%${ apellidoProfesor }%'` }
                         ${ ( nombreSocio === undefined ) ? `` : `AND D.nombre_cmp LIKE '%${ nombreSocio }%'` }
@@ -163,36 +141,14 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
             res.status( 200 ).json( {
                 status : false,
                 msg : "No se encontraron clases para el dia de hoy",
-                clasesDelDia
+                clasesDelDia : []
             } );
         }else {
 
-            const clasesDelDia = clases_del_dia.map( ( element )=>{
-                const { id_agendamiento, id_profesor, nombre_profesor, id_socio, nombre_cmp,
-                        id_mesa, desc_mesa, clase_abonada, monto_abonado,
-                        /*fechaAgendamiento,*/ horario_inicio, horario_hasta, fechaCreacion } = element;
-                return {
-                    idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
-                    nombreCmp : nombre_cmp,
-                    //fechaAgendamiento : fecha_agendamiento, 
-                    fechaCreacion,
-                    horaDesde : horario_inicio, 
-                    horaHasta : horario_hasta,
-                    descMesa : desc_mesa,
-                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
-                    //----------------------------------------------------------------------------------------
-                    idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                    nombreProfesor : nombre_profesor,
-                    idProfesor : id_profesor,
-                    claseAgendada : clase_abonada,
-                    montoAbonado : monto_abonado
-                    //----------------------------------------------------------------------------------------
-                }
-            } );
             res.status( 200 ).json( {
                 status : true,
                 msg : "Clases para el dia de hoy",
-                clasesDelDia
+                clasesDelDia : clases_del_dia
             } );
         }
     } catch (error) {
@@ -262,36 +218,14 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
             res.status( 200 ).json( {
                 status : false,
                 msg : "No se encontraron clases para el dia de hoy",
-                clasesDelDia
+                clasesDelDia : []
             } );
         }else {
 
-            const clasesDelDia = clases_del_dia.map( ( element )=>{
-                const { id_agendamiento, id_profesor, nombre_profesor, id_socio, nombre_cmp,
-                        id_mesa, desc_mesa, clase_abonada, monto_abonado,
-                        fecha_agendamiento, horario_inicio, horario_hasta } = element;
-                return {
-                    idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
-                    nombreCmp : nombre_cmp,
-                    //fechaAgendamiento : fecha_agendamiento, 
-                    fechaCreacion,
-                    horaDesde : horario_inicio, 
-                    horaHasta : horario_hasta,
-                    descMesa : desc_mesa,
-                    idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
-                    //----------------------------------------------------------------------------------------
-                    idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                    nombreProfesor : nombre_profesor,
-                    idProfesor : id_profesor,
-                    claseAgendada : clase_abonada,
-                    montoAbonado : monto_abonado
-                    //----------------------------------------------------------------------------------------
-                }
-            } );
             res.status( 200 ).json( {
                 status : true,
                 msg : "Clases para el dia de hoy",
-                clasesDelDia
+                clasesDelDia : clases_del_dia
             } );
         }
     } catch (error) {

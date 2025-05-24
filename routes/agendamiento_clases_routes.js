@@ -32,11 +32,11 @@ const { verificar_existe_alumno_asignado_a_clase } = require('../middlewares/ver
 const router_agendamientos_clase = Router();
 
 
-router_agendamientos_clase.get( '/obtener_clases_x_fecha', [ verificar_vista_usuario ], obtener_clases_del_dia );
+router_agendamientos_clase.get( '/obtener_clases_x_fecha', [ /*verificar_vista_usuario*/ ], obtener_clases_del_dia );
 
-router_agendamientos_clase.get( '/obtener_clases_x_fecha_socio', [ verificar_vista_usuario ], obtener_clases_del_dia_x_socio );
+router_agendamientos_clase.get( '/obtener_clases_x_fecha_socio', [ /*verificar_vista_usuario*/ ], obtener_clases_del_dia_x_socio );
 
-router_agendamientos_clase.post( '/obtener_mesas_disponibles_x_horario', [ verificar_vista_usuario ], obtener_mesas_disponibles_x_horario );
+router_agendamientos_clase.post( '/obtener_mesas_disponibles_x_horario', [ /*verificar_vista_usuario*/ ], obtener_mesas_disponibles_x_horario );
 
 router_agendamientos_clase.get( '/obtener_clases_x_fecha_profesor', [], obtener_clases_x_profesor_dia );
 

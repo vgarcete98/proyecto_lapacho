@@ -60,7 +60,7 @@ const verificar_vista_usuario = async ( req = request, res = response, next ) =>
         
             {
                 status : false,
-                msg : `Ha ocurrido un error al realizar la consulta, No se pudo generar el token : ${ error }`,
+                msg : `Ha ocurrido un error al verificar la vista del usuario : ${ error }`,
                 //mensaje_error : error
             }
     
