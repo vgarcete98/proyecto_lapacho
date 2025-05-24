@@ -100,56 +100,80 @@ const obtener_profesor_cedula_nombre = async ( req = request, res = response ) =
     //const { id_profesor_cons } = req.params;
 
     try {
-        const { busqueda } = req.query;
-        var profesor;
+        const { busqueda, cedula } = req.query;
+        let profesores;
         //console.log( typeof( busqueda ), busqueda );
-        if( Number( busqueda ) === NaN || typeof( busqueda ) === 'string') {
+        if( (busqueda ) !== null && busqueda !== undefined ) {
             //console.log( typeof( busqueda ), busqueda );
-            profesor = await prisma.profesores.findFirst( { where : { 
-                                                                        OR : [
-                                                                                { nombre_profesor : { startsWith : busqueda, mode: 'insensitive' } },
-                                                                                { nombre_profesor : { endsWith : busqueda, mode: 'insensitive' } },
-                                                                                { nombre_profesor : { contains : busqueda, mode: 'insensitive' } }
-                                                                            ]
-                                                                    } 
+            profesores = await prisma.profesores.findMany( { where : { 
+                                                                nombre_profesor : {
+                                                                    contains : busqueda,
+                                                                    mode : 'insensitive'
+                                                                }
+                                                            },
+                                                            select : {
+                                                                costo_x_hora : true,
+                                                                precio_clase : true,
+                                                                cedula : true,
+                                                                id_profesor : true,
+                                                                porc_facturacion : true,
+                                                                contacto_profesor : true,
+                                                                nombre_profesor : true,
+                                                                estado_profesor : true
+                                                            }
                                                         } ); 
-        }else {
-            profesor = await prisma.profesores.findFirst( { where : { cedula : busqueda } } );
+        }else if ( cedula !== null & cedula !== undefined ){
+            profesores = await prisma.profesores.findMany( { 
+                                                            where : { cedula : busqueda },
+                                                            select : {
+                                                                costo_x_hora : true,
+                                                                precio_clase : true,
+                                                                cedula : true,
+                                                                id_profesor : true,
+                                                                porc_facturacion : true,
+                                                                contacto_profesor : true,
+                                                                nombre_profesor : true,
+                                                                estado_profesor : true
+                                                            }
+                                                        } );
 
-       }
-        if ( profesor === null || profesor === undefined ) {
+        }else {
+            profesores = await prisma.profesores.findMany();
+        }
+
+        console.log( profesores )
+        if ( profesores === null || profesores === undefined ) {
 
             res.status( 200 ).json( {
                 status : false,
                 msg : "No se encontro el profesor mencionado",
-                profesor
+                profesores
             } );
 
         }else {
-            const { cedula, contacto_profesor, costo_x_hora, 
-                    creadoen, editadoen, estado_profesor, 
-                    id_profesor, nombre_profesor } = profesor;
 
-            const profesorFormateado = {
-                cedula,
-                contactoProfesor : contacto_profesor,
-                costoXHora : costo_x_hora,
-                creadoEn : creadoen,
-                editadoEn : editadoen,
-                estadoProfesor : estado_profesor,
-                idProfesor : id_profesor,
-                nombreProfe : nombre_profesor
-            }
+            const profesoresFormateado = profesores.map( element => {
+                const { costo_x_hora, precio_clase, cedula, 
+                        id_profesor, porc_facturacion, contacto_profesor,
+                        nombre_profesor, estado_profesor} = element;
+                return { cedula,
+                        contactoProfesor : contacto_profesor,
+                        costoXHora : costo_x_hora,
+                        estadoProfesor : estado_profesor,
+                        idProfesor : id_profesor,
+                        nombreProfe : nombre_profesor
+                    };
+            });
             res.status( 200 ).json( {
                 status : true,
-                msg : "Profesor Buscado",
-                profesorFormateado
+                msg : "Profesores Buscados",
+                profesoresFormateado
             } );
         } 
 
     } catch (error) {
         console.log ( error );
-        res.status( 5001 ).json( {
+        res.status( 500 ).json( {
             status : false,
             msg : "No se pudo obtener el Profesor Buscado",
         } );
