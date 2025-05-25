@@ -235,7 +235,7 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
                                             WHERE A.fecha_ingreso BETWEEN DATE '${fechaDesde}' AND DATE '${fechaHasta}'
                                                 AND A.borrado = false
                                             ORDER BY A.fecha_ingreso DESC
-                                            LIMIT ${ cantidad } OFFSET ${(Number(pagina) > 1 ) ? Number(pagina)* 20 : 0};`
+                                            LIMIT ${ cantidad } OFFSET ${(Number(pagina) > 1 ) ? Number(pagina)* 10 : 0};`
         //console.log( query_ingresos );
         const ingresosXFecha = await prisma.$queryRawUnsafe( query_ingresos );
 
