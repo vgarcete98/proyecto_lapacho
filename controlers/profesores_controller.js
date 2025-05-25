@@ -113,7 +113,6 @@ const obtener_profesor_cedula_nombre = async ( req = request, res = response ) =
                                                             },
                                                             select : {
                                                                 costo_x_hora : true,
-                                                                precio_clase : true,
                                                                 cedula : true,
                                                                 id_profesor : true,
                                                                 porc_facturacion : true,
@@ -127,7 +126,6 @@ const obtener_profesor_cedula_nombre = async ( req = request, res = response ) =
                                                             where : { cedula : busqueda },
                                                             select : {
                                                                 costo_x_hora : true,
-                                                                precio_clase : true,
                                                                 cedula : true,
                                                                 id_profesor : true,
                                                                 porc_facturacion : true,
@@ -141,7 +139,7 @@ const obtener_profesor_cedula_nombre = async ( req = request, res = response ) =
             profesores = await prisma.profesores.findMany();
         }
 
-        console.log( profesores )
+        //console.log( profesores )
         if ( profesores === null || profesores === undefined ) {
 
             res.status( 200 ).json( {
@@ -163,7 +161,6 @@ const obtener_profesor_cedula_nombre = async ( req = request, res = response ) =
                         estadoProfesor : estado_profesor,
                         idProfesor : id_profesor,
                         nombreProfesor : nombre_profesor,
-                        precioClase : precio_clase,
                         porcFacturacion : porc_facturacion
                     };
             });

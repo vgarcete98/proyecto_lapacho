@@ -179,8 +179,8 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
                                                     LEFT JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
                                                 WHERE (A.fecha_operacion :: DATE ) BETWEEN ('${fecha_desde_format}' :: DATE) AND ('${fecha_hasta_format}' :: DATE)) AS X
                         GROUP BY X.nro_factura,X.timbrado, X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')
-                        LIMIT ${cantidad} OFFSET ${(Number(pagina) - 1)*cantidad }`;
-        console.log( query )
+                        LIMIT ${cantidad} OFFSET ${(Number(pagina) > 1 ) ? Number(pagina)* cantidad : 0 }`;
+        //console.log( query )
         const movimientos_de_caja = await prisma.$queryRawUnsafe(query);
 
 
@@ -250,7 +250,7 @@ const obtener_movimientos_de_caja_al_cierre = async ( req = request, res = respo
                                                     LEFT JOIN COMPRAS F ON F.ID_COMPRA = A.ID_COMPRA
                                                 WHERE  B.ID_CAJA = (SELECT MAX(ID_CAJA) FROM CAJA WHERE FECHA_CIERRE IS NOT NULL )) AS X
                         GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')
-                        LIMIT ${cantidad} OFFSET ${(Number(pagina) - 1)*cantidad }`;
+                        LIMIT ${cantidad} OFFSET ${(Number(pagina) > 1 ) ? Number(pagina)* cantidad : 0 }`;
         //console.log( query )
         const movimientosDeCaja = await prisma.$queryRawUnsafe(query)
 

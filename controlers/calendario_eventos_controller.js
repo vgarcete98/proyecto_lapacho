@@ -143,7 +143,7 @@ const obtener_todos_los_torneos_x_fecha = async ( req = request, res = response 
                                     FROM eventos A JOIN EVENTOS B ON A.id_tipo_evento = B.id_tipo_evento
                                     WHERE A.fecha_desde_evento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
                                                                         AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }'
-                                    LIMIT ${cantidad} OFFSET ${(Number(pagina) - 1)*Number(cantidad) } `;
+                                    LIMIT ${cantidad} OFFSET ${(Number(pagina) > 1 ) ? Number(pagina)* cantidad : 0 } `;
 
         console.log( query_torneos );
 

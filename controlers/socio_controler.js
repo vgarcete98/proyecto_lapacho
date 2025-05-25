@@ -527,7 +527,7 @@ const obtener_socios = async ( req = request, res = response ) => {
                             FROM CLIENTE A JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
                         ${ ( nombre !== undefined && nombre !== '' )? `AND UPPER( CONCAT (A.NOMBRE, ' ', A.APELLIDO) ) LIKE '%${nombre.toUpperCase()}%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
-                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
+                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${(Number(omitir) > 1 ) ? Number(omitir)*10: 0 }` }`
         //console.log( query );
         socios = await prisma.$queryRawUnsafe( query );
         
@@ -598,7 +598,7 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
                         WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL )
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
-                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
+                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ (Number(omitir) > 1 ) ? Number(omitir)*10: 0 }` }`
         console.log( query )
         let sociosFormateados = await prisma.$queryRawUnsafe( query ); 
 
@@ -667,7 +667,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
                         WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  NULL, '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL)
                         ${ ( cedula !== undefined && cedula !== '' )? `AND A.CEDULA LIKE '%${ cedula }%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
-                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
+                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ (Number(omitir) > 1 ) ? Number(omitir)*10: 0 }` }`
 
         console.log(query);
 
@@ -742,7 +742,7 @@ const obtener_socio = async ( req = request, res = response ) => {
                         ${ ( nombre !== undefined ) && (apellido !== undefined )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre} ${apellido}%'` : `` }
                         ${ ( cedula !== undefined ) && ( cedula !== '' )?  `AND A.cedula = ${ cedula }` : ``}
                         ${ ( isNaN(cantidad)) ? `` : `LIMIT ${Number(cantidad)}`} 
-                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
+                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ (Number(omitir) > 1 ) ? Number(omitir)*10: 0 }` }`
 
         let socios = await prisma.$queryRawUnsafe(query_socio);
 
@@ -803,7 +803,7 @@ const obtener_socio_usuario = async ( req = request, res = response ) => {
                         WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL) AND A.NOMBRE_USUARIO IS NOT NULL
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
-                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
+                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ (Number(omitir) > 1 ) ? Number(omitir)*10: 0 }` }`
         //console.log( query )
         let usuariosFormateados = await prisma.$queryRawUnsafe( query ); 
 

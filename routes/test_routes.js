@@ -45,7 +45,7 @@ const obtener_socios_detallados_test = async ( req = request, res = response ) =
                         WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL )
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
-                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ Number(omitir) }` }`
+                        ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ (Number(omitir) > 1 ) ? Number(omitir)*10: 0 }` }`
         console.log( query )
         let sociosFormateados = await prisma.$queryRawUnsafe( query ); 
 

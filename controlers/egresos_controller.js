@@ -240,7 +240,7 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
                         WHERE A.fecha_pago BETWEEN DATE '${fecha_desde_format}' AND DATE '${fecha_hasta_format}'
                             AND A.borrado = false OR A.borrado IS NULL
                         ORDER BY A.fecha_pago DESC
-                        LIMIT 20 OFFSET ${Number(pagina)}`
+                        LIMIT 20 OFFSET ${(Number(pagina) > 1 ) ? Number(pagina)* 20 : 0}`
 
 
         //console.log ( query )
