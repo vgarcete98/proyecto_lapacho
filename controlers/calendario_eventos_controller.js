@@ -25,61 +25,83 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
         
         //console.log( "query de eventos" );
         //console.log( format( fecha_desde_format, 'yyyy-MM-dd' ), format( fecha_hasta_format, 'yyyy-MM-dd' ) )
-        const query_eventos = `SELECT A.id_evento AS "idEvento", 
-                                        B.id_tipo_evento AS "idTipoEvento", 
-                                        A.fecha_desde_evento AS "horaDesde", 
-                                        A.eventocreadoen AS "fechaCreacion", 
-                                        A.fecha_hasta_evento AS "horaHasta", 
-                                        --A.costo AS "costo", 
-                                        A.decripcion_evento AS "descripcion", 
-                                        A.nombre_evento AS "nombreCmp", 
-                                        A.todo_el_dia AS "todoEldia", 
-                                        --A.fechaagendamiento AS "fechaAgendamiento",
-                                        A.nombre_evento AS "descTipoEvento"
-                                    FROM eventos A JOIN tipos_evento B ON A.id_tipo_evento = B.id_tipo_evento
-                                    WHERE A.fecha_desde_evento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
-                                                                        AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }';`
-        const eventosMes =  await prisma.$queryRawUnsafe( query_eventos );  
+        let query_eventos = ``;
+        let eventosMes = [];
+        try {
+            query_eventos = `SELECT A.id_evento AS "idEvento", 
+                              B.id_tipo_evento AS "idTipoEvento", 
+                              A.fecha_desde_evento AS "horaDesde", 
+                              A.eventocreadoen AS "fechaCreacion", 
+                              A.fecha_hasta_evento AS "horaHasta", 
+                              --A.costo AS "costo", 
+                              A.decripcion_evento AS "descripcion", 
+                              A.nombre_evento AS "nombreCmp", 
+                              A.todo_el_dia AS "todoEldia", 
+                              --A.fechaagendamiento AS "fechaAgendamiento",
+                              A.nombre_evento AS "descTipoEvento"
+                          FROM eventos A JOIN tipos_evento B ON A.id_tipo_evento = B.id_tipo_evento
+                          WHERE A.fecha_desde_evento BETWEEN TIMESTAMP '${ format( fecha_desde_format, 'yyyy-MM-dd' ) }' 
+                                                              AND TIMESTAMP '${ format( fecha_hasta_format, 'yyyy-MM-dd' ) }';`
+            eventosMes =  await prisma.$queryRawUnsafe( query_eventos );  
+        } catch (error1) {
+            console.log( error1 )
+            eventosMes = [];
+        }
 
-
-        console.log( "query de clases" );
-        const query = `SELECT  A.id_agendamiento AS "idAgendamiento", 
-                                B.id_profesor AS "idProfesor", 
-                                B.nombre_profesor AS "nombreProfesor", 
-                                D.id_cliente AS "idCliente", 
-                        		D.nombre_cmp AS "nombreCmp", 
-                                --A.fecha_agendamiento AS "fechaAgendamiento", 
-                                C.id_mesa AS "idMesa", 
-                                C.desc_mesa AS "descMesa", 
-                        		A.horario_inicio AS "horaDesde", 
-                                A.horario_hasta AS "horaHasta", 
-                                A.clase_abonada AS "claseAgendada", 
-                                A.monto_abonado AS "montoAbonado",
-                                A.creadoen AS "fechaCreacion"
-                        	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
-                        	JOIN mesas C ON C.id_mesa = A.id_mesa
-                        	JOIN cliente D ON D.id_cliente = A.id_cliente
-                        WHERE (A.horario_inicio, A.horario_hasta) OVERLAPS ( TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}', TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}')
-                        ORDER BY A.fecha_agendamiento DESC`;
-        //console.log( query );
+        let query = ``;
         let clasesDelDia = [];
-        clasesDelDia = await prisma.$queryRawUnsafe( query );  
+        try {
+            
+            query = `SELECT  A.id_agendamiento AS "idAgendamiento", 
+                      B.id_profesor AS "idProfesor", 
+                      B.nombre_profesor AS "nombreProfesor", 
+                      D.id_cliente AS "idCliente", 
+                      D.nombre_cmp AS "nombreCmp", 
+                      --A.fecha_agendamiento AS "fechaAgendamiento", 
+                      C.id_mesa AS "idMesa", 
+                      C.desc_mesa AS "descMesa", 
+                      A.horario_inicio AS "horaDesde", 
+                      A.horario_hasta AS "horaHasta", 
+                      A.clase_abonada AS "claseAgendada", 
+                      A.monto_abonado AS "montoAbonado",
+                      A.creadoen AS "fechaCreacion"
+                  FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
+                  JOIN mesas C ON C.id_mesa = A.id_mesa
+                  JOIN cliente D ON D.id_cliente = A.id_cliente
+              WHERE (A.horario_inicio, A.horario_hasta) OVERLAPS ( TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}', TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}')
+              ORDER BY A.fecha_agendamiento DESC`;
+            //console.log( query );
+            clasesDelDia = await prisma.$queryRawUnsafe( query );  
+        } catch (error2) {
+            console.log( error2 );
+            clasesDelDia = [];
+        }
 
         //console.log( "query de reservas" );
-        const query2 = `SELECT A.id_cliente_reserva AS "idCliente", 
-                        		B.nombre || ', ' || B.apellido AS "nombreCmp",
-                        		--A.fecha_reserva AS "fechaAgendamiento",
-                        		A.fecha_creacion AS "fechaCreacion",
-                        		A.hora_desde AS "horaDesde",
-                        		A.hora_hasta AS "horaHasta",
-                        		D.desc_mesa AS "descMesa",
-                        		D.id_mesa AS "idMesa"
-                        	FROM RESERVAS A JOIN CLIENTE B ON A.id_cliente = B.id_cliente
-                        	JOIN MESAS D ON D.id_mesa = A.id_mesa
-                        WHERE (A.hora_desde, A.hora_hasta) OVERLAPS ( TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}', TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}')
-                        ORDER BY A.fecha_reserva DESC`;
-        console.log( query2 );
-        const reservasClub = await prisma.$queryRawUnsafe( query2 );
+        let query2 = ``;
+        let reservasClub = [];
+
+        try {
+            
+            query2 = `SELECT A.id_cliente_reserva AS "idCliente", 
+                      B.nombre || ', ' || B.apellido AS "nombreCmp",
+                      --A.fecha_reserva AS "fechaAgendamiento",
+                      A.fecha_creacion AS "fechaCreacion",
+                      A.hora_desde AS "horaDesde",
+                      A.hora_hasta AS "horaHasta",
+                      D.desc_mesa AS "descMesa",
+                      D.id_mesa AS "idMesa"
+                  FROM RESERVAS A JOIN CLIENTE B ON A.id_cliente = B.id_cliente
+                  JOIN MESAS D ON D.id_mesa = A.id_mesa
+              WHERE (A.hora_desde, A.hora_hasta) OVERLAPS ( TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}', TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}')
+              ORDER BY A.fecha_reserva DESC`;
+            //console.log( query2 );
+            reservasClub = await prisma.$queryRawUnsafe( query2 );
+        } catch (error3) {
+            console.log( error3 );
+            reservasClub = [];
+        }
+
 
         //console.log(  eventosMes, clasesDelDia, reservasClub )
         if ( eventosMes.length === 0 && clasesDelDia.length === 0 && reservasClub.length === 0 ) {
