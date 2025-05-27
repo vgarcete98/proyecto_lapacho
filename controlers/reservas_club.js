@@ -56,7 +56,7 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
                                 ${ ( apellido_socio === undefined ) ? `` : `AND B.nombre_cmp  LIKE '%${ apellido_socio }%'` }
                                 ${ ( nro_cedula === undefined ) ? `` : `AND B.cedula  = '${ nro_cedula }'` }
                         ORDER BY A.fecha_reserva DESC
-                        LIMIT 10 OFFSET ${(Number(pagina) > 1 ) ? Number(pagina)* 10 : 0 };`;
+                        LIMIT 10 OFFSET ${(Number(pagina) > 1 ) ? ( Number(pagina) - 1)* 10 : 0 };`;
         //console.log( query );
         const reservasClub = await prisma.$queryRawUnsafe( query );
         
