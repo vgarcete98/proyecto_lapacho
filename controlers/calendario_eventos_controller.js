@@ -52,23 +52,24 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
         let clasesDelDia = [];
         try {
             
-            query = `SELECT  A.id_agendamiento AS "idAgendamiento", 
-                      B.id_profesor AS "idProfesor", 
-                      B.nombre_profesor AS "nombreProfesor", 
-                      D.id_cliente AS "idCliente", 
-                      D.nombre_cmp AS "nombreCmp", 
-                      --A.fecha_agendamiento AS "fechaAgendamiento", 
-                      C.id_mesa AS "idMesa", 
-                      C.desc_mesa AS "descMesa", 
-                      A.horario_inicio AS "horaDesde", 
-                      A.horario_hasta AS "horaHasta", 
-                      A.clase_abonada AS "claseAgendada", 
-                      A.monto_abonado AS "montoAbonado",
-                      A.creadoen AS "fechaCreacion"
-                  FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
-                  JOIN mesas C ON C.id_mesa = A.id_mesa
-                  JOIN cliente D ON D.id_cliente = A.id_cliente
-              WHERE (A.horario_inicio, A.horario_hasta) OVERLAPS ( TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}', TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}')
+            query = `SELECT A.id_agendamiento AS "idAgendamiento", 
+                                B.id_profesor AS "idProfesor", 
+                                B.nombre_profesor AS "nombreProfesor", 
+                                D.id_cliente AS "idCliente", 
+                        		D.nombre_cmp AS "nombreCmp", 
+                                --A.fecha_agendamiento AS "fechaAgendamiento", 
+                                C.id_mesa AS "idMesa", 
+                                C.desc_mesa AS "descMesa", 
+                        		A.horario_inicio AS "horaDesde", 
+                                A.horario_hasta AS "horaHasta", 
+                                A.clase_abonada AS "claseAgendada", 
+                                A.monto_abonado AS "montoAbonado",
+                                A.creadoen AS "fechaCreacion"
+                        	FROM agendamiento_clase A JOIN profesores B ON B.id_profesor = A.id_profesor
+                        	JOIN mesas C ON C.id_mesa = A.id_mesa
+                            JOIN clases_alumnos F on F.id_agendamiento = A.id_agendamiento
+                        	JOIN cliente D ON D.id_cliente = F.id_cliente
+              WHERE A.fecha_agendamiento BETWEEN  TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}' AND TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}'
               ORDER BY A.fecha_agendamiento DESC`;
             //console.log( query );
             clasesDelDia = await prisma.$queryRawUnsafe( query );  
