@@ -58,7 +58,7 @@ const obtener_compras_club = async ( req = request, res = response ) =>{
     
             res.status( 200 ).json( {
                 status : true,
-                msg : 'Ventas de ese cliente',
+                msg : 'Compras que se deben procesar',
                 compras,
                 cantidad : cantidad_compras
                 //descripcion : `No existe ninguna venta generada para ese cliente`
