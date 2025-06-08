@@ -616,7 +616,7 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                                                             id_cliente : Number( idCliente ),
                                                                                             id_tipo_pago : Number( tipoPago ),
                                                                                             id_caja : caja.id_caja,
-                                                                                            nro_comprobante : ( Number( tipoPago ) !== 2 )? nroComprobante : imagen_comprobante,
+                                                                                            nro_comprobante : '',//ESTO SE PUEDE ADJUNTAR DESPUES
                                                                                             nro_factura : nroFactura,
                                                                                             id_venta : Number( idVenta ),
                                                                                             id_compra : null,
