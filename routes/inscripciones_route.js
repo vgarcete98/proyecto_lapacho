@@ -61,7 +61,7 @@ router_inscripciones.post( '/inscribirse_a_evento',
                                         verificar_sexo  
                                 ], 
                                 //( req = request, res = response ) => {
-                                //        const { acceso } = req.body;
+
                                 //        if ( acceso === 'ADMINISTRADOR' ) { 
                                 //                return inscribirse_a_evento( req , res )
                                 //        }else {

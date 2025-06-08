@@ -82,7 +82,7 @@ const obtener_usuarios= async ( req = request, res = response ) => {
             );      
         }
     } catch (error) {
-        //console.log ( error );
+        ;
 
         res.status( 500 ).json( { 
             status : false,
@@ -137,7 +137,7 @@ const crear_usuario = async ( req = request, res = response ) => {
             );
         }
     } catch (error) {
-        //console.log ( error );
+        ;
 
         res.status( 500 ).json( { 
             status : false,
@@ -192,7 +192,7 @@ const editar_usuario = async ( req = request, res = response ) => {
             );
         }
     } catch (error) {
-        //console.log ( error );
+        ;
 
         res.status( 500 ).json( { 
             status : false,
@@ -267,7 +267,7 @@ const eliminar_usuario = async ( req = request, res = response ) => {
             }
         );      
     } catch (error) {
-        //console.log ( error );
+        ;
 
         res.status( 500 ).json( { 
             status : false,

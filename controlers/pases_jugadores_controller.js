@@ -294,7 +294,7 @@ const abonar_pase_jugador = async ( req = request, res = response ) =>{
                                                                         });
             }
             console.log( registro_actualizado );
-            //const {  } = registro_actualizado;
+
             res.status( 200 ).json({
                 status : true,
                 msg : "Fichaje Actualizado",

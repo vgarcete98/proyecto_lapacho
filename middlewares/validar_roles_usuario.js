@@ -17,7 +17,7 @@ const validar_usuario_administrador = async ( req = request, res = response, nex
                                                         WHERE A.ID_USUARIO = ${ id_usuario };`
 
     const { descripcion_acceso } = rol_usuario;
-    //console.log( rol_usuario );  
+      
     if( descripcion_acceso === 'ACCESO_TOTAL' ){
         next(); 
     }else{
@@ -41,7 +41,7 @@ const validar_usuario_socio = async ( req = request, res = response, next ) =>{
                                                         WHERE A.ID_USUARIO = ${ id_usuario };`
 
     const { descripcion_acceso } = rol_usuario;
-    //console.log( rol_usuario );  
+    
     if( descripcion_acceso === 'ACCESO_NORMAL' ){
         next(); 
     }else{
@@ -65,7 +65,7 @@ const validar_usuario_profesor = async ( req = request, res = response, next ) =
                                                         WHERE A.ID_USUARIO = ${ id_usuario };`
 
     const { descripcion_acceso } = rol_usuario;
-    //console.log( rol_usuario );  
+      
     if( descripcion_acceso === 'ACCESO_PROFESOR' ){
         next(); 
     }else{

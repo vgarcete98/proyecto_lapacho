@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 //PARA ENCRIPTADO Y DESENCRIPTADO 
 //----------------------------------------------------
 var AES = require("crypto-js/aes");
-//var SHA256 = require("crypto-js/sha256");
+
 var CryptoJS = require("crypto-js");
 //----------------------------------------------------
 
@@ -22,7 +22,7 @@ const desencriptar_body_login = async ( req = request, res = response, next )=>{
         const { path } = req;
         if (data === undefined && path !== '/auth/login'){
             //SOLO PARA EL LOGIN SOLICITO EL ENCRIPTADO 
-            //console.log( `Es la ruta ${path}` );
+            
             next()
         }else {
             // CASO CONTRARIO PARA OPERACIONES DE INSERT, DELETE, UPDATE 

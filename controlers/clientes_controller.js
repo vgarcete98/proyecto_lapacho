@@ -12,7 +12,6 @@ const crear_cliente = async ( req = request, res = response ) => {
     try {
         
         const { nombre, apellido, cedula, nroTelefono } = req.body;
-        //console.log( req.body );
         const cliente = await prisma.cliente.create( { 
                                                         data : { 
 
@@ -32,7 +31,7 @@ const crear_cliente = async ( req = request, res = response ) => {
         );
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `No se pudo crear al cliente  ${ error }`,

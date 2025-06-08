@@ -224,7 +224,7 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
 
  //RUTAS ASIGNADAS A ROLES POR DEFECTO A SOCIOS
   //--------------------------------------------------------------------------------------------------------------
-  //const rutas_habilitadas_rol_socio = await prisma.rutas_habilitadas_rol.createMany(
+
   //                                                                                    {
   //                                                                                      data : [
   //                                                                                        { id_rol_usuario : 2, id_ruta_app : 3 },
@@ -576,7 +576,7 @@ const rol_usuario = await prisma.roles_usuario.createMany( { data : [
   const precio_reserva = await prisma.precio_reservas.create( { data : { monto_reserva : 30000, creado_en : new Date(), valido : true,  } } )
   const precio_clases = await prisma.precio_clase.create( { data : { precio : 60000, id_profesor : 1, porc_descuento : 0, valido : true, creado_en : new Date () } } )
   //VOY A CREAR UNAS CUANTAS RESERVAS PARA LAS PRUEBAS QUE HAY QUE HACER
-  //const reservas = await prisma.reservas.createMany( { data : 
+
   //                                                        [
   //                                                          { creado_en : new Date(), creado_por : 1, hora_desde : new Date('2024-06-17T17:00:00.000Z'), hora_hasta : new Date('2024-06-17T18:00:00.000Z'), id_cliente : 2, id_mesa : 1, monto : 30000, id_precio_reserva : 1, fecha_reserva : new Date(), fecha_creacion : new Date()  },
   //                                                          { creado_en : new Date(), creado_por : 1, hora_desde : new Date('2024-09-16T17:00:00.000Z'), hora_hasta : new Date('2024-06-17T18:00:00.000Z'), id_cliente : 1, id_mesa : 2, monto : 30000, id_precio_reserva : 1, fecha_reserva : new Date(), fecha_creacion : new Date()  },

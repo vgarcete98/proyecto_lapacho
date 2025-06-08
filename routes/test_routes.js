@@ -59,7 +59,7 @@ const obtener_socios_detallados_test = async ( req = request, res = response ) =
             }); 
 
         }else {
-            //const total_registros_query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
+
             //                                    --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
             //                                    A.CEDULA AS "cedula",
             //                                    A.CORREO_ELECTRONICO AS "correoElectronico", 
@@ -77,7 +77,7 @@ const obtener_socios_detallados_test = async ( req = request, res = response ) =
             //                                FROM CLIENTE A LEFT  JOIN TIPO_SOCIO C ON C.ID_TIPO_SOCIO = A.ID_TIPO_SOCIO
             //                            WHERE (A.ESTADO_USUARIO IN ( '${ estados_socio.activo.descripcion }',  '${ estados_socio.suspendido.descripcion }', '${ estados_socio.eliminado.descripcion }') || A.ESTADO_USUARIO IS NULL )
             //                            ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }`
-            //const cantidad = await obtener_cantidad_registros_query(total_registros_query);
+
             res.status(200).json({
                 status: true,
                 msg: 'Socios del club',
@@ -88,7 +88,7 @@ const obtener_socios_detallados_test = async ( req = request, res = response ) =
         
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
            status : false,
            msg : `No se pudo obtener el detalle de los socios ${ error } `,
@@ -171,7 +171,7 @@ const obtener_socios_detallados_test2 = async ( req = request, res = response ) 
         
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
            status : false,
            msg : `No se pudo obtener el detalle de los socios ${ error } `,
@@ -235,7 +235,7 @@ const obtener_socios_detallados_test3 = async ( req = request, res = response ) 
         
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
            status : false,
            msg : `No se pudo obtener el detalle de los socios ${ error } `,

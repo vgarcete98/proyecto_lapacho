@@ -17,7 +17,7 @@ const obtener_data_socio = async ( req = request, res = response, next ) =>{
             const { x_token } = req.headers;
             const { id_usuario } = decode( x_token, process.env.SECRET0RPR1VAT3K3Y );
             req.body.idSocio = id_usuario;
-            //console.log( decode( x_token, process.env.SECRET0RPR1VAT3K3Y ) );
+            
             next();
 
         }
@@ -51,7 +51,7 @@ const verificar_vista_usuario = async ( req = request, res = response, next ) =>
             next();
         }else{
             req.query.idUsuario = id_usuario;
-            //console.log( decode( x_token, process.env.SECRET0RPR1VAT3K3Y ) );
+            
             next();
 
         }
@@ -125,7 +125,7 @@ const verificar_vista_profesor = async ( req = request, res = response, next ) =
             }else {
 
                 req.query.id_profesor = id_usuario;
-                //console.log( decode( x_token, process.env.SECRET0RPR1VAT3K3Y ) );
+                
                 next();
             }
 

@@ -80,19 +80,18 @@ let PROFESOR = [
 const comprobar_acceso_rol = async ( req = request, res = response, next)=> {
 
     try {
-        //console.log("validacion del rol" )
         if ( req.path === '/auth/login' ){
             next();
         }else{
 
             const { x_token } = req.headers;
 
-            //console.log( decode( x_token, process.env.SECRET0RPR1VAT3K3Y ) );
+            
             const { id_usuario, tipo_usuario, rol   } = decode( x_token, process.env.SECRET0RPR1VAT3K3Y );
 
             const { path } = req;
-            //console.log( path )
-            //console.log( rol )
+            
+            
             switch (rol) {
                 case 'ADMINISTRADOR':
                     if ( ADMINISTRADOR.find( ( element) => element.path_ruta === path ) ){
@@ -148,7 +147,7 @@ const comprobar_acceso_rol = async ( req = request, res = response, next)=> {
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 401 ).json( {
             status : false,
             msg : `No se pudo verificar el acceso del rol , error : ${error}`,
@@ -179,7 +178,6 @@ const cargar_rutas_rol = async () =>{
                                                                         FROM ACCESOS_USUARIO A JOIN RUTAS_APP B ON A.ID_RUTA_APP = B.ID_RUTA_APP
                                                                         JOIN ROLES_USUARIO C ON C.ID_ROL_USUARIO = A.ID_ROL_USUARIO
                                                                     WHERE C.ID_ROL_USUARIO = 3` );
-        //console.log( ADMINISTRADOR)
     } catch (error) {
         console.log ( 'No se lograron cargar los accesos de los roles : ' )
         console.log( error );

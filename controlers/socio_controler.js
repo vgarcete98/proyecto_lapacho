@@ -38,7 +38,6 @@ const crear_socio_dependientes = async ( req = request, res = response ) => {
         nuevo_socio = await prisma.cliente.findUnique( { where : { id_cliente : Number(idSocio) } } )
 
         const idClienteTitular = nuevo_socio.id_cliente;
-        //console.log( dependientes );
         if (dependientes.length !== 0 && dependientes !== undefined && dependientes !== null) {
             let dependiente = {};
             try {
@@ -115,7 +114,7 @@ const crear_socio_dependientes = async ( req = request, res = response ) => {
         }
 
     } catch ( error ) {
-        //console.log( error );
+        
         res.status( 500 ).json(
 
             {
@@ -177,7 +176,6 @@ const crear_socio = async ( req = request, res = response ) => {
             }
         } );
         if ( nuevo_socio.correo_electronico != "" ){
-            //console.log( correo_electronico )
             const cuerpo_mail = `Bienvenido al club Lapacho Socio ${nombre}, ${apellido}`;
             sendMail( nuevo_socio.correo_electronico, cuerpo_mail );
         }
@@ -206,7 +204,7 @@ const crear_socio = async ( req = request, res = response ) => {
         }
 
     } catch ( error ) {
-        //console.log( error );
+        
         res.status( 500 ).json(
 
             {
@@ -270,9 +268,7 @@ const actualizar_socio = async ( req = request, res = response ) => {
                                                                     direccion : direccion
                                                                 }
                                                             } );
-        //console.log( socio_actualizado );
         const { id_tipo_socio, id_cliente } = datos_viejos;
-        //console.log( Number(tipoSocio), id_tipo_socio );
         if ( Number(tipoSocio) !== id_tipo_socio) {
             await actualiza_datos_cuota_socio(id_cliente, Number(tipoSocio), cuotas_viejas);
         }
@@ -280,7 +276,6 @@ const actualizar_socio = async ( req = request, res = response ) => {
         if( socio_actualizado !== null ){
 
             if ( correo !== "" && correo !== undefined ){
-                //console.log( correo_electronico )
                 const cuerpo_mail = `Actualizacion de datos de socio`;
                 sendMail( correo, cuerpo_mail );
             }
@@ -357,7 +352,7 @@ const crear_socio_usuario = async ( req = request, res = response ) => {
         }
 
     } catch ( error ) {
-        //console.log( error );
+        
         res.status( 500 ).json(
 
             {
@@ -507,7 +502,6 @@ const obtener_socios = async ( req = request, res = response ) => {
         const { cantidad, omitir, nombre } = req.query;
 
         let socios;
-        //console.log( cantidad, omitir, nombre, apellido )
         const query = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
                                 --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
                                 A.CEDULA AS "cedula",
@@ -528,7 +522,7 @@ const obtener_socios = async ( req = request, res = response ) => {
                         ${ ( nombre !== undefined && nombre !== '' )? `AND UPPER( CONCAT (A.NOMBRE, ' ', A.APELLIDO) ) LIKE '%${nombre.toUpperCase()}%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( isNaN(omitir) ) ? `` : `OFFSET ${(Number(omitir) > 1 ) ? Number(omitir)*10: 0 }` }`
-        //console.log( query );
+        
         socios = await prisma.$queryRawUnsafe( query );
         
 
@@ -551,12 +545,11 @@ const obtener_socios = async ( req = request, res = response ) => {
 
             });    
         }
-        //console.log ( socios );
 
  
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json({
             status: false,
             msg: `No se pudo obtener la informacion de los socios del club ${ error }`,
@@ -624,7 +617,7 @@ const obtener_socios_detallados = async ( req = request, res = response ) => {
         
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
            status : false,
            msg : `No se pudo obtener el detalle de los socios ${ error } `,
@@ -698,7 +691,7 @@ const obtener_socio_cedula_nombre = async ( req = request, res = response ) =>{
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : true,
             msg : `Ha ocurrido un error al buscar al socio ${ error } `,
@@ -719,8 +712,6 @@ const obtener_socio = async ( req = request, res = response ) => {
     try {
         const { cantidad, omitir, nombre, apellido, cedula } = req.query;
 
-        
-        //console.log( cantidad, omitir, nombre, apellido )
         const query_socio = `SELECT CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS "nombreSocio", 
                                 --A.NOMBRE AS NOMBRE, A.APELLIDO AS APELLIDO,
                                 A.CEDULA AS "cedula",
@@ -746,7 +737,6 @@ const obtener_socio = async ( req = request, res = response ) => {
 
         let socios = await prisma.$queryRawUnsafe(query_socio);
 
-        //console.log ( socios );
         if ( socios.length === 0 ){
 
             res.status(200).json({
@@ -804,7 +794,7 @@ const obtener_socio_usuario = async ( req = request, res = response ) => {
                         ${ ( nombre !== undefined && nombre !== '' )? `AND CONCAT (A.NOMBRE, ' ', A.APELLIDO) LIKE '%${nombre}%'` : `` }
                         ${ ( isNaN(cantidad) ) ? `` : `LIMIT ${Number(cantidad)}`} 
                         ${ ( isNaN(omitir) ) ? `` : `OFFSET ${ (Number(omitir) > 1 ) ? Number(omitir)*10: 0 }` }`
-        //console.log( query )
+        
         let usuariosFormateados = await prisma.$queryRawUnsafe( query ); 
 
         if ( usuariosFormateados.length === 0 ){
@@ -824,7 +814,7 @@ const obtener_socio_usuario = async ( req = request, res = response ) => {
         
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
            status : false,
            msg : `No se pudo obtener el detalle de los socios ${ error } `,

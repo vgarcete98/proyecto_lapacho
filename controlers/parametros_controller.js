@@ -47,7 +47,7 @@ const obtener_precios_de_cuotas = async ( req = request, res = response ) => {
         }
         
     } catch (error) {
-        //console.log ( error );
+        ;
 
         res.status( 500 ).json( { 
             status : false,
@@ -145,7 +145,7 @@ const editar_precio_de_cuotas = async ( req = request, res = response ) => {
             );     
         }
     } catch (error) {
-        //console.log ( error );
+        ;
 
         res.status( 500 ).json( { 
             status : false,
@@ -173,7 +173,7 @@ const agregar_precio_de_cuota = async ( req = request, res = response ) => {
             }
         );      
     } catch (error) {
-        //console.log ( error );
+        ;
 
         res.status( 500 ).json( { 
             status : false,
@@ -255,7 +255,7 @@ const editar_precio_de_reservas = async ( req = request, res = response ) => {
 
 
     } catch (error) {
-        //console.log ( error );
+        ;
 
         res.status( 500 ).json( { 
             status : false,
@@ -319,7 +319,7 @@ const obtener_precio_de_reservas = async ( req = request, res = response ) => {
 
 
     } catch (error) {
-        //console.log ( error );
+        ;
 
         res.status( 500 ).json( { 
             status : false,

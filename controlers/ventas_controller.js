@@ -186,9 +186,8 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
                                                                             id_cliente : true
                                                                         } 
                                                                 } );
-        //console.log( ventas_dependientes )
         let otros_clientes = ( ventas_dependientes.length !== 0  ) ? ventas_dependientes.map( element => element.id_cliente ) : [];
-        //console.log( otros_clientes );
+        
         let cantidad_ventas = 0;
         [cantidad_ventas ,ventas] = await prisma.$transaction(
 
@@ -238,7 +237,6 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
             
         );        
 
-        //console.log(  ventas )
         let ventaServicios = [];
         if ( ventas.length > 0 ) {
 
@@ -257,7 +255,7 @@ const obtener_venta_servicios = async (  req = request, res = response  ) =>{
                 monto: element.monto ?? 0, // Aquí puedes poner 0 o null según lo que necesites
                 estado: element.estado ?? "SIN_ESTADO", // Otro ejemplo, elige un valor por defecto
             }));            
-            //console.log( ventaServicios );
+            
             res.status( 200 ).json( {
                 status : true,
                 msg : 'Ventas de ese cliente',

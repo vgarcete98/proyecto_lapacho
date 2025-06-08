@@ -42,7 +42,7 @@ const validar_existe_socio = async ( req = request, res = response, next ) =>{
         }
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo verificar que haya un socio repetido',
@@ -85,7 +85,7 @@ const validar_existe_socio_usuario = async ( req = request, res = response, next
             })
         }
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo verificar que haya un socio repetido',
@@ -110,7 +110,7 @@ const comprobar_existe_socio = async ( req = request, res = response, next ) =>{
                                                                          ] 
                                                                     },
                                                         } );
-        //console.log( persona );
+        
         
         if ( persona === null || persona === undefined ) {
             // QUIERE DECIR QUE NO SE ENCONTRO POR TANTO NO EXISTE
@@ -153,11 +153,11 @@ const comprobar_existe_socio_usuario = async ( req = request, res = response, ne
                                                                          ] 
                                                                     },
                                                         } );
-        //console.log( persona );
+        
         
         if ( persona === null || persona === undefined ) {
             // QUIERE DECIR QUE NO SE ENCONTRO POR TANTO NO EXISTE
-            //const { nombre, apellido, fecha_nacimiento } = persona;
+
             res.status( 400 ).json( {
                 status : false,
                 msg : 'No existe un socio con esos datos',
@@ -187,7 +187,7 @@ const comprobar_existe_socio_id = async ( req = request, res = response, next ) 
     try {
         const { idSocio } = req.body;
         const socio = await prisma.socio.findFirst( { where : { id_socio : Number( idSocio ) } } );
-        //console.log( persona );
+        
         
         if ( persona === null || persona === undefined ) {
             // QUIERE DECIR QUE NO SE ENCONTRO POR TANTO NO EXISTE
@@ -203,7 +203,7 @@ const comprobar_existe_socio_id = async ( req = request, res = response, next ) 
         }
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `No se pudo verificar que haya un socio repetido ${ error }`,
@@ -296,7 +296,7 @@ const validar_existe_socio_y_dependientes = async ( req = request, res = respons
         }
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo verificar que haya un socio repetido',

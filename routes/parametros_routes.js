@@ -1,7 +1,7 @@
 
 const Router = require( 'express' )
 
-//const { login } = require( '../controlers/login_controler' );
+
 
 const { editar_precio_de_cuotas, obtener_precios_de_cuotas, agregar_precio_de_cuota } = require( '../controlers/parametros_controller' );
 

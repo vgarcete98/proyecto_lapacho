@@ -84,11 +84,7 @@ const cerrar_caja = async ( req = request, res = response ) =>{
     try {
 
 
-        //const { idCaja } = req.body;
-        //const { idCliente } = req.body;//TIENE QUE VENIR DEL TOKEN, ESTA PENDIENTE DE REALIZAR
         const caja = await prisma.caja.findFirst( { orderBy : { id_caja : 'desc' } } );
-
-        //console.log( caja );
         const { id_caja  } = caja;
         const cierre_caja = await prisma.caja.update( { 
                                                         data : {
@@ -100,7 +96,6 @@ const cerrar_caja = async ( req = request, res = response ) =>{
                                                         where : { id_caja : id_caja  } //SIEMPRE CERRAMOS EL ULTIMO COSA QUE CONTROLAMOS QUE NO SE CREE UNO DEMAS CUANDO ESTA ACTIVO
                                                     } );
         if ( cierre_caja !== null ) {
-            //console.log( cierre_caja );
             const { id_caja, monto_inicial, monto_cierre } = cierre_caja;
             res.status( 200 ).json( {
                 status : true,
@@ -180,11 +175,9 @@ const obtener_movimientos_de_caja = async ( req = request, res = response ) =>{
                                                 WHERE (A.fecha_operacion :: DATE ) BETWEEN ('${fecha_desde_format}' :: DATE) AND ('${fecha_hasta_format}' :: DATE)) AS X
                         GROUP BY X.nro_factura,X.timbrado, X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')
                         LIMIT ${cantidad} OFFSET ${(Number(pagina) > 1 ) ? Number(pagina)* cantidad : 0 }`;
-        //console.log( query )
         const movimientos_de_caja = await prisma.$queryRawUnsafe(query);
 
 
-        //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
 
         if ( movimientos_de_caja.length === 0  ){
 
@@ -251,10 +244,9 @@ const obtener_movimientos_de_caja_al_cierre = async ( req = request, res = respo
                                                 WHERE  B.ID_CAJA = (SELECT MAX(ID_CAJA) FROM CAJA WHERE FECHA_CIERRE IS NOT NULL )) AS X
                         GROUP BY X.nro_comprobante, X.tipo_comprobante, X.tipo_operacion, TO_CHAR(X.FECHA_OPERACION, 'DD/MM/YYYY')
                         LIMIT ${cantidad} OFFSET ${(Number(pagina) > 1 ) ? Number(pagina)* cantidad : 0 }`;
-        //console.log( query )
         const movimientosDeCaja = await prisma.$queryRawUnsafe(query)
 
-        //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
+
 
         if ( movimientosDeCaja.length === 0  ){
 
@@ -309,10 +301,9 @@ const obtener_resumen_de_caja_al_cierre = async ( req = request, res = response 
                                                 left join compras c  on c.id_compra = mc.id_compra 
                                             WHERE  mc.ID_CAJA = (SELECT MAX(ID_CAJA) FROM CAJA WHERE FECHA_CIERRE IS NOT NULL )
                                             group by mc.id_caja	) X on X.id_caja = a.id_caja `;
-        //console.log( query )
         const resumen_caja = await prisma.$queryRawUnsafe(query)
 
-        //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
+
 
         if ( resumen_caja.length === 0  ){
 
@@ -421,7 +412,7 @@ const obtener_tipo_pagos = async ( req = request, res = response ) => {
 
     try {
 
-        //const {  } = req.body;
+
 
         const tipos_pago = await prisma.tipo_pago.findMany();
 
@@ -589,10 +580,6 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
         let monto_total = 0;
         let factura = {};
         let detalleFactura = [];
-        //const detallesFactura = {
-        //    nroTimbrado,
-        //    nroFactura
-        //}
         //----------------------------------------------------------------------------------------------------------------------------
         if ( ventas.length > 0  ){
             //GENERO O COMPLETO LAS CABECERAS DE MI FACTURA
@@ -601,17 +588,17 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
             factura = await genera_factura( { monto_total : monto_total, nro_factura : nroFactura, fecha_emision : new Date(), id_cliente : idCliente, nroTimbrado }, ventas );
             detalleFactura = [];
             //----------------------------------------------------------------------------------------------------------------------------
-
+            let venta, caja, movimientos_de_caja, actualiza_venta, ingreso_club;
             for (let element in ventas) {
                 //----------------------------------------------------------------------------------------------------------------------------
                 try { 
                     let { idVenta , idSocioCuota, idReserva, idInscripcion, fechaOperacion, monto, tipoServicio } = ventas[ element ];
                     
-                    let venta = await prisma.ventas.findUnique( { where : { id_venta : Number( idVenta ) } } );
+                    venta = await prisma.ventas.findUnique( { where : { id_venta : Number( idVenta ) } } );
 
                     //AQUI VAMOS A OBTENER SIEMPRE LA ULTIMA CAJA ABIERTA
                     //----------------------------------------------------------------------------------------------------------------------------
-                    let caja = await prisma.caja.findFirst( { 
+                    caja = await prisma.caja.findFirst( { 
                                                                 orderBy : { fecha_apertura : 'desc' }, 
                                                                 where : {
                                                                     AND : [
@@ -622,7 +609,7 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                     //----------------------------------------------------------------------------------------------------------------------------
                     //SERIA COMO EL DETALLE DE LA FACTURA
                     //----------------------------------------------------------------------------------------------------------------------------
-                    let movimientos_de_caja = await prisma.movimiento_caja.create( { 
+                    movimientos_de_caja = await prisma.movimiento_caja.create( { 
                                                                                         data : {
                                                                                             creado_por : 1,
                                                                                             cedula : cedula,
@@ -646,7 +633,7 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                                                         }
                                                                                 } );
                     //OK ACTUALIZO EL ESTADO DE LA VENTA A PAGADO
-                    let actualiza_venta = await prisma.ventas.update( { 
+                    actualiza_venta = await prisma.ventas.update( { 
                                                                         data : { 
                                                                                     estado : 'PAGADO', 
                                                                                     editado_en : new Date( ),
@@ -668,7 +655,7 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                 iva10 : actualiza_venta.monto/11 
                                             } );
 
-                        let ingreso_club = await prisma.ingresos.create( { 
+                        ingreso_club = await prisma.ingresos.create( { 
                                                                             data : {
                                                                                 cargado_en : new Date(),
                                                                                 fecha_ingreso : new Date(),
@@ -681,7 +668,6 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                                         } );
 
                         if ( ingreso_club !== null ) { 
-                            //console.log( `ingreso registrado con exito : ${ ingreso_club.column_d_operacion_ingreso }` );
                             venta_socio.push( { ingreso_club } );
                         }else {
                             console.log( `No se registro el ingreso de esa venta : ${ idVenta }` );
@@ -699,10 +685,8 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
             }
         }
 
-    //console.log( "Llegue hasta aca", ventas.length === venta_socio.length &&  ventas.length !==  0 && venta_socio.length !== 0 )
     if ( ((ventas.length === venta_socio.length) && (ventas.length !==  0)) && (venta_socio.length !== 0) ){
 
-        //console.log( "Llegue hasta aca");
         return res.status( 200 ).json( {
             status : true,
             msg : 'Ventas Procesadas con exito',

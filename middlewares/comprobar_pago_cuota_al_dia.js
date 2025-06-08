@@ -6,9 +6,9 @@ const prisma = new PrismaClient();
 const comprobar_pago_cuota_al_dia = async ( req = request, res = response, next )=> {
 
     const { nroFactura } = req.body;
-    //console.log( req.body, req.files, req.file )
-    //console.log( req )
-    //console.log( nroFactura )
+    
+    
+    
     try {
 
         const query = `SELECT COUNT( * )

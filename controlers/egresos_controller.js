@@ -54,7 +54,7 @@ const agrega_regreso = async ( req = request, res = response )=>{
         const { cargado_en, id_socio, monto, id_tipo, descripcion, editado_en, nro_factura, is_operacion_egreso, fecha_pago } = nuevo_egreso;
 
         const egreso = await prisma.tipos_egreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
-        //const { descripcion } = egreso;
+
 
         const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
         
@@ -107,7 +107,7 @@ const borrar_egreso = async ( req = request, res = response )=>{
         
 
         const egreso = await prisma.tipos_egreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
-        //const { descripcion } = egreso;
+
 
         const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
         
@@ -168,7 +168,7 @@ const actualizar_egreso = async ( req = request, res = response )=>{
         const { is_operacion_egreso, monto, nro_factura, descripcion, id_tipo, id_socio, editado_en, fecha_pago } = edicion_egreso;
         
         const egreso = await prisma.tipos_egreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
-        //const { descripcion } = egreso;
+
 
         const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
         
@@ -243,7 +243,7 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
                         LIMIT 10 OFFSET ${(Number(pagina) > 1 ) ? ( Number(pagina) - 1)* 10 : 0}`
 
 
-        //console.log ( query )
+        
         const egresos_x_fecha = await prisma.$queryRawUnsafe(query);
 
         let egresosXFecha = [];
@@ -288,7 +288,7 @@ const obtener_egresos_x_fecha = async ( req = request, res = response )=>{
         } );
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 400 ).json( {
             status : false,
             msg : "No se pudo obtener los egresos por fecha, error : " + error,
@@ -406,7 +406,7 @@ const obtener_egresos_monto_x_fecha = async ( req = request, res = response ) =>
         } );
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 400 ).json( {
             status : false,
             msg : "No se pudo obtener el monto del ingreso en esas fechas : " + error,
@@ -472,7 +472,6 @@ const generar_grafico_x_fecha = async ( req = request, res = response) =>{
                             AND A.borrado = false OR A.borrado IS NULL
                         GROUP BY A.fecha_pago
                         ORDER BY A.fecha_pago DESC`;
-        //console.log( query );
         let egresos_x_fecha = [];               
         egresos_x_fecha = await prisma.$queryRawUnsafe( query );
     
@@ -480,7 +479,7 @@ const generar_grafico_x_fecha = async ( req = request, res = response) =>{
         let data = [];
         if ( egresos_x_fecha.length > 0 ){
     
-            //const { monto, fecha_pago } = egresos_x_fecha;
+
             egresos_x_fecha.forEach( ( element ) => {
     
                 const { monto, fecha_pago } = element;
@@ -531,7 +530,6 @@ const obtener_grafico_torta_egresos = async ( req = request, res = response )=>{
                                             WHERE FECHA_EGRESO BETWEEN  DATE '${format( generar_fecha( fecha_desde ), 'yyyy-MM-dd' )}' AND DATE '${format( generar_fecha( fecha_hasta ), 'yyyy-MM-dd' )}') AS total
                         WHERE FECHA_EGRESO BETWEEN  DATE '${format( generar_fecha( fecha_desde ), 'yyyy-MM-dd' )}' AND DATE '${format( generar_fecha( fecha_hasta ), 'yyyy-MM-dd' )}'
                         GROUP BY ID_TIPO, total_monto, descripcion;`
-        //console.log( query )
         let porcentajeEgresos = [];       
               
         porcentajeEgresos = await prisma.$queryRawUnsafe( query );
@@ -545,7 +543,7 @@ const obtener_grafico_torta_egresos = async ( req = request, res = response )=>{
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 400 ).json( {
             status : true,
             msg : `No se pudo obtener los datos para el grafico : ${error}`,

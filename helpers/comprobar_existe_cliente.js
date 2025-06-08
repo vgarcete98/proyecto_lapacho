@@ -16,9 +16,8 @@ const comprobar_existe_cliente = async ( cedula = "" )=> {
                                                                 ]      
                                                             }
                                                         } )
-        //console.log( cliente );
+        
         if ( cliente === null ) {
-            //console.log( "retorno falso" )
             return false;
         }else {
             return true;
@@ -50,9 +49,8 @@ const comprobar_existe_cliente_no_socio = async ( cedula = "" )=> {
                                                                 ]      
                                                             }
                                                         } )
-        //console.log( cliente );
+        
         if ( cliente === null ) {
-            //console.log( "retorno falso" )
             return false;
         }else {
             return true;

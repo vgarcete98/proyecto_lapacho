@@ -29,9 +29,9 @@ const validar_acceso_a_ruta = async (req = request, res = response, next)=>{
             var comprobado = false;
             resultado.forEach(element => {
                 const { ruta } = element;
-                //console.log( ruta );
+                
                 const rutas = req.path.split( '/' );
-                //console.log( rutas )
+                
                 if ( rutas.length > 2 ){
                     if ( ruta === `/${rutas[1]}` ){
                         comprobado = true;

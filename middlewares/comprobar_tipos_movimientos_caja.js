@@ -123,15 +123,15 @@ const verificar_ventas_procesadas = async (req = request, res = response, next) 
         const { ventas } = req.body;
         
         let verificados = false;
+        let movimiento;
         for (let venta of ventas) {
             try {
                 // Extraer idVenta directamente del objeto venta
                 let { idVenta } = venta;
-                let movimiento = await prisma.movimiento_caja.findFirst({
+                movimiento = await prisma.movimiento_caja.findFirst({
                     where: { id_venta: Number(idVenta) }
                 });
 
-                console.log( movimiento )
                 if (movimiento !== null) {
                     verificados = true;
                     break;  // Si ya se encontró, no es necesario seguir verificando

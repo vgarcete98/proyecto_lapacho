@@ -11,7 +11,7 @@ const validar_existe_usuario = async ( req = request, res = response, next ) =>{
     // ESTO SERIA PARA EL CASO DE UN POST 
     //ESTO SERIA PARA ANTES DE CREAR UN NUEVO SOCIO
     try {
-        //const { id_usuario } = req.params;
+
         const { nombreUsuario } = req.body;
         const comprobar_usuario = await prisma.usuario.findFirst( { where : { nombre_usuario : nombreUsuario } } ); 
         if ( comprobar_usuario === null || comprobar_usuario === undefined ) {
@@ -41,7 +41,7 @@ const validar_existe_usuario_socio = async ( req = request, res = response, next
     // ESTO SERIA PARA EL CASO DE UN POST 
     //ESTO SERIA PARA ANTES DE CREAR UN NUEVO SOCIO
     try {
-        //const { id_usuario } = req.params;
+
         const { nombreUsuario } = req.body;
         const comprobar_usuario = await prisma.cliente.findFirst( { where : {  nombre_usuario : nombreUsuario } } ); 
         if ( comprobar_usuario !== null || comprobar_usuario !== undefined ) {

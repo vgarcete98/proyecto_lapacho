@@ -1,5 +1,5 @@
 
-const { request, response, query } = require('express')
+const { request, response } = require('express')
 
 const { PrismaClient } = require('@prisma/client')
 const { withOptimize } = require("@prisma/extension-optimize");
@@ -23,7 +23,6 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
 
 
                 let { idCategoria, descInscripcion, idEvento } = element;
-                //console.log( req.body );
                 let categoria = await prisma.categorias.findUnique( { 
                                                                         where : { id_categoria : Number( idCategoria ) },
                                                                         select : {
@@ -32,8 +31,6 @@ const inscribirse_a_evento = async ( req = request, res = response ) =>{
 
                                                                         }
                                                                     } );
-
-                //console.log( categoria );
                 
                 let inscripcion  = await prisma.inscripciones.create( { 
                                                                         data : {
@@ -171,7 +168,7 @@ const editar_inscripcion = async ( req = request, res = response ) =>{
         } );
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false, 
             msg : `No se pudo editar la inscripcion  ${ error }`,
@@ -256,7 +253,6 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
 
     try {
         const { id_evento, id_categoria } = req.query;
-        //console.log( req.query )
         const query = `SELECT   A.id_inscripcion AS "idInscripcion",
 								C.id_categoria AS "idCategoria",
 								C.nombre_categoria AS "nombreCategoria",
@@ -294,7 +290,6 @@ const ver_inscripciones_x_evento = async ( req = request, res = response ) =>{
         }
 
     } catch (error) {
-        //console.log ( error );  
         res.status( 500 ).json( { 
             status : false,
             msg : `No se ha podido obtener las inscripciones de ese evento ${error}`,
@@ -314,7 +309,6 @@ const ver_inscripciones_x_evento_x_categoria = async ( req = request, res = resp
       
     try {
         const { id_evento, id_categoria } = req.query;
-        //console.log( req.query )
         const query = `SELECT C.id_categoria AS "idCategoria",
 		                        C.nombre_categoria AS "nombreCategoria",
 								JSON_AGG(JSON_BUILD_OBJECT(
@@ -354,7 +348,6 @@ const ver_inscripciones_x_evento_x_categoria = async ( req = request, res = resp
         }
 
     } catch (error) {
-        //console.log ( error );  
         res.status( 500 ).json( { 
             status : false,
             msg : `No se ha podido obtener las inscripciones de ese evento ${error}`,
@@ -521,7 +514,6 @@ const obtner_todas_inscripciones_x_evento = async ( req = request, res = respons
 
         
     } catch (error) {
-        //console.log ( error );  
         res.status( 500 ).json( { 
             status : false,
             msg : "No se ha podido obtener todas las inscripciones del evento ",
@@ -649,7 +641,7 @@ const borrar_inscripcion_socio = async ( req = request, res = response ) =>{
         } );
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false, 
             msg : `No se pudo editar la inscripcion  ${ error }`,
@@ -738,7 +730,6 @@ const agregar_inscripciones_a_venta = async ( req = request, res = response ) =>
         
         
     } catch (error) {
-        //console.log ( error );
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al generar la venta : ${ error }`,

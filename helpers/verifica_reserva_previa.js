@@ -10,8 +10,8 @@ const verifica_reserva_previa = async ( req = request, res = response, next )=> 
 
     try {
         const { idMesa, horaDesde, horaHasta, tipoIngreso, idCliente } = req.body;
-        //const [ dia, mes, annio ] = fechaAgendamiento.split( "/" );
-        //console.log( "" )
+
+        
         let existe_reserva = [];
 
         existe_reserva = await prisma.reservas.findMany( { 
@@ -26,7 +26,7 @@ const verifica_reserva_previa = async ( req = request, res = response, next )=> 
                                                             } 
                                                         } );
 
-        //console.log ( existe_reserva )
+        
         if ( existe_reserva.length === 0 ){
             next();
         }else{

@@ -13,6 +13,7 @@ const verificar_inscripcion_a_evento = async ( req = request, res = response, ne
         let inscripcion_comprobada = false;
         try {
 
+            let categoria;
             for (const element of categorias) {
                 
                 let { idCategoria, idEvento } = element;
@@ -26,7 +27,7 @@ const verificar_inscripcion_a_evento = async ( req = request, res = response, ne
                                                                                             } 
                                                                                         } );
                 if ( inscripciones_registradas !== null &&  inscripciones_registradas !== undefined) {
-                    let categoria = await prisma.categorias.findUnique( { where : { id_categoria : Number( idCategoria ) } } );
+                    categoria = await prisma.categorias.findUnique( { where : { id_categoria : Number( idCategoria ) } } );
                     categorias_registradas.push( categoria.descripcion );
                     inscripcion_comprobada = true;
                     //break;

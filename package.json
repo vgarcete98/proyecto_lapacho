@@ -9,7 +9,8 @@
   "scripts": {
     "build": "npx prisma db push && node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app"
+    "dev": "nodemon app",
+    "scan": "sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=sqp_91d4adb8dce6d4a09ab1b2fcb166f68a67bcd816"
   },
   "keywords": [],
   "author": "",

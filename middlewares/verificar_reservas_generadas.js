@@ -13,7 +13,7 @@ const verificar_reservas_generadas = async ( req = request, res = response, next
     try {
 
         const { reservas } = req.body;
-        //const evento = await prisma.eventos.findFirst( { where : { id_evento : Number( idEvento ) } } );
+
         let reserva_falsa = false;
         for (const element of reservas) {
             let {  idReserva } = element;

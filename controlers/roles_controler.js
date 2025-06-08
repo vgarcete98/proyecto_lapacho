@@ -62,7 +62,7 @@ const crear_rol_con_accesos = async (  req = request, res = response  ) =>{
         );   
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json(
             {
                 status : false,
@@ -95,7 +95,7 @@ const crear_rol = async ( req = request, res = response ) => {
                                                                     } 
                                                             } );
         
-        //const rol_nuevo = await prisma.$executeRaw`INSERT INTO public.roles_usuario(
+
         //                                                descripcion_rol )
         //                                            VALUES ( ${ descripcionRol });`;
 
@@ -117,7 +117,7 @@ const crear_rol = async ( req = request, res = response ) => {
 
         );    
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json(
 
             {
@@ -147,7 +147,7 @@ const actualizar_rol = async ( req = request, res = response ) => {
                                                                                                                 } 
                                                                                                             } );
 
-        //const rol_editado = await prisma.$executeRaw`UPDATE public.roles_usuario
+
         //                                                SET descripcion_rol= ${ descripcionRol }
         //                                            WHERE id_rol_usuario = ${id}`;
 
@@ -169,7 +169,7 @@ const actualizar_rol = async ( req = request, res = response ) => {
 
         );    
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json(
 
             {
@@ -192,12 +192,12 @@ const actualizar_rol = async ( req = request, res = response ) => {
 const borrar_rol = async ( req = request, res = response ) => {
 
 
-    //const { id } = req.params;
-    //const { descripcion_rol } = req.body;
+
+
     try {
         const { descripcionRol, idSocio, idRol } = req.body;
-        //const rol = await prisma.roles_usuario.findFirst( { where : { id_rol_usuario : id } } );
-        //const rol_borrado = await prisma.$executeRaw`UPDATE public.roles_usuario
+
+
         //                                                SET activacion_rol= false
         //                                            WHERE id_rol_usuario = ${id}`;
 
@@ -223,7 +223,7 @@ const borrar_rol = async ( req = request, res = response ) => {
 
         ); 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json(
 
             {
@@ -244,11 +244,10 @@ const obtener_roles = async ( req = request, res = response ) => {
 
     
     try {
-        //const roles_usuario = await prisma.$queryRaw`select CAST ( id_rol_usuario AS INTEGER ) AS id_rol_usuario, descripcion_rol
+
         //                                                from roles_usuario;`;
         let roles = [], rolesUsuario = [];
         roles = await prisma.roles_usuario.findMany();
-        //console.log( roles )
         if(roles.length > 0 ) { 
             rolesUsuario = roles.map( ( element ) =>{ 
                                             const { descripcion_rol, id_rol_usuario, id_usuario_crea_rol, 
@@ -276,7 +275,7 @@ const obtener_roles = async ( req = request, res = response ) => {
         );
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json(
 
             {
@@ -344,7 +343,7 @@ const actualizar_accesos_rol = async ( req = request, res = response ) => {
         );   
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json(
             {
                 status : false,
@@ -403,7 +402,7 @@ const quitar_accesos_rol = async ( req = request, res = response ) => {
         );   
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json(
             {
                 status : false,

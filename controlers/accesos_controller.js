@@ -20,7 +20,6 @@ const obtener_accesos = async ( req = request, res = response ) => {
                 }
             }
         );
-        //console.log ( accesos_disponibles )
         let accesosDisponibles = [];
         accesosDisponibles = accesos_disponibles.map( ( element )=> { 
                                                     const { id_rol_usuario, descripcion_rol } = element;
@@ -31,7 +30,6 @@ const obtener_accesos = async ( req = request, res = response ) => {
                                                 } 
                                 );
 
-        //console.log( accesosDisponibles )
         res.status( 200 ).json(
             {
                 status : true,
@@ -40,7 +38,6 @@ const obtener_accesos = async ( req = request, res = response ) => {
             }
         );      
     } catch (error) {
-        //console.log ( error );
 
         res.status( 500 ).json( { 
             status : false,
@@ -95,7 +92,6 @@ const obtener_accesos_rol = async ( req = request, res = response ) => {
             }
         );      
     } catch (error) {
-        //console.log ( error );
 
         res.status( 500 ).json( { 
             status : false,
@@ -276,7 +272,7 @@ const crear_accesos = async ( req = request, res = response ) => {
 
         });
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `No se ha podido crear el acceso con exito : ${ error }`,
@@ -298,12 +294,7 @@ const asignar_accesos = async ( req = request, res = response ) => {
 
 
         for ( let element in accesos ){
-            console.log( element, accesos[element], idRolUsuario );
             const { idRutaApp } = accesos[element];
-            //const query_acceso = `INSERT INTO ACCESOS_USUARIO ( ID_ROL_USUARIO, ID_RUTA_APP )
-            //                        VALUES ( ${ idRolUsuario }, ${ idRutaApp } )`
-            //console.log( query_acceso )
-            //const insert = await prisma.$executeRawUnsafe( query_acceso );
             const acceso_creado = await prisma.accesos_usuario.create( { data : { 
                                                                             id_rol_usuario : idRolUsuario, 
                                                                             id_ruta_app : idRutaApp,

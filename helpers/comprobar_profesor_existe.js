@@ -13,7 +13,7 @@ const comprobar_profesor_existe = async ( req = request, res = response, next )=
             console.log ( existe );
             next();
         }else {
-            //const { cedula, contacto_profesor, costo_x_hora, creadoen, nombre_profesor } = existe;
+
             console.log( existe );
             res.status( 400 ).json( {
                 status : false,

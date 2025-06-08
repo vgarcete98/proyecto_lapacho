@@ -18,13 +18,9 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
 
         //ENDPOINT QUE DEVUELVE TODO, EVENTOSS, RESERVAS Y CLASES DEL MES
         const { fechaDesde, fechaHasta, pagina, idUsuario } = req.body;
-        //console.log( fechaDesde, fechaHasta );
         const fecha_desde_format = new Date ( fechaDesde );
 
         const fecha_hasta_format = new Date ( fechaHasta );   
-        
-        //console.log( "query de eventos" );
-        //console.log( format( fecha_desde_format, 'yyyy-MM-dd' ), format( fecha_hasta_format, 'yyyy-MM-dd' ) )
         let query_eventos = ``;
         let eventosMes = [];
         try {
@@ -71,14 +67,12 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
                         	JOIN cliente D ON D.id_cliente = F.id_cliente
               WHERE A.fecha_agendamiento BETWEEN  TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}' AND TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}'
               ORDER BY A.fecha_agendamiento DESC`;
-            //console.log( query );
             clasesDelDia = await prisma.$queryRawUnsafe( query );  
         } catch (error2) {
             console.log( error2 );
             clasesDelDia = [];
         }
 
-        //console.log( "query de reservas" );
         let query2 = ``;
         let reservasClub = [];
 
@@ -96,15 +90,12 @@ const obtener_todos_los_eventos_calendario = async ( req = request, res = respon
                   JOIN MESAS D ON D.id_mesa = A.id_mesa
               WHERE (A.hora_desde, A.hora_hasta) OVERLAPS ( TIMESTAMP  '${format( fecha_desde_format, 'yyyy-MM-dd' )}', TIMESTAMP '${format( fecha_hasta_format, 'yyyy-MM-dd' )}')
               ORDER BY A.fecha_reserva DESC`;
-            //console.log( query2 );
             reservasClub = await prisma.$queryRawUnsafe( query2 );
         } catch (error3) {
             console.log( error3 );
             reservasClub = [];
         }
 
-
-        //console.log(  eventosMes, clasesDelDia, reservasClub )
         if ( eventosMes.length === 0 && clasesDelDia.length === 0 && reservasClub.length === 0 ) {
             res.status( 400 ).json( {
                 status : false,
@@ -144,13 +135,9 @@ const obtener_todos_los_torneos_x_fecha = async ( req = request, res = response 
 
         //ENDPOINT QUE DEVUELVE TODO, EVENTOSS, RESERVAS Y CLASES DEL MES
         const { fechaDesde, fechaHasta, pagina, idUsuario, cantidad } = req.body;
-        //console.log( fechaDesde, fechaHasta );
         const fecha_desde_format = new Date ( fechaDesde );
 
         const fecha_hasta_format = new Date ( fechaHasta );   
-        
-        //console.log( "query de eventos" );
-        //console.log( format( fecha_desde_format, 'yyyy-MM-dd' ), format( fecha_hasta_format, 'yyyy-MM-dd' ) )
         const query_torneos = `SELECT A.id_evento AS "idEvento", 
                                         B.id_tipo_evento AS "idTipoEvento", 
                                         A.fecha_desde_evento AS "horaDesde", 
@@ -172,7 +159,6 @@ const obtener_todos_los_torneos_x_fecha = async ( req = request, res = response 
 
         const eventosMes =  await prisma.$queryRawUnsafe( query_torneos );  
 
-        //console.log(  eventosMes, clasesDelDia, reservasClub )
         if ( eventosMes.length === 0 ) {
             res.status( 400 ).json( {
                 status : false,
@@ -236,7 +222,6 @@ const obtener_categorias_x_evento = async ( req = request, res = response ) =>{
                 costo : costo
             } )
         } )
-        //console.log( categoriasEvento )
         
         res.status( 200 ).json( {
             status : true,
@@ -248,7 +233,7 @@ const obtener_categorias_x_evento = async ( req = request, res = response ) =>{
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al obtener las categorias del evento ${error} `
@@ -269,12 +254,13 @@ const crear_categorias_x_evento = async ( req = request, res = response ) =>{
         const { categorias, idEvento }  = req.body;
 
         let categorias_creadas = 0;
+        let categoria;
         for (const element of categorias) {
 
             try {
                 let { descripcionCategoria, nombreCategoria,
                         costoCategoria, edadMaxima, edadMinima, nivelMaximo, nivelMinimo, sexoPermitido   } = element;
-                let categoria = await prisma.categorias.create( {
+                categoria = await prisma.categorias.create( {
                                                                 data : { 
                                                                     descripcion : descripcionCategoria,  
                                                                     nombre_categoria : nombreCategoria, 
@@ -318,7 +304,7 @@ const crear_categorias_x_evento = async ( req = request, res = response ) =>{
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
@@ -336,12 +322,13 @@ const editar_categorias_x_evento = async ( req = request, res = response ) =>{
         const { idEvento, categorias }  = req.body;
 
         let categorias_editadas = 0;
+        let categoria ;
         for (const element of categorias) {
 
             try {
                 let { descripcionCategoria, nombreCategoria, 
                         costoCategoria, edadMaxima, edadMinima, nivelMaximo, nivelMinimo, sexoPermitido   } = element;
-                let categoria = await prisma.categorias.update( {
+                categoria = await prisma.categorias.update( {
                                                                 data : { 
                                                                     descripcion : descripcionCategoria,  
                                                                     nombre_categoria : nombreCategoria, 
@@ -383,7 +370,7 @@ const editar_categorias_x_evento = async ( req = request, res = response ) =>{
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
@@ -427,7 +414,7 @@ const eliminar_categorias_x_evento = async ( req = request, res = response ) =>{
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al crear el evento en el calendario ${error} `,
@@ -635,7 +622,7 @@ const obtener_eventos_x_fecha_calendario = async ( req = request, res = response
 
     }      
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {  
             status : false,
             msg : `Ha ocurrido un error al procesar la consulta ${ error }`,
@@ -777,7 +764,7 @@ const borrar_evento_calendario = async ( req = request, res = response ) =>{
             } );
         }    
     } catch (error) {
-        //console.log( error );
+        
         res.status( 200 ).json( {
             status : false,
             msg : `No se pudo borrar el evento  ${ error }`,
@@ -808,7 +795,6 @@ const actualizar_evento_calendario = async ( req = request, res = response ) =>{
                 idEvento,
                 idSocio } = req.body;
     
-        //console.log( fechaNuevaDesde, fechaNuevaHasta )
         const fecha_actualizacion = new Date();
         const actualizacion_evento = await prisma.calendario_eventos.update( { 
                                                                                 where : { id_evento_calendario : Number( idEvento ) },
@@ -877,7 +863,6 @@ const actualizar_evento_calendario = async ( req = request, res = response ) =>{
         }   
     } catch (error) {
 
-        //console.log ( error );
 
         res.status( 200 ).json( {
             status : false,
@@ -917,7 +902,7 @@ const obtener_inscripciones_x_evento = async ( req = request, res = response ) =
         if ( inscripciones_socios.length > 0 ) {
 
             inscripciones_socios.forEach( ( element )=>{
-                //const { id_inscripcion, id_socio, nombre_cmp, fecha_inscripcion,  } = element;
+
     
                 inscripcionesSocios.push( { 
                     idInscripcion : element.id_inscripcion,
@@ -968,7 +953,6 @@ const obtener_tipos_de_evento = async (req = request, res = response)=>{
 
             const tiposEventos = tipos_evento.map( ( element )=>{
                 const { id_tipo_evento, desc_tipo_evento, color_evento } = element;
-                //console.log( element )
                 return { 
                     idTipoEvento : (typeof(id_tipo_evento) ==='bigint') ? Number(id_tipo_evento.toString()) : id_tipo_evento ,
                     descTipoEvento : desc_tipo_evento,
@@ -1043,7 +1027,6 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
                                                                     } 
                                                                 } );
 
-        //console.log( eventos )
         const eventosMes =  eventos.map( ( element ) =>{
             const { fecha_desde_evento, 
                     fecha_hasta_evento, 
@@ -1092,7 +1075,7 @@ const obtener_eventos_del_mes = async (req  =request, res = response)=>{
         } );
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 400 ).json( {
             status : false,
             msg : `Ha ocurrido un error al obtener los eventos del mes : ${error}`
@@ -1136,7 +1119,7 @@ const obtener_requerimientos_x_evento = async ( req = request, res = response ) 
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al obtener los requerimientos del evento ${error} `,
@@ -1216,7 +1199,7 @@ const crear_requerimientos_x_evento = async ( req = request, res = response ) =>
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al crear el requerimiento para el evento ${error} `,
@@ -1272,7 +1255,7 @@ const editar_requerimientos_x_evento = async ( req = request, res = response ) =
         } );
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al editar los requerimiento del evento ${error} `,
@@ -1324,7 +1307,7 @@ const eliminar_requerimientos_x_evento = async ( req = request, res = response )
         } );
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al eliminar los requerimiento del evento ${error} `,

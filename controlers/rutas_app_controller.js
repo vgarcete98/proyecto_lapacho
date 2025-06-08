@@ -74,7 +74,6 @@ const obtener_rutas_de_usuario = async ( req = request, res = response )=>{
 
     try {
         const { id_usuario } = req.params;  
-        //console.log ( id_usuario );
         let rutas_de_usuario = [];
         rutas_de_usuario = await prisma.$queryRaw`SELECT A.ID_SOCIO, A.NOMBRE_USUARIO, B.ID_ACCESO AS ACCESO, B.DESCRIPCION_ACCESO,
                                                     		C.ID_ROL_USUARIO, C.DESCRIPCION_ROL, D.ID_RUTA_HABILITADA, D.ID_RUTA_APP, F.PATH_RUTA
@@ -84,7 +83,7 @@ const obtener_rutas_de_usuario = async ( req = request, res = response )=>{
                                                     	JOIN RUTAS_HABILITADAS_ROL D ON D.id_rol_usuario = C.id_rol_usuario
                                                     	JOIN RUTAS_APP F ON F.id_ruta_app = D.id_ruta_app
                                                     WHERE A.ID_SOCIO =  ${ Number(id_usuario) }`;
-        //console.log( rutas_de_usuario )
+        
         if ( rutas_de_usuario.length > 0 ){
 
 
@@ -266,7 +265,7 @@ const obtener_rutas_de_usuario_faltantes = async ( req = request, res = response
     try {
 
         const { id_usuario } = req.params;  
-        //console.log ( id_usuario );
+        ;
         let rutas_faltantes = [];
         rutas_faltantes = await prisma.$queryRaw`SELECT ID_RUTA_APP, PATH_RUTA
                                                         FROM RUTAS_APP 
@@ -277,7 +276,7 @@ const obtener_rutas_de_usuario_faltantes = async ( req = request, res = response
                                                                                    JOIN RUTAS_HABILITADAS_ROL D ON D.id_rol_usuario = C.id_rol_usuario
                                                                                    JOIN RUTAS_APP F ON F.id_ruta_app = D.id_ruta_app
                                                                                WHERE A.ID_SOCIO =  ${ Number(id_usuario) } )`;
-        //console.log( rutas_de_usuario )
+        
         if ( rutas_faltantes.length > 0 ){
 
 

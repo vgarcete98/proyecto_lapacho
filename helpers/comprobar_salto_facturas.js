@@ -10,7 +10,7 @@ const comprobar_salto_factura = async ( req = request, res = response, next )=> 
         const { nroTimbrado, nroFactura } = req.body;
         
         //VOY A BUSCAR SI HAY UNA FACTURA VACIA QUE CORRESPONDE A ESA
-        //const factura = "";
+
         const numeracion = nroFactura.split( '-' ).pop();
         const factura_previas = await prisma.facturas.findMany( { 
                                                                         where : { 
@@ -66,7 +66,7 @@ const comprobar_factura_registrada = async ( req = request, res = response, next
         const { nroTimbrado, nroFactura } = req.body;
         
         //VOY A BUSCAR SI HAY UNA FACTURA VACIA QUE CORRESPONDE A ESA
-        //const factura = "";
+
         const numeracion = nroFactura.split( '-' ).pop();
         const factura_previas = await prisma.facturas.findFirst( { 
                                                                         where : { 
@@ -121,7 +121,7 @@ const comprobar_utilizacion_factura_registrada = async ( req = request, res = re
         const { nroTimbrado, nroFactura } = req.body;
         
         //VOY A BUSCAR SI HAY UNA FACTURA VACIA QUE CORRESPONDE A ESA
-        //const factura = "";
+
         const numeracion = nroFactura.split( '-' ).pop();
         console.log(numeracion  )
         const factura_previas = await prisma.facturas.findFirst( { 

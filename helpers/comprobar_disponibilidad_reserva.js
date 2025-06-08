@@ -10,8 +10,7 @@ const comprobar_disponibilidad_reserva = async ( req = request, res = response, 
 
     try {
         const { idMesa, horaDesde, horaHasta } = req.body;
-        //const [ dia, mes, annio ] = fechaAgendamiento.split( "/" );
-        //console.log( "" )
+
         let existe_reserva = [];
 
         existe_reserva = await prisma.reservas.findMany( { 
@@ -26,7 +25,6 @@ const comprobar_disponibilidad_reserva = async ( req = request, res = response, 
                                                             } 
                                                         } );
 
-        //console.log ( existe_reserva )
         if ( existe_reserva.length === 0 ){
             next();
         }else{
@@ -53,10 +51,8 @@ const comprobar_reserva_express_duplicada = async ( req = request, res = respons
 
     try {
         const { tipoIngreso, idCliente } = req.body;
-        //const [ dia, mes, annio ] = fechaAgendamiento.split( "/" );
-        //console.log( "" )
+
         let existe_reserva = [];
-        //console.log( new Date ( (new Date()).toLocaleDateString()) )
         const fechaDesde = new Date();
 
         fechaDesde.setHours(0,0,0);
@@ -79,7 +75,6 @@ const comprobar_reserva_express_duplicada = async ( req = request, res = respons
                                                             } 
                                                         } );
 
-        //console.log ( existe_reserva )
         if ( existe_reserva.length === 0 ){
             next();
         }else{

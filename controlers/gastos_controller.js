@@ -22,8 +22,7 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
                 ingresoXegreso } = req.body;
     
         const { token_trad } = req;
-        //console.log( token_trad );
-        //const [ rol_usuario,...resto ] = token_trad;
+
         const { id_usuario } = token_trad;
         // VAMOS A DETERMINAR QUE HACER DEPENDIENDO DE LO QUE SE CARGUE EN EL CAMPO INGRESOxEGRESO
         const idUsuarioTrad = id_usuario;
@@ -32,9 +31,6 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
         const descripcionGasto = descripcion;
 
         //----------------------------------------------------------------
-        //const { archivo } = req.file;
-        //console.log( req )
-        //console.log( req.file );
         //----------------------------------------------------------------        
 
         if ( ingresoXegreso === true ){
@@ -84,15 +80,10 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
             //------------------------------------------------------------------------------------------------------
         }
         if( req.file ){
-            //const directorio = path.dirname('../gastos_ingresos');
-            //console.log( directorio )
-            //console.log( path.join( __dirname) )
-            //console.log( ruta );
+
             const { filename, destination, originalname } = req.file;
             const { file } = req;
-            //console.log( destination )
             const ruta = path.join( __dirname, '../gastos_ingresos' );
-            //console.log( file );
 
             //fs.appendFileSync( ruta, filename );
             const ruta_destino = ruta + `/${filename}`;
@@ -101,7 +92,7 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
                 if (error) {
                     const mensaje = error.message;
                     console.log( mensaje );
-                    //const error = new Error( mensaje );
+
                     throw new Error( mensaje );
                 }
             
@@ -116,16 +107,6 @@ const cargar_gasto_club = async ( req = request, res = response ) =>{
                                                                         }
                                                                     } )
 
-            /*
-            fs.writeFile( ruta , originalname, 
-                ( error_carga ) => {
-                    if ( error_carga ) {
-                        const mensaje = error_carga.message;
-                        console.log( mensaje );
-                        //const error = new Error( mensaje );
-                        throw new Error( mensaje );
-                    }
-            })*/
             
         }
 
@@ -308,8 +289,7 @@ const editar_gasto_club = async ( req = request, res = response ) =>{
     try {
         let gasto_editado;
         const { token_trad } = req;
-        //console.log( token_trad );
-        //const [ rol_usuario,...resto ] = token_trad;
+
         const { id_usuario } = token_trad;
         const idUsuario = id_usuario;
 

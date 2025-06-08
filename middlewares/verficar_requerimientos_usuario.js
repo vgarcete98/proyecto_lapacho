@@ -39,11 +39,9 @@ const verificar_requerimientos_usuario = async ( req = request, res = response, 
             default : 
                 acceso = descripcion_rol;
         }
-
-        //console.log( acceso_usuario )
         req.body.idSocio = id_usuario;
         req.body.acceso = acceso;
-        //console.log( decode( x_token, process.env.SECRET0RPR1VAT3K3Y ) );
+        
         next();
 
     } catch (error) {

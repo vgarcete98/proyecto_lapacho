@@ -13,7 +13,7 @@ const validar_token = async ( req = request, res = response, next ) =>{
         
         try {
             const { x_token } = req.headers;
-            //console.log( token )
+            
             
             if( !x_token ) { 
                 return res.status( 401 ).json({
@@ -21,7 +21,7 @@ const validar_token = async ( req = request, res = response, next ) =>{
                 })
             }
             const payload = jwt.verify( x_token,process.env.SECRET0RPR1VAT3K3Y );
-            //console.log ( payload );
+            ;
             req.token_trad = payload;
             next();
         

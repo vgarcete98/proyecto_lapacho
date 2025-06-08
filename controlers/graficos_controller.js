@@ -1,7 +1,7 @@
 const { request, response } = require('express')
 
 const { PrismaClient } = require('@prisma/client');
-//const { generar_fecha } = require('../helpers/generar_fecha');
+
 
 const prisma = new PrismaClient();
 
@@ -37,7 +37,7 @@ const obtener_socios_al_dia_detalle = async ( req = request, res = response ) =>
                         order by X.id_cliente`;
         const sociosAlDiaDetalle = await prisma.$queryRawUnsafe(query)
 
-        //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
+
 
         if ( sociosAlDiaDetalle.length === 0  ){
 
@@ -62,7 +62,6 @@ const obtener_socios_al_dia_detalle = async ( req = request, res = response ) =>
 
         
     } catch (error) {
-        //console.log(error );
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo obtener el detalle de los socios al dia',
@@ -111,7 +110,7 @@ const obtener_cant_socios_al_dia = async ( req = request, res = response ) =>{
 
         const estados = await prisma.$queryRawUnsafe(query)
 
-        //const movimientos_de_caja = await prisma.movimiento_caja.findMany();
+
 
         if ( estados.length === 0  ){
 

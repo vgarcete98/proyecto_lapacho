@@ -15,12 +15,12 @@ const verificar_edad = async ( req = request, res = response, next )=>{
 
         let inscripciones_validas = false;
         const cliente = await prisma.cliente.findUnique( { where : { id_cliente : Number(idCliente) }, select : { fecha_nacimiento : true } } );
-        console.log( (new Date()).getFullYear, cliente.fecha_nacimiento.getFullYear());
         const cliente_edad = (new Date()).getFullYear() - cliente.fecha_nacimiento.getFullYear();
-        console.log( cliente_edad )
+
+        let reglas_categoria
         for (const element of categorias) {
             let { idCategoria } = element;
-            let reglas_categoria = await prisma.categorias.findUnique( { where : { 
+            reglas_categoria = await prisma.categorias.findUnique( { where : { 
                                                                             id_categoria : Number(idCategoria)
                                                                         },
                                                                         select : {
@@ -30,8 +30,6 @@ const verificar_edad = async ( req = request, res = response, next )=>{
                                                                     } );
             if ( reglas_categoria !== null ) {
                 const { edad_maxima, edad_minima } = reglas_categoria;
-                console.log( reglas_categoria );
-                console.log( cliente_edad >= edad_minima, ( (edad_maxima === null )? true : cliente_edad <= edad_maxima ) )
                 if (  cliente_edad >= edad_minima  && ( (edad_maxima === null )? true : cliente_edad <= edad_maxima ) ) {
                     inscripciones_validas = true;
                     break;
@@ -73,9 +71,10 @@ const verificar_sexo = async ( req = request, res = response, next )=>{
         let inscripciones_validas = false;
         const cliente = await prisma.cliente.findUnique( { where : { id_cliente : Number(idCliente) } } )
         const cliente_sexo = cliente.sexo;
+        let reglas_categoria 
         for (const element of categorias) {
             let { idCategoria } = element;
-            let reglas_categoria = await prisma.categorias.findUnique( { where : { 
+            reglas_categoria = await prisma.categorias.findUnique( { where : { 
                                                                             
                                                                             id_categoria : Number(idCategoria) ,
                                                                         },
@@ -84,7 +83,6 @@ const verificar_sexo = async ( req = request, res = response, next )=>{
                                                                         } 
                                                                     } );
             if( reglas_categoria !== null ) {
-                console.log( cliente_sexo )
                 const { sexo } = reglas_categoria
                 if ( (cliente_sexo !== sexo) && (sexo !== null) ) {
                     inscripciones_validas = true;
@@ -130,9 +128,10 @@ const verificar_nivel = async ( req = request, res = response, next )=>{
         let inscripciones_validas = false;
         const cliente = await prisma.cliente.findUnique( { where : { id_cliente : Number(idCliente) } } )
         const cliente_nivel = cliente.nivel;
+        let reglas_categoria 
         for (const element of categorias) {
             let { idCategoria } = element;
-            let reglas_categoria = await prisma.categorias.findUnique( { where : { 
+            reglas_categoria = await prisma.categorias.findUnique( { where : { 
                                                                             id_categoria : Number(idCategoria)
                                                                         },
                                                                         select : {

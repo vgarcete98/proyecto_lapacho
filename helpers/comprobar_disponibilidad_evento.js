@@ -28,7 +28,7 @@ const comprobar_disponibilidad_evento = async ( req = request, res = response, n
             next();
         }else {
 
-            //console.log( evento );
+            
             res.status( 400 ).json( {
                 status : true,
                 msg : 'Esa fecha para ese evento no se encuentra libre',
@@ -55,8 +55,8 @@ const comprobar_disponibilidad_evento = async ( req = request, res = response, n
 const comprobar_evento_borrado = async ( req = request, res = response, next )=> {
 
     try {
-        //const { fechaDesde, fechaHasta } = req.body;
-        //const [ fecha_desde_convertido, fecha_hasta_convertido ] = [ generar_fecha( fechaDesde ), generar_fecha( fechaHasta ) ];
+
+
         const { id_evento } = req.params;
         const evento = await prisma.calendario_eventos.findFirst( { 
                                                                     where : { id_evento_calendario : id_evento } 
@@ -99,10 +99,10 @@ const comprobar_existe_evento = async ( req = request, res = response, next )=> 
         const evento = await prisma.calendario_eventos.findFirst( { 
                                                                     where : { id_evento_calendario : Number( idEvento ) } 
                                                                 } );
-        //const { estadoevento } = evento;
+
         if ( evento === null || evento === undefined ){
             //next();
-            //const { fecha_desde_evento, fecha_hasta_evento, costo, decripcion_evento  } = evento;
+
             res.status( 400 ).json( {
                 status : true,
                 msg : 'Ese evento no existe, favor verificar',   

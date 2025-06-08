@@ -30,7 +30,6 @@ const generar_documentos_factura = async ( req = request, res = response )=>{
             try {
                 
                 for (let index = timbrado.numero_desde ; index <= timbrado.numero_hasta; index++) {
-                    //console.log( "entre al for" )
                     //HAY QUE GENERAR LAS FACTURAS DESDE UN NUMERO HASTA OTRO NUMERO
                     let factura = await prisma.facturas.create( {
                                                                     data : {
@@ -65,7 +64,7 @@ const generar_documentos_factura = async ( req = request, res = response )=>{
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 400 ).json( {
             status : true,
             msg : `No se pudo obtener los datos para el grafico : ${error}`,
@@ -230,7 +229,7 @@ const registrar_datos_factura = async ( req = request, res = response )=>{
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 400 ).json( {
             status : true,
             msg : `No se pudo obtener los datos para el grafico : ${error}`,

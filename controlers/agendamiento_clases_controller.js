@@ -16,7 +16,6 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
 
         const { fechaDesde, fechaHasta, pagina, nombreProfesor, apellidoProfesor,
                 nombreSocio, apellidoSocio, cedulaSocio, cedulaProfesor, idUsuario } = req.query;
-        console.log( cedulaSocio );
         const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
 
         const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
@@ -52,7 +51,6 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
                         ${ ( cedulaSocio === undefined ) ? `` : `AND D.id_socio = ${ idUsuario }` }
                         ORDER BY A.fecha_agendamiento DESC
                         LIMIT 10 OFFSET ${ (Number(pagina) > 1 ) ? ( Number(pagina) - 1)* 10 : 0 }`;
-        //console.log( query );
         let clases_del_dia, clasesDelDia = [];
         clases_del_dia = await prisma.$queryRawUnsafe( query );  
 
@@ -72,7 +70,6 @@ const obtener_clases_del_dia = async ( req = request, res = response ) =>{
             } );
         }
     } catch (error) {
-        //console.log ( ` Error encontrado ${error}` );
 
         res.status( 500 ).json( {
             status : false,
@@ -97,7 +94,6 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
                 nombreSocio, apellidoSocio, cedulaSocio, cedulaProfesor, idUsuario } = req.query;
 
         const { idSocio } = req.body;
-        //console.log( idSocio );
         const [ dia_desde, mes_desde, annio_desde ] = fechaDesde.split( '/' );
 
         const [ dia_hasta, mes_hasta, annio_hasta ] = fechaHasta.split( '/' );
@@ -154,7 +150,6 @@ const obtener_clases_del_dia_x_socio = async ( req = request, res = response ) =
             } );
         }
     } catch (error) {
-        //console.log ( ` Error encontrado ${error}` );
 
         res.status( 500 ).json( {
             status : false,
@@ -212,7 +207,6 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
                                 ${ ( cedulaProfesor === undefined ) ? `` : `AND B.cedula = ${ cedulaProfesor }` }
                         ORDER BY A.fecha_agendamiento DESC
                         LIMIT 10 OFFSET ${(Number(pagina) > 1 ) ? ( Number(pagina) - 1)* 10 : 0}`;
-        //console.log( query )
         let clases_del_dia, clasesDelDia = [];
         clases_del_dia = await prisma.$queryRawUnsafe( query ); 
 
@@ -233,7 +227,6 @@ const obtener_clases_x_profesor_dia = async ( req = request, res = response ) =>
             } );
         }
     } catch (error) {
-        //console.log ( ` Error encontrado ${error}` );
 
         res.status( 500 ).json( {
             status : false,
@@ -291,7 +284,6 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
                                                                         id_precio_clase : true
                                                                     }
                                                                 } );
-        //console.log( precio_clase )
         const { id_profesor, precio, id_precio_clase } = precio_clase
         const clase_nueva = await prisma.agendamiento_clase.create( { 
                                                                         data : { 
@@ -511,7 +503,6 @@ const agendar_alumno_a_clase = async ( req = request, res = response ) =>{
 
 
     } catch (error) {
-        console.log ( error );
         res.status( 500 ).json( {
             status : false,
             msg : `Ocurrio un error al agendar la clase, favor intente de vuelta : ${error}`,
@@ -528,7 +519,6 @@ const editar_una_clase = async ( req = request, res = response ) =>{
 
     try {
         const { idSocio, idProfesor, fechaAgendamiento, inicio, fin, idMesa, idAgendamiento } = req.body;
-        //console.log ( req.body )
         const { id_agendamiento, id_socio, id_profesor, 
                 //fecha_agendamiento, 
                 horario_inicio, horario_hasta, 
@@ -571,7 +561,6 @@ const editar_una_clase = async ( req = request, res = response ) =>{
         } );
 
     } catch (error) {
-        //console.log ( error );
         res.status( 500 ).json( {
             status : false,
             msg : `Ocurrio un error al editar el registro : ${error}`,
@@ -628,8 +617,6 @@ const abonar_una_clase = async ( req = request, res = response ) =>{
 
     } catch (error) {
 
-        //console.log ( error );
-
         res.status( 500 ).json( {
             status : false,
             msg : `No se pudo abonar por la clase, ocurrio un error ${ error }`,
@@ -677,7 +664,7 @@ const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
         } );
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Ocurrio un error al eliminar la clase ${ error }`,
@@ -695,7 +682,6 @@ const obtener_mesas_disponibles_x_horario = async ( req = request, res = respons
 
         const { horaDesde, horaHasta } = req.body;  
 
-        //console.log ( new Date( horaDesde ), new Date( horaHasta ) )
         const clases = await prisma.agendamiento_clase.findMany( { 
                                                                     where : {  
                                                                         horario_inicio : { gte : new Date( horaDesde ) },

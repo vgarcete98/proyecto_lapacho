@@ -34,16 +34,6 @@ const obtener_compras_club = async ( req = request, res = response ) =>{
                                         }
                                     } ),
             prisma.compras.count( {  
-                select : {
-                    id_compra : true,
-                    estado : true,
-                    fecha_operacion : true,
-                    descripcion : true,
-                    cantidad : true,
-                    creado_en : true,
-                    id_tipo_egreso : true,
-                    id_insumo : true
-                },
                 where : {
                     estado : { contains : 'PENDIENTE' }//que aun no se completo el circuito de compras
                 }
@@ -87,7 +77,7 @@ const obtener_compras_club = async ( req = request, res = response ) =>{
         
     } catch (error) {
 
-        //console.log( error );
+        
         res.status( 500 ).json( { 
             status : false,
             msg : `No se pudo obtener las compras generadas por el club`,
@@ -214,7 +204,6 @@ const procesar_pago_por_compras_club = async () => {
                                                                 } 
                                                             } );
                 if( actualiza_compra !== null ) {
-                    //console.log( nueva_compra );
                     //SE ACTUALIZO LA COMPRA POR TANTO TIENE QUE FIGURARSE COMO UN EGRESO
                     //Y TAMBIEN COMO UN MOVIMIENTO DE CAJA PARA PAGAR
                     let { cantidad, monto, id_tipo_egreso,  } = actualiza_compra;

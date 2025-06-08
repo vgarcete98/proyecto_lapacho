@@ -6,7 +6,7 @@ const { generar_fecha } = require('../helpers/generar_fecha');
 const axios = require('axios');
 const prisma = new PrismaClient();
 
-//const url = env("URL_BASE");
+
 
 const instance = axios.create({
     baseURL: 'url',
@@ -57,7 +57,7 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
                                 ${ ( nro_cedula === undefined ) ? `` : `AND B.cedula  = '${ nro_cedula }'` }
                         ORDER BY A.fecha_reserva DESC
                         LIMIT 10 OFFSET ${(Number(pagina) > 1 ) ? ( Number(pagina) - 1)* 10 : 0 };`;
-        //console.log( query );
+        
         const reservasClub = await prisma.$queryRawUnsafe( query );
         
         if ( reservasClub.length === 0 ) {
@@ -77,7 +77,7 @@ const obtener_reservas_en_club = async ( req = request, res = response ) => {
 
         }        
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `No se pudo obtener las reservas del club ${ error }`,
@@ -96,15 +96,15 @@ const crear_reserva_en_club = async ( req = request, res = response ) => {
     try {
 
         const { idCliente, horaDesde, horaHasta, idMesa, idPrecioReserva, montoReserva, tipoIngreso } = req.body;
-        //console.log( idCliente );
+        
         //-----------------------------------------------------------------------------------------
         //PRIMERAMENTE VAMOS A BUSCAR EL PRECIO ESTABLECIDO PARA QUE SEA UN POCO MAS DINAMICO
         let fecha_desde = generar_fecha(horaDesde),
             fecha_hasta = generar_fecha(horaHasta);
         //-----------------------------------------------------------------------------------------
 
-        //console.log( montoReserva );
-        //console.log( tipoIngreso );
+        
+        
         const nueva_reserva = await prisma.reservas.create( { 
                                                                     data : {
                                                                         id_cliente : Number(idCliente),
@@ -183,14 +183,12 @@ const crear_reserva_en_club_administrador = async ( req = request, res = respons
 
                                                                     } 
                                                                 });
-        //console.log( nueva_reserva)
         const { fecha_creacion, fecha_reserva, hora_desde, 
                 hora_hasta, id_mesa, id_socio, 
                 id_socio_reserva, id_tipo_reserva, reserva_editada, reserva_eliminada } = nueva_reserva;
         
         const { desc_mesa } = await prisma.mesas.findUnique(  { where : { id_mesa : Number(idMesa) } } );
         const socio  = await prisma.socio.findUnique( { where : { id_socio : Number( idSocio ) } } );
-        //console.log( socio )
         const { id_persona, nombre_cmp } = socio;
         res.status( 200 ).json( {
             status : true,
@@ -199,7 +197,7 @@ const crear_reserva_en_club_administrador = async ( req = request, res = respons
         } );
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Reserva no generada : ${ extraerMensaje( error.message ) }`,
@@ -310,7 +308,6 @@ const editar_reserva_en_club = async ( req = request, res = response ) => {
         
         const { desc_mesa } = await prisma.mesas.findUnique(  { where : { id_mesa : Number(idMesa) } } );
         const socio  = await prisma.socio.findUnique( { where : { id_socio : Number( idSocio ) } } );
-        //console.log( socio )
         const { id_persona, nombre_cmp } = socio;
         res.status( 200 ).json( {
             status : true,
@@ -329,7 +326,7 @@ const editar_reserva_en_club = async ( req = request, res = response ) => {
         } );
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Reserva no generada : ${ extraerMensaje( error.message ) }`,
@@ -399,13 +396,13 @@ const obtener_mesas_reserva = async ( req = request, res = response ) =>{
 
     try {
         
-        //const query = `SELECT id_mesa, desc_mesa FROM MESAS`;
+
         const mesas_disponibles = await prisma.mesas.findMany();
         let mesasDisponibles = [];
         if ( mesas_disponibles.length > 0 ){
             mesas_disponibles.forEach( ( element )=> {
                 const { desc_mesa, id_mesa } = element;
-                //console.log( element );
+                
                 mesasDisponibles.push ( {
                     idMesa : (typeof(id_mesa)==='bigint')? Number( id_mesa.toString() ) : id_mesa,
                     descMesa : desc_mesa
@@ -428,7 +425,6 @@ const obtener_mesas_reserva = async ( req = request, res = response ) =>{
         
         
     } catch (error) {
-        //console.log ( error );
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al eliminar la reserva : ${ error }`,
@@ -465,9 +461,9 @@ const agregar_reserva_a_venta = async ( req = request, res = response ) =>{
                 
                 let reserva = await prisma.reservas.findUnique( { where : { id_cliente_reserva : Number( idReserva ) } } );
                 let  { id_cliente_reserva, id_cliente, id_mesa, monto, fecha_reserva } = reserva;
-                //console.log( reserva );
+                
                 let cliente = await prisma.cliente.findUnique( { where : { id_cliente : id_cliente } } )
-                //console.log( cliente );
+                
                 if ( reserva !== null  ) { 
 
                     let nueva_venta = await prisma.ventas.create( {
@@ -522,7 +518,6 @@ const agregar_reserva_a_venta = async ( req = request, res = response ) =>{
         
         
     } catch (error) {
-        //console.log ( error );
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al eliminar la reserva : ${ error }`,
@@ -574,7 +569,6 @@ const setear_precio_reservas = async ( req = request, res = response ) =>{
         
         
     } catch (error) {
-        //console.log ( error );
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al eliminar la reserva : ${ error }`,

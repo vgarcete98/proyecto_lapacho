@@ -10,7 +10,7 @@ const verificar_inscripciones_generadas = async ( req = request, res = response,
     try {
 
         const { inscripciones } = req.body;
-        //const evento = await prisma.eventos.findFirst( { where : { id_evento : Number( idEvento ) } } );
+
         let inscripcion_falsa = false;
         for (const element of inscripciones) {
             let {  idInscripcion } = element;

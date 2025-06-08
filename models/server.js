@@ -17,19 +17,19 @@ const logger = winston.createLogger({
 //----------------------------------------------------
 const { PrismaClient } = require('@prisma/client')
 const { request, response } = require('express')
-//const prisma = new PrismaClient();
+
 const schedule = require('node-schedule');
 const prisma = new PrismaClient();
 //----------------------------------------------------
 
 const listEndpoints = require('express-list-endpoints')
-//const getEndpoints = require('express-list-endpoints')
+
 
 const bodyParser = require('body-parser');
 
 const cors = require( 'cors' );
 
-//const multer = require( 'multer' );
+
 
 const rutas = require( '../routes/routes' );
 
@@ -90,10 +90,10 @@ const job_profesores = schedule.scheduleJob( '0 0 1 20 1 *', cron_job_genera_ven
 const job_gastos_fijos = schedule.scheduleJob('0 0 1 * * *', cron_job_genera_gastos_fijos);
 const job_cuotas_vencidas = schedule.scheduleJob( '0 0 0 0 1 *', cron_job_genera_venta_cuotas_vencidas );
 //PARA TEST DEL CRON JOB
-//const job = schedule.scheduleJob('40 * * * *', cron_job_genera_cuotas_anio);
-//const job_cuotas_vencidas = schedule.scheduleJob( '* * 5 * * *', cron_job_genera_venta_cuotas_vencidas );
-//const job_gastos_fijos = schedule.scheduleJob('5 * * * * *', cron_job_genera_gastos_fijos);
-//const job_profesores = schedule.scheduleJob( '5 * * * * *', cron_job_genera_venta_clases_profesores );
+
+
+
+
 //----------------------------------------------------------------------------
 
 class Server {
@@ -198,7 +198,6 @@ class Server {
 
         this.app.use(function( err, req , res , next ) {
             
-            //console.error(err.stack);
             res.status(500).json( 
                 {
                     status : false,
@@ -275,7 +274,7 @@ class Server {
             console.log(path);
           });
 
-        //console.log(getEndpoints(this.app));
+        
     }
 
     cargar_accesos_rol(){
@@ -287,12 +286,10 @@ class Server {
 
         //actualizar_pass_clientes();
 
-        //console.log( encriptar_password('jechague2025') );
-        //console.log( encriptar_solicitud( { "usuario" : "sfernandez", "contraseña" : "xxxxxxx" } ) );
+        
+        
         //await subir_imagen(`C:\Users\vgarcete_facu\Pictures\Screenshots\test_subida_mini.png`);
         //await obtener_imagen('test_subida_imagen', {});
-        //console.log( desencriptar_password("U2FsdGVkX18+UCKA/IXIYL7Hey3WaQXODCS0Rp7VfITzPefn4v4HX7ia4q5+jr5fJCQmQdwbF97o1cbqxTcE3b13RHB0XLhEIrqXfIZfO9I="))
-        //console.log( desencriptar_password("U2FsdGVkX1+I7MDOaxedAbB/D0SLgEmd6HRaZzZK5CDsbWIz8Ei8VBRadPrGPc+DDSuZr1bCdB7aE/xXl5Bp1UuHlXHf+HynyvKajalCu9I="))
         this.app.listen( this.PUERTO, ()=>{
 
             console.log ( `BACKEND CLUB LAPACHO\n` );

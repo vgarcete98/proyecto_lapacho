@@ -4,7 +4,6 @@ const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient();
 
-//const schedule = require('node-schedule');
 
 const obtener_id_ingreso_clases = async () =>{
 
@@ -57,7 +56,6 @@ const cron_job_genera_venta_clases_profesores = async (  ) => {
                                                                             } )
         let idProfesor = 0;
         const diferencia = profesores.filter(x => !periodo_procesado.includes(x));
-        //console.log(diferencia);
         let cedulaProfe = '';
         let monto_venta = 0;
         if ( diferencia.length > 0  ) { 
@@ -91,11 +89,9 @@ const cron_job_genera_venta_clases_profesores = async (  ) => {
         
         
                     const { id_profesor, porc_facturacion, costo_x_hora, cedula } = datos_profesor;
-                    //console.log( datos_profesor );
                     cedulaProfe = cedula;
                                                                                 
                     //VOY A BUSCAR EL PERIODO PRIMERO DE MODO A NO PROCESAR 2 VECES LO MISMO 
-                    //console.log( ( precio_clase*clases_profesor )*porc_facturacion );
                     monto_venta = ( costo_x_hora*clases_profesor )*porc_facturacion;
 
                     if ( monto_venta !== 0 && isNaN( monto_venta )  ) {

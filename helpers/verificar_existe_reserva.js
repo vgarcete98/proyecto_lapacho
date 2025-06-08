@@ -24,7 +24,7 @@ const verificar_existe_reserva = async ( req = request, res = response, next )=>
         }
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `Ha ocurrido un error al comprobar el pago : ${ error }`

@@ -44,10 +44,9 @@ const agregar_ingreso = async ( req = request, res = response )=>{
                                                         } );
 
         const { cargado_en, id_socio, monto, id_tipo, descripcion, column_d_operacion_ingreso, editado_en, fecha_ingreso } = nuevo_ingreso;
-        //console.log( nuevo_ingreso );
 
         const ingreso = await prisma.tipos_ingreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
-        //const { descripcion } = egreso;
+
 
         const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
         
@@ -100,7 +99,7 @@ try {
             cargado_en, editado_en, fecha_ingreso   } = borrado_ingreso;
 
     const ingreso = await prisma.tipos_ingreso.findUnique( { where : { id_tipo : Number( id_tipo ) } } );
-    //const { descripcion } = egreso;
+
 
     const usuario = await prisma.socio.findUnique( { where : { id_socio : Number( id_socio ) } } );
     
@@ -219,7 +218,6 @@ const actualizar_ingreso = async ( req = request, res = response )=>{
 const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
     try {
 
-        //console.log( req.query );
 
         const { fechaDesde, fechaHasta, pagina, cantidad } = req.query;     
 
@@ -236,7 +234,6 @@ const obtener_ingresos_x_fecha = async ( req = request, res = response )=>{
                                                 AND A.borrado = false
                                             ORDER BY A.fecha_ingreso DESC
                                             LIMIT ${ cantidad } OFFSET ${(Number(pagina) > 1 ) ? ( Number(pagina) - 1)* 10 : 0};`
-        //console.log( query_ingresos );
         const ingresosXFecha = await prisma.$queryRawUnsafe( query_ingresos );
 
         if ( ingresosXFecha.length > 0 ){
@@ -285,12 +282,10 @@ const obtener_ingresos_x_fecha_excel = async ( req = request, res = response )=>
                                                         WHERE A.fecha_ingreso BETWEEN DATE '${fechaDesde}' AND DATE '${fechaHasta}'
                                                             AND A.borrado = false
                                                         ORDER BY A.fecha_ingreso DESC;`;
-        //console.log( query )
         const ingresos_x_fecha = await prisma.$queryRawUnsafe( query );
 
         if ( ingresos_x_fecha.length > 0 ) {
             
-            //console.log( ingresos_x_fecha );
             //PARA  LO QUE SERIA EGRESOS
             //----------------------------------------------------------------
             const workbook_ingresos = new ExcelJS.Workbook();
@@ -363,7 +358,7 @@ const obtener_ingresos_monto_x_fecha = async ( req = request, res = response ) =
         } );
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 400 ).json( {
             status : false,
             msg : "No se pudo obtener el monto del ingreso en esas fechas : " + error,
@@ -394,7 +389,7 @@ const obtener_tipos_ingreso = async ( req = request, res = response )=>{
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 400 ).json( {
             status : false,
             msg : "No se pudo obtener los tipos de ingresos, error : " + error,
@@ -421,7 +416,6 @@ const generar_grafico_x_fecha_ingresos = async ( req = request, res = response) 
                             AND A.borrado = false
                         GROUP BY A.fecha_ingreso
                         ORDER BY A.fecha_ingreso DESC;`;
-        //console.log( query );
         let ingresos_x_fecha = [];               
         ingresos_x_fecha = await prisma.$queryRawUnsafe( query );
     
@@ -429,7 +423,7 @@ const generar_grafico_x_fecha_ingresos = async ( req = request, res = response) 
         let data = [];
         if ( ingresos_x_fecha.length > 0 ){
     
-            //const { monto, fecha_pago } = egresos_x_fecha;
+
             ingresos_x_fecha.forEach( ( element ) => {
     
                 const { monto, fecha_ingreso } = element;
@@ -447,7 +441,7 @@ const generar_grafico_x_fecha_ingresos = async ( req = request, res = response) 
         } );
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 400 ).json( {
             status : true,
             msg : "No se pudo obtener los datos para el grafico :" + error,
@@ -486,7 +480,7 @@ const obtener_grafico_torta_ingresos = async ( req = request, res = response )=>
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 400 ).json( {
             status : true,
             msg : `No se pudo obtener los datos para el grafico : ${error}`,

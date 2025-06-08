@@ -33,7 +33,6 @@ const comprobar_traspaso_activo = async ( req = request, res = response, next )=
         if ( traspaso === null || traspaso === undefined ){
             next()
         }else {
-            //console.log( traspaso )
             const { nombre_club_habilitado } = club;
             res.status( 400 ).json( {
                 status : false,

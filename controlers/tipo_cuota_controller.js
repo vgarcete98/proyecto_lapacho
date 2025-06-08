@@ -17,7 +17,7 @@ const obtener_tipos_de_cuota = async ( req = request, res = response ) => {
 
             const { creadoen, desc_tipo_cuota, editadoen, id_tipo_cuota, monto_cuota } = value;
             
-            //const idTipoCuota =Number(JSON.stringify(id_tipo_cuota));
+
             tiposCuota.push( {
                 creadoEn : creadoen,
                 descripcion : desc_tipo_cuota,

@@ -1,5 +1,5 @@
 const { request, response } = require('express')
-//const multer = require( 'multer' );
+
 const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient();
@@ -19,12 +19,10 @@ const estadosProfesor = {
 const obtener_nomina_profesores = async ( req = request, res = response ) =>{
 
     try {
-        //console.log( req.file, req.body, req.files );
-        //const { originalname,  } = req.file;
+
         const { cantidad, omitir } = req.query;
 
         var todos_los_profesores;
-        //console.log( cantidad, omitir )
         if ( cantidad === undefined && omitir === undefined ) {
 
             todos_los_profesores = await prisma.profesores.findMany();
@@ -97,14 +95,12 @@ const obtener_profesor_cedula_nombre = async ( req = request, res = response ) =
 
     // VOY A OBTENER UN PROFESOR DADO SU ID
 
-    //const { id_profesor_cons } = req.params;
+
 
     try {
         const { busqueda, cedula } = req.query;
         let profesores;
-        //console.log( typeof( busqueda ), busqueda );
         if( (busqueda ) !== null && busqueda !== undefined ) {
-            //console.log( typeof( busqueda ), busqueda );
             profesores = await prisma.profesores.findMany( { where : { 
                                                                 nombre_profesor : {
                                                                     contains : busqueda,
@@ -139,7 +135,6 @@ const obtener_profesor_cedula_nombre = async ( req = request, res = response ) =
             profesores = await prisma.profesores.findMany();
         }
 
-        //console.log( profesores )
         if ( profesores === null || profesores === undefined ) {
 
             res.status( 200 ).json( {
@@ -328,7 +323,7 @@ const crear_profesor = async ( req = request, res = response ) =>{
         }
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : "Ha ocurrido un error al crear un profesor",

@@ -13,20 +13,11 @@ const { encriptar_password, desencriptar_password } = require('../helpers/genera
 const login = async ( req = request, res = response )=> {
 
     const { usuario, contraseña } = req.body;
-    //console.log( usuario, contraseña )
     try {
-        //const consulta_usuario = await prisma.$queryRaw`SELECT CAST ( id_socio AS INTEGER ) AS id_usuario, 
-        //                                                        CAST ( id_acceso_socio AS INTEGER ) AS id_acceso,
-        //                                                        tipo_usuario, nombre_usuario, contrasea 
-        //                                                    FROM  public.Socio
-        //                                                WHERE nombre_usuario = ${ usuario } AND contrasea = ${ contraseña }`;
-        //const password_encriptado = encriptar_password( contraseña );
-        //console.log( password_encriptado );
         const socio = await prisma.cliente.findFirst( { 
                                                         where : { 
                                                             AND : [
                                                                 { nombre_usuario : usuario },
-                                                                //{ password : password_encriptado }
                                                             ]
                                                         } 
                                                     } );
@@ -41,7 +32,6 @@ const login = async ( req = request, res = response )=> {
             );
         }else {
 
-            //console.log( `hasta aca llegue` )
 
             const desencriptado = desencriptar_json(socio.password) ;
             let real ;
@@ -51,7 +41,7 @@ const login = async ( req = request, res = response )=> {
             }else {
                 real = desencriptar_password( socio.password )
             }
-            //console.log( desencriptado )
+
             if ( contraseña ===  real ) { 
 
                 const { id_cliente, id_rol_usuario,  } = socio;
@@ -60,19 +50,15 @@ const login = async ( req = request, res = response )=> {
     
                 const idUsuario = ( typeof( id_socio ) === 'bigint' )? Number( id_socio.toString() ) : id_cliente;
                 
-                //console.log( idRolUsuario, idUsuario )
-                //console.log ( consulta_acceso );
                 
                 const { descripcion_rol } = await prisma.roles_usuario.findUnique( { where : { id_rol_usuario : idRolUsuario } } );
                 
-                //const { descripcion_acceso } = await prisma.accesos_usuario.findFirst( { where : { id_rol_usuario : idRolUsuario } } );
                 
                 const token = await generar_token( idUsuario, idRolUsuario, descripcion_rol );
                 res.status( 200 ).json(
                     {
                         status : true,
                         msg : 'Login OK',
-                        //usuario,
                         token,
                         acceso : { 
                             tipoUsuario : descripcion_rol, 
@@ -93,7 +79,6 @@ const login = async ( req = request, res = response )=> {
 
         }
     } catch ( error ) {
-        //console.log ( "Ha ocurrido un error al realizar la consulta " + error );
         res.status( 500 ).json(
         
             {

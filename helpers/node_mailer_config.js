@@ -17,7 +17,7 @@ async function sendMail( email_socio = "", cuerpo_email = "" ) {
 
   try {
     
-    //console.log( email_socio, cuerpo_email );
+    
     const info = await transporter.sendMail({
       from: `'"Club lapacho de Tenis de Mesa 🏓" <${process.env.T3ST_M4IL_CU3NT4}>'`, // sender address
       to: email_socio, // list of receivers

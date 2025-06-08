@@ -11,9 +11,9 @@ const comprobar_horario_profesor = async ( req = request, res = response, next)=
         
         const { idCliente, idProfesor, inicio, fin, idMesa, idAgendamiento } = req.body;
         
-        //const [ dia, mes, annio ] = fechaAgendamiento.split( '/' );
 
-        //const fecha_agendamiento = `${annio}-${mes}-${dia}`; 
+
+
         
         
         const query = `SELECT A.id_agendamiento, 
@@ -30,14 +30,14 @@ const comprobar_horario_profesor = async ( req = request, res = response, next)=
                                         AND B.id_profesor = ${ Number( idProfesor ) }
                                         AND C.id_mesa = ${ Number( idMesa ) }
                                 ORDER BY A.fecha_agendamiento DESC`;
-        //console.log ( query )
+        
         const clases_del_dia = await prisma.$queryRawUnsafe( query );
         
         if ( clases_del_dia.length === 0 ){
             // HAY CLASES DISPONIBLES PARA ESE DIA Y CON ESE PROFESOR
             next()
         } else {
-            //console.log ( "clase que coincide, no se puede reservar" );
+            ;
             res.status( 400 ).json( {
                 status : true,
                 msg : "clase que coincide, no se puede reservar",
@@ -45,7 +45,7 @@ const comprobar_horario_profesor = async ( req = request, res = response, next)=
             } );
         }
     } catch (error) {
-        //console.log( error );
+        
         res.status( 400 ).json( {
             status : false,
             msg : `No se pudo verificar las clases coincidentes, error : ${error}`,

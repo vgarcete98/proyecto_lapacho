@@ -87,7 +87,7 @@ const cron_job_genera_venta_cuotas_vencidas = async (  ) => {
         console.log( 'Procedimiento terminado' );
 
     } catch (error) {
-        //console.log( error );
+        
         console.log( `No se logro ejecutar el procedimiento de carga de gastos fijos : ${ error }` );
     }
 

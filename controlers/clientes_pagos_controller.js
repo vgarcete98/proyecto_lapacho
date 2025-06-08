@@ -89,7 +89,7 @@ const realizar_pago_socio = async ( req = request, res = response ) => {
             );
         }
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `No se finalizo el pago de cuota  ${ error }`,
@@ -113,7 +113,6 @@ const anular_pagos_cliente = async ( req = request, res = response ) =>{
 
 
         const pago_cuota = await prisma.pagos_socio.findFirst(  { where : { id_cuota_socio : Number(id_cuota) } } );
-        //console.log( pago_cuota );
         const { id_pago_socio } = pago_cuota;
 
         const cuota_anulada = await prisma.pagos_socio.delete(  { 
@@ -133,8 +132,6 @@ const anular_pagos_cliente = async ( req = request, res = response ) =>{
                                                                     }
                                                                 }
                                                                 );
-        
-        //console.log( cuota_anulada );
 
         
         
@@ -193,7 +190,6 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
                                                                 }
                                                             } );
                 if ( cuota !== null ){
-                    //console.log( cuota )
                     let { descripcion, id_cliente, id_cuota_socio, monto_cuota, cliente} = cuota;
                     let { cedula } = cliente;
                     let venta = await prisma.ventas.create( { 
@@ -256,7 +252,7 @@ const generar_venta_cuota_socio= async ( req = request, res = response ) => {
         }
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `No se finalizo el pago de cuotas ${ error }`,
@@ -275,7 +271,7 @@ const realizar_cobro_clases_socio = async ( req = request, res = response ) => {
 
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `No se finalizo el pago de cuotas ${ error }`,
@@ -299,7 +295,7 @@ const realizar_cobro_evento_socio = async ( req = request, res = response ) => {
 
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `No se finalizo el pago de cuotas ${ error }`,
@@ -322,7 +318,7 @@ const generar_mov_caja = async ( req = request, res = response ) => {
 
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `No se finalizo el pago de cuotas ${ error }`,
@@ -346,7 +342,7 @@ const generar_venta_reserva = async ( req = request, res = response ) => {
 
         
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `No se finalizo el pago de cuotas ${ error }`,

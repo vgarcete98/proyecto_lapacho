@@ -34,7 +34,6 @@ const MESES_ESPAÑOL = [ 'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 
 const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response ) =>{
 
     const { numero_cedula, annio } = req.query;
-    //console.log( numero_cedula);
     // OBTIENE LAS CUOTAS PENDIENTES DEL SOCIO EN EL AÑO
     try {
 
@@ -97,7 +96,6 @@ const obtener_cuotas_pendientes_x_socio = async ( req = request, res = response 
 const obtener_cuotas_pendientes_x_socio_a_la_fecha = async ( req = request, res = response ) =>{
 
     const { numero_cedula, annio, id_socio } = req.query;
-    //console.log( numero_cedula);
     // OBTIENE LAS CUOTAS PENDIENTES DEL SOCIO EN EL AÑO
     try {
         const query = `SELECT A.ID_SOCIO::integer AS "idSocio", 
@@ -122,7 +120,6 @@ const obtener_cuotas_pendientes_x_socio_a_la_fecha = async ( req = request, res 
                         GROUP BY A.ID_SOCIO,  A.NOMBRE_USUARIO, A.NOMBRE_CMP;`;
         
         let cuotasPendientes = await prisma.$queryRawUnsafe(query);
-        //console.log( cuotasPendientes )
         if ( cuotasPendientes.length === 0 ){
             res.status( 200 ).json(
 
@@ -160,7 +157,6 @@ const obtener_cuotas_pendientes_x_socio_a_la_fecha = async ( req = request, res 
 const obtener_cuotas_pendientes_a_la_fecha = async ( req = request, res = response ) =>{
 
     const { numero_cedula, annio, id_socio } = req.query;
-    //console.log( numero_cedula);
     // OBTIENE LAS CUOTAS PENDIENTES DEL SOCIO EN EL AÑO
     try {
 
@@ -227,7 +223,7 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
         
         const { numero_cedula, annio, nombre, apellido } = req.query;
 
-        //const en_español = await prisma.$executeRawUnsafe`SET lc_time = '${"es_ES"}'`;
+
         const query = `SELECT CAST ( C.ID_CUOTA_SOCIO AS INTEGER ) AS "idCuotaSocio" ,
                                 CONCAT (A.NOMBRE, ' ', A.APELLIDO) AS nombreSocio, 
                                 A.ID_CLIENTE AS idSocio,
@@ -246,7 +242,6 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
                                 AND C.estado <> 'ANULADO'
                                 ${ ( nombre === undefined || nombre === '' ) ? `` : `AND A.NOMBRE LIKE '%${nombre}%'` }
                                 ${ ( apellido === undefined || apellido === '' ) ? `` : `AND A.APELLIDO LIKE '%${nombre}%'` }`;
-        //console.log( query );
 
         //await prisma.$executeRawUnsafe`RESET lc_time`;
         const cuotas = await prisma.$queryRawUnsafe( query );
@@ -275,7 +270,7 @@ const obtener_cuotas_x_socio = async ( req = request, res = response ) =>{
             );
         } 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : `No se pudo obtener las cuotas del socio : ${error}`,
@@ -313,7 +308,6 @@ const obtener_cuotas_pendientes_del_mes = async ( req = request, res = response 
 
         let cuotas_pendientes = [];
         cuotas_pendientes = await prisma.$queryRawUnsafe( query );
-        console.log( cuotas_pendientes );
 
         let cuotasPendientes = [];
 
@@ -322,9 +316,7 @@ const obtener_cuotas_pendientes_del_mes = async ( req = request, res = response 
             const { idcuotasocio, nombresocio, id_socio, 
                     fechavencimiento, cedula, numero_mes,
                     fecha_pago, tipo_cuota, monto_cuota } = element;
-            //console.log( numero_mes )
             const mes_español = MESES_ESPAÑOL[ Number( numero_mes ) -1 ];
-            //console.log( mes_español )
 
             return {
                 idCuotaSocio : idcuotasocio,
@@ -363,7 +355,6 @@ const obtener_cuotas_pendientes_del_mes = async ( req = request, res = response 
         } 
         
     } catch (error) {
-        console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo obtener las cuotas pendientes del mes',
@@ -404,9 +395,7 @@ const obtener_cuotas_pagadas_del_mes = async ( req = request, res = response )=>
             const { idcuotasocio, nombresocio, id_socio, 
                     fechavencimiento, cedula, numero_mes,
                     fecha_pago, tipo_cuota, monto_cuota } = element;
-            //console.log( numero_mes )
             const mes_español = MESES_ESPAÑOL[ Number( numero_mes ) -1 ];
-            //console.log( mes_español )
 
             return {
                 idCuotaSocio : idcuotasocio,
@@ -444,7 +433,6 @@ const obtener_cuotas_pagadas_del_mes = async ( req = request, res = response )=>
         }
 
     } catch (error) {
-        //console.log( error );
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo obtener las cuotas pagadas del mes',
@@ -483,9 +471,7 @@ const obtener_cuotas_atrasadas_del_mes = async ( req = request, res = response )
             const { idcuotasocio, nombresocio, id_socio, 
                     fechavencimiento, cedula, numero_mes,
                     fecha_pago, tipo_cuota, monto_cuota } = element;
-            //console.log( numero_mes )
             const mes_español = MESES_ESPAÑOL[ Number( numero_mes ) -1 ];
-            //console.log( mes_español )
 
             return {
                 idCuotaSocio : idcuotasocio,
@@ -561,7 +547,6 @@ const obtener_grilla_de_cuotas = async ( req = request, res = response )=>{
         let grillaCuotas = [];
         let grilla_cuotas = [];
         grilla_cuotas = await prisma.$queryRawUnsafe( query );
-        //console.log( grilla_cuotas );
 
         if ( grilla_cuotas.length === 0  ){
             res.status( 200 ).json(
@@ -600,7 +585,7 @@ const obtener_grilla_de_cuotas = async ( req = request, res = response )=>{
 
 
     } catch (error) {
-        //console.log( error );
+        
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo obtener la grilla de cuotas del mes',

@@ -11,13 +11,13 @@ const validar_existe_rol_usuario = async ( req = request, res = response, next )
 
         const { descripcionAcceso } = req.body;
         const rol = await prisma.roles_usuario.findFirst( { where : { descripcion_rol : descripcionAcceso } } );
-        //console.log( persona );
+        
         
         if ( rol === null || rol === undefined ) {
             // QUIERE DECIR QUE NO SE ENCONTRO POR TANTO NO EXISTE
             next();
         }else {
-            //const { nombre, apellido, fecha_nacimiento } = persona;
+
             const { descripcion_rol } = rol;
             res.status( 400 ).json( {
                 status : false,

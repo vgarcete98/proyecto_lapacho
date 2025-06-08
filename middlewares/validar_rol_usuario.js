@@ -10,7 +10,7 @@ const validar_rol_usuario = async ( req = request, res = response, next ) =>{
 
     // ESTA FUNCION VALIDA SI EL USUARIO ES UN USUARIO ADMIN PARA REALIZAR PETICIONES
     const { token_trad } = req;
-    //console.log( token_trad );
+    
     const { id_usuario } = token_trad;
     //----------------------------------------------------------------------------------------------------------------------------
     /*const [ rol_usuario, rest ] = await prisma.$queryRaw`SELECT A.NOMBRE_USUARIO, B.DESCRIPCION_ACCESO
@@ -28,17 +28,16 @@ const validar_rol_usuario = async ( req = request, res = response, next ) =>{
                                                         include: { accesos_usuario : true }
                                                         
                                                     } );
-    //console.log ( usuario );
-    //console.log( rol_usuario );
-    //const { descripcion_acceso } = rol_usuario;
-    //console.log( rol_usuario ); 
+    
+
+     
 
     const { descripcion_acceso } = usuario.accesos_usuario;
 
-    //const idAcceso = id_acceso;
-    //const acceso = await prisma.accesos_usuario.findUnique( { where : { id_acceso : idAcceso } } ); 
-    //const { descripcion_acceso } = acceso;
-    //console.log( descripcion_acceso );
+
+
+
+    
     if( descripcion_acceso === 'ACCESO_TOTAL' ){
         next(); 
     }else{

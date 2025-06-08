@@ -15,7 +15,7 @@ const { actualizar_socio,
         actualizar_socio_usuario} = require( '../controlers/socio_controler' );
 const { crear_tipo_socio, obtener_tipos_socios } = require( '../controlers/tipo_socio_controller' );
 
-//const validar_existe_usuario = require('../middlewares/validar_existe_usuario');
+
 const { validar_existe_socio, comprobar_existe_socio, validar_existe_socio_y_dependientes, validar_existe_socio_usuario }= require('../middlewares/validar_existe_socio');
 const router_socio = Router();
 

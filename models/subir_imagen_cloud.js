@@ -22,9 +22,9 @@ const subir_imagen =  async ( archivo ) =>{
 
 // Optimize delivery by resizing and applying auto-format and auto-quality
 
-//const obtener_imagen = async ( id_imagen, resto ) =>{
+
 //    cloudinary.config()
-//    let url_imagen = cloudinary.url( `Home/comprobantes/${id_imagen}`, {
+
 //        fetch_format: 'auto',
 //        quality: 'auto',
 //        width: 500,

@@ -34,7 +34,7 @@ const actualiza_datos_cuota_socio = async ( id_socio = 0, id_tipo_socio = 0, cuo
                                                             
         }
 
-        //console.log( socio_actualizado );
+        
 
     } catch (error) {
         console.log( error );
