@@ -73,7 +73,8 @@ const cron_job_genera_venta_clases_profesores = async (  ) => {
                                                                             AND : [
                                                                                 { horario_inicio : { gte : new Date( inicio ) } },
                                                                                 { horario_hasta : { lte : new Date( fin ) } },
-                                                                                { id_profesor : Number( idProfesor ) }
+                                                                                { id_profesor : Number( idProfesor ) },
+                                                                                { clase_abonada : true }
                                                                             ]
                                                                         } 
                                                                 } );

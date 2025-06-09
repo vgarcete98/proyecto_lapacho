@@ -297,6 +297,7 @@ const agendar_una_clase = async ( req = request, res = response ) =>{
                                                                                     fecha_agendamiento : new Date(),
                                                                                     creadoen : new Date(),
                                                                                     id_precio_clase : id_precio_clase,
+                                                                                    clase_abonada : true
                                                                                     //monto_abonado : precio_clase.precio,
                                                                                     //precio_clase : precio_clase.precio
                                                                                     //clase_eliminada : false,
@@ -634,34 +635,28 @@ const eliminar_clase_con_profesor = async ( req = request, res = response ) =>{
 
         const { idSocio, idProfesor, /*fechaAgendamiento,*/ inicio, fin, idMesa, idAgendamiento } = req.body;
         
-        const { id_agendamiento, id_socio, id_profesor, 
-                fecha_agendamiento, horario_inicio, horario_hasta, 
-                clase_abonada, monto_abonado, creadoen } = await prisma.agendamiento_clase.delete( { where : { id_agendamiento : Number( idAgendamiento ) } } );
+        const clase_cancelada = await prisma.agendamiento_clase.update( { 
+                                                                            where : { id_agendamiento : Number( idAgendamiento ) },
+                                                                            data : {
+                                                                                clase_abonada : false
+                                                                            }
+                                                                        } );
 
-        const { nombre_profesor } = await prisma.profesores.findUnique( { where : { id_profesor :  Number( idProfesor )} } );
-        const { nombre_cmp } = await prisma.socio.findUnique( { where : { id_socio :  Number( idSocio )} } );
-        const { desc_mesa, id_mesa } = await prisma.mesas.findUnique( { where : { id_mesa :  Number( idMesa )} } );
-        res.status( 200 ).json( {
-            status : true,
-            msg : "Clase Borrada",
-            claseAgendada : {
-                idAgendamiento : (typeof id_agendamiento === 'bigint' ? Number(id_agendamiento.toString()) : id_agendamiento), 
-                nombreCmp : nombre_cmp,
-                //fechaAgendamiento : fecha_agendamiento, 
-                fechaCreacion : creadoen,
-                horaDesde : horario_inicio, 
-                horaHasta : horario_hasta,
-                descMesa : desc_mesa,
-                idMesa : (typeof id_mesa === 'bigint' ? Number(id_mesa.toString()) : id_mesa),
-                //----------------------------------------------------------------------------------------
-                idSocio : (typeof id_socio === 'bigint' ? Number(id_socio.toString()) : id_socio),
-                nombreProfesor : nombre_profesor,
-                idProfesor : id_profesor,
-                claseAgendada : clase_abonada,
-                montoAbonado : monto_abonado
-                //----------------------------------------------------------------------------------------
-            }
-        } );
+        if (clase_cancelada !== null){
+            res.status( 200 ).json( {
+                status : true,
+                msg : "Clase Cancelada",
+                descripcion : "Se ha cancelado la clase seleccionada"
+            } );
+
+        }else {
+            res.status( 400 ).json( {
+                status : true,
+                msg : "La Clase no fue Cancelada",
+                descripcion : "No se ha cancelado la clase seleccionada"
+            } );
+        }
+
 
     } catch (error) {
         
