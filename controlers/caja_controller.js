@@ -392,20 +392,6 @@ const obtener_detalle_movimiento_de_caja = async ( req = request, res = response
     }  
 }
 
-const actualizar_caja = async ( req = request, res = response ) =>{ 
-    try {
-
-        const {  } = req.body;
-        
-    } catch (error) {
-        res.status( 500 ).json( {
-            status : false,
-            msg : 'No se pudo realizar esa accion sobre la caja',
-            //error
-        } );
-        
-    }  
-}
 
 
 const obtener_tipo_pagos = async ( req = request, res = response ) => {
@@ -625,11 +611,6 @@ const generar_movimientos_de_caja_ventas = async ( req = request, res = response
                                                                                             id_tipo_ingreso : Number(tipoServicio),
                                                                                             fecha_operacion : new Date(),
                                                                                             timbrado : Number( nroTimbrado ),
-                                                                                        },
-                                                                                        select : {
-                                                                                            timbrado : true,
-                                                                                            nro_factura : true
-
                                                                                         }
                                                                                 } );
                     //OK ACTUALIZO EL ESTADO DE LA VENTA A PAGADO
@@ -1097,7 +1078,6 @@ module.exports = {
     reabrir_caja,
     obtener_movimientos_de_caja,
     obtener_detalle_movimiento_de_caja,
-    actualizar_caja,
     obtener_tipo_pagos,
     crear_tipo_pago,
     generar_movimientos_de_caja_ventas,

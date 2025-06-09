@@ -57,8 +57,6 @@ router_caja.get( '/obtener_movimientos_caja/detalle_movimiento', [  ],  obtener_
 
 router_caja.post( '/crear_caja', [ verificar_existe_caja_vigente ],  crear_caja);
 
-router_caja.put( '/actualizar_caja', [  ],  actualizar_caja);
-
 router_caja.put( '/reabrir_caja', [  ],  reabrir_caja);
 
 router_caja.put( '/cerrar_caja', [ verificar_caja_abierta_y_disponible ],  cerrar_caja);

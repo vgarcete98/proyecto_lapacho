@@ -2,5 +2,5 @@ projectKey=Proyecto_Lapacho
 serverUrl=http://localhost:9000
 serverVersion=25.5.0.107428
 dashboardUrl=http://localhost:9000/dashboard?id=Proyecto_Lapacho
-ceTaskId=fa1c2218-119d-4729-8e92-0a345d25a170
-ceTaskUrl=http://localhost:9000/api/ce/task?id=fa1c2218-119d-4729-8e92-0a345d25a170
+ceTaskId=939c1b35-71fb-49b3-ba81-5883837596f0
+ceTaskUrl=http://localhost:9000/api/ce/task?id=939c1b35-71fb-49b3-ba81-5883837596f0
