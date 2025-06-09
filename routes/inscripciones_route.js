@@ -25,6 +25,7 @@ const { verificar_requerimientos_usuario } = require('../middlewares/verficar_re
 const { verificar_existencia_evento } = require('../middlewares/verificar_existencia_evento');
 const { verificar_inscripcion_a_evento } = require('../middlewares/verficar_inscripcion_a_evento');
 const { verificar_inscripciones_generadas } = require('../middlewares/verificar_inscripciones_generadas');
+const { verificar_servicio_en_venta } = require('../helpers/verificar_servicio_en_venta');
 
 
 
@@ -38,7 +39,7 @@ router_inscripciones.get( '/ver_inscripciones_x_evento',[ obtener_data_socio ], 
 
 router_inscripciones.get( '/ver_inscripciones_x_evento_x_categoria', [], ver_inscripciones_x_evento_x_categoria );
 
-router_inscripciones.post( '/agregar_inscripciones_a_venta',[ obtener_data_socio, verificar_inscripciones_generadas ], agregar_inscripciones_a_venta );
+router_inscripciones.post( '/agregar_inscripciones_a_venta',[ obtener_data_socio, verificar_inscripciones_generadas, verificar_servicio_en_venta ], agregar_inscripciones_a_venta );
 
 router_inscripciones.get( '/obtener_cantidad_inscriptos',[ obtener_data_socio ], obtener_cantidad_inscriptos_x_evento );
 

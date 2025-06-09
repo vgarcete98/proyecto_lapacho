@@ -21,7 +21,8 @@ const {
     verificar_existe_clase_agendada_para_reserva,
     verificar_existe_evento_agendado_para_reservas,
     verificar_existe_evento_agendado_para_reservas_express
-} = require( '../helpers/verificar_disponibilidad_para_servicios' )
+} = require( '../helpers/verificar_disponibilidad_para_servicios' );
+const { verificar_servicio_en_venta } = require('../helpers/verificar_servicio_en_venta');
 
 const router_reservas_club = Router();
 
@@ -31,7 +32,7 @@ router_reservas_club.get( '/obtener_mesas_disponibles',[ ], obtener_mesas_reserv
 router_reservas_club.get( '/obtener_reservas_club', [ verificar_vista_usuario ], obtener_reservas_en_club );
 
 
-router_reservas_club.post( '/agregar_reserva_a_venta', [ verificar_reservas_generadas ], agregar_reserva_a_venta );
+router_reservas_club.post( '/agregar_reserva_a_venta', [ verificar_reservas_generadas, verificar_servicio_en_venta ], agregar_reserva_a_venta );
 
 router_reservas_club.post( '/crear_reserva_club', [     verificar_existe_clase_agendada_para_reserva,
                                                         verificar_existe_evento_agendado_para_reservas, 

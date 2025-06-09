@@ -19,7 +19,8 @@ const actualiza_datos_del_servicio = async ( id_venta = 0 ) => {
                                                             id_agendamiento : true,
                                                             id_cliente_reserva : true,
                                                             id_inscripcion : true,
-                                                            id_cuota_socio : true
+                                                            id_cuota_socio : true,
+                                                            id_periodo_fact : true 
                                                         }
                                                     } );
 
@@ -45,6 +46,7 @@ const actualiza_datos_del_servicio = async ( id_venta = 0 ) => {
                                                                 where : { id_cliente_reserva : id_cliente_reserva },
                                                                 data : {
                                                                     estado : 'PAGADO',
+                                                                    
                                                                     hora_hasta : new Date()
 
                                                                 }
@@ -54,12 +56,13 @@ const actualiza_datos_del_servicio = async ( id_venta = 0 ) => {
                 
                 case id_inscripcion !== null :
                     //DEJO VACIO POR QUE ESTA EN VEREMOS TODAVIA ESTE SERVICIO DE HACER
-                    //servicio = await prisma.in.update( { 
-                    //                                                        where : { id_cuota_socio : id },
-                    //                                                        data : {
-                    //                                                            estado : 'PAGADO'
-                    //                                                        }
-                    //                                                    } );                                                                        
+                    servicio = await prisma.inscripciones.update( { 
+                                                                            where : { id_inscripcion : id_inscripcion },
+                                                                            data : {
+                                                                                estado : 'PAGADO',
+
+                                                                            }
+                                                                        } );                                                                        
                     break;
 
                 case id_cuota_socio !== null :

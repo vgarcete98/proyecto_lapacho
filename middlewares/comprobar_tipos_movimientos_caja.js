@@ -145,8 +145,8 @@ const verificar_ventas_procesadas = async (req = request, res = response, next) 
         if (verificados === true) {
             res.status(400).json({
                 status: false,
-                msg: 'Un movimiento que se está pasando ya fue procesado',
-                descripcion: 'Favor verificar los movimientos a procesar ya que algunos fueron procesados',
+                msg: 'Un movimiento que se está pasando ya no existe',
+                descripcion: 'Favor verificar los movimientos a procesar ya que algunos no existen',
             });
         }
         next();
@@ -187,8 +187,8 @@ const verificar_compras_procesadas = async ( req = request, res = response, next
         if ( verificados === true ){
             return res.status( 400 ).json( {
                 status : false,
-                msg : 'Un movimiento que se esta pasando ya se proceso',
-                descripcion : `Favor verificar los movimientos a procesar ya que algunos fueron procesados`
+                msg : 'Un movimiento que se esta pasando no existe',
+                descripcion : `Favor verificar los movimientos a procesar ya que algunos no existen`
             } );
         }else {
 
@@ -206,6 +206,9 @@ const verificar_compras_procesadas = async ( req = request, res = response, next
     }
 
 }
+
+
+
 
 
 
