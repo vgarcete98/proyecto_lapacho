@@ -43,7 +43,7 @@ router_agendamientos_clase.get( '/obtener_clases_x_fecha_profesor', [], obtener_
 router_agendamientos_clase.get( '/obtener_mesas_disponibles_x_horario', [], obtener_mesas_disponibles_x_horario );
 
 
-router_agendamientos_clase.delete( '/cancelar_clase', [], eliminar_clase_con_profesor );
+router_agendamientos_clase.put( '/cancelar_clase', [], eliminar_clase_con_profesor );
 
 router_agendamientos_clase.put( '/pagar_x_clase', [ obtener_data_socio, verificar_existe_clase  ], abonar_una_clase );
 
