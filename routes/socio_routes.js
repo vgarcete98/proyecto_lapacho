@@ -42,7 +42,7 @@ router_socio.put( '/editar_socio_usuario',[ comprobar_existe_socio ], actualizar
 
 router_socio.post( '/crear_socio_dependientes',[ validar_existe_socio_y_dependientes ], crear_socio_dependientes );
 
-router_socio.delete( '/borrar_socio',[  comprobar_existe_socio ], borrar_socio );
+router_socio.put( '/borrar_socio',[  comprobar_existe_socio ], borrar_socio );
 
 router_socio.put( '/editar_socio',[ comprobar_existe_socio ], actualizar_socio );
 

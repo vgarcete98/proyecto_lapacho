@@ -467,7 +467,7 @@ const borrar_socio = async ( req = request, res = response ) => {
                 {
     
                     status : false,
-                    msg : 'Socio Borrado',
+                    msg : 'El Socio no fue Borrado',
                     descripcion : `No se pudo borrar al socio, intente de nuevo`
                 }   
             ); 

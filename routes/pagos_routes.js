@@ -34,7 +34,7 @@ router_pagos.post( '/cliente/generar_venta_servicios', [  ], generar_venta_servi
 
 router_pagos.get( '/cliente/obtener_venta_clientes', [  ], obtener_venta_servicios );
 
-router_pagos.delete( '/cliente/cancelar_venta_servicios', [  ], eliminar_venta_servicios );
+router_pagos.put( '/cliente/cancelar_venta_servicios', [  ], eliminar_venta_servicios );
 
 router_pagos.put( '/cliente/actualizar_venta_servicios', [  ], actualizar_venta_servicios )
 
