@@ -12,7 +12,7 @@ const obtener_socios_al_dia_detalle = async ( req = request, res = response ) =>
 
 
         //ESTO ES PARA REALIZARLO DE UNA FORMA MAS RESUMIDA
-        const query = `select  X.id_cliente::integer as "idCliente",
+        /*const query = `select  X.id_cliente::integer as "idCliente",
                                 X.nombre_cmp as "nombreCmp",
                                 COUNT(X.id_cuota_socio)::integer as "cantPendiente",
                                 ARRAY_AGG( TO_CHAR(X.fecha_vencimiento, 'Month YYYY') ) as "mesesPendientes"
@@ -35,6 +35,40 @@ const obtener_socios_al_dia_detalle = async ( req = request, res = response ) =>
                                     order by cs.id_cuota_socio ) X 
                         group by  X.id_cliente, X.nombre_cmp
                         order by X.id_cliente`;
+        */
+
+        const query = `WITH meses AS (
+                        SELECT 
+                            date_trunc('month', d) AS mes_inicio,
+                            TO_CHAR(d, 'YYYY-MM') AS mes_codigo,
+                            MES_EN_ESPANOL(TO_CHAR(d, 'Month')) AS mes_nombre
+                        FROM generate_series(
+                            date_trunc('month', CURRENT_DATE) - interval '5 months',
+                            date_trunc('month', CURRENT_DATE),
+                            interval '1 month'
+                        ) AS d
+                        ),
+                        pagos_por_mes AS (
+                        SELECT 
+                            date_trunc('month', cs.fecha_vencimiento) AS mes_inicio,
+                            COUNT(DISTINCT c.id_cliente) AS cantidad
+                        FROM cliente c 
+                        JOIN cuotas_socio cs ON c.id_cliente = cs.id_cliente 
+                        LEFT JOIN ventas v ON cs.id_cuota_socio = v.id_cuota_socio 
+                        WHERE 
+                            v.estado = 'PAGADO' 
+                            --AND cs.fecha_pago_realizado <= cs.fecha_vencimiento
+                        GROUP BY date_trunc('month', cs.fecha_vencimiento)
+                        )
+                        SELECT 
+                        m.mes_nombre AS mes,
+                        (socios.cantidad_socios - COALESCE(p.cantidad, 0) )::integer AS "cantidadAtrasados"
+                        FROM meses m
+                        LEFT JOIN pagos_por_mes p ON p.mes_inicio = m.mes_inicio,
+                        (select COUNT ( c.id_cliente ) cantidad_socios
+                            from cliente c
+                        where c.es_socio = true ) as socios
+                        ORDER BY m.mes_codigo;`
         const sociosAlDiaDetalle = await prisma.$queryRawUnsafe(query)
 
 
@@ -62,6 +96,7 @@ const obtener_socios_al_dia_detalle = async ( req = request, res = response ) =>
 
         
     } catch (error) {
+        console.log( error )
         res.status( 500 ).json( {
             status : false,
             msg : 'No se pudo obtener el detalle de los socios al dia',
@@ -79,34 +114,54 @@ const obtener_cant_socios_al_dia = async ( req = request, res = response ) =>{
 
 
         //ESTO ES PARA REALIZARLO DE UNA FORMA MAS RESUMIDA
-        const query = `select B.estado as estado,
+        const query = `WITH estados_posibles AS (
+                        SELECT unnest(ARRAY['ESTA AL DIA', 'NO ESTA AL DIA']) AS estado
+                        ),
+                        base AS (
+                        select B.estado as estado,
                                 count(B.estado)::integer as cantidad
-                            from (select Z.id_cliente,
-                                        case when (Z.cant_pendiente > 1) then 'NO ESTA AL DIA' else 'ESTA AL DIA' end as estado
-                                        from ( select  X.id_cliente,
-                                                        X.nombre_cmp,
-                                                        COUNT(X.id_cuota_socio) as cant_pendiente,
-                                                        ARRAY_AGG( TO_CHAR(X.fecha_vencimiento, 'Month YYYY') )
-                                                from ( select distinct cs.id_cuota_socio,
-                                                                    c.id_cliente,
-                                                                    c.cedula,
-                                                                    c.nombre_cmp,
-                                                                    v.id_cuota_socio as cuota_venta,
-                                                                    cs.descripcion,
-                                                                    mc.fecha_operacion,
-                                                                    cs.estado  as cuota_estado,
-                                                                    v.estado  as venta_estado,
-                                                                    cs.fecha_vencimiento
-                                                                from cliente c join cuotas_socio cs on c.id_cliente = cs.id_cliente 
-                                                                left join movimiento_caja mc on mc.id_cliente = c.id_cliente 
-                                                                left join ventas v on v.id_cliente = c.id_cliente 
-                                                            where c.id_tipo_socio is not null 
-                                                                and ( v.estado like '%PENDIENTE%' or cs.estado like '%PENDIENTE%')
-                                                                and ( cs.fecha_vencimiento <= current_date )
-                                                            order by cs.id_cuota_socio ) X 
-                                                group by  X.id_cliente, X.nombre_cmp
-                                                order by X.id_cliente ) Z ) B
-                        group by B.estado`;
+                        from (
+                            select Z.id_cliente,
+                                case 
+                                    when Z.cant_pendiente > 1 then 'NO ESTA AL DIA' 
+                                    else 'ESTA AL DIA' 
+                                end as estado
+                            from (
+                            select X.id_cliente,
+                                    X.nombre_cmp,
+                                    COUNT(X.id_cuota_socio) as cant_pendiente,
+                                    ARRAY_AGG(TO_CHAR(X.fecha_vencimiento, 'Month YYYY'))
+                            from (
+                                select distinct cs.id_cuota_socio,
+                                                c.id_cliente,
+                                                c.cedula,
+                                                c.nombre_cmp,
+                                                v.id_cuota_socio as cuota_venta,
+                                                cs.descripcion,
+                                                mc.fecha_operacion,
+                                                cs.estado  as cuota_estado,
+                                                v.estado  as venta_estado,
+                                                cs.fecha_vencimiento
+                                from cliente c 
+                                join cuotas_socio cs on c.id_cliente = cs.id_cliente 
+                                left join movimiento_caja mc on mc.id_cliente = c.id_cliente 
+                                left join ventas v on v.id_cliente = c.id_cliente 
+                                where c.id_tipo_socio is not null 
+                                and (v.estado like '%PENDIENTE%' or cs.estado like '%PENDIENTE%')
+                                and cs.fecha_vencimiento <= current_date
+                                order by cs.id_cuota_socio
+                            ) X 
+                            group by X.id_cliente, X.nombre_cmp
+                            ) Z 
+                        ) B
+                        group by B.estado
+                        )
+                        SELECT 
+                        e.estado, 
+                        COALESCE(b.cantidad, 0) AS cantidad
+                        FROM estados_posibles e
+                        LEFT JOIN base b ON b.estado = e.estado
+                        ORDER BY e.estado;`;
 
         const estados = await prisma.$queryRawUnsafe(query)
 
