@@ -1,4 +1,4 @@
-# 🏟️ Proyecto Lapacho – Sistema de Gestión para Club Deportivo
+# 🏟️ Proyecto Lapacho – Sistema de Gestión para Club Deportivo Lapacho 🏓
 
 **Proyecto Lapacho** es una aplicación web desarrollada con **Node.js**, **Express** y **PostgreSQL**, diseñada para cubrir las necesidades operativas de un club deportivo. Permite gestionar socios, reservas, torneos y otros aspectos clave de la administración del club.
 
