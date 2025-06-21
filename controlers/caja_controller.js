@@ -6,7 +6,12 @@ const { withOptimize } = require("@prisma/extension-optimize");
 
 const { subir_imagen } = require( '../models/subir_imagen_cloud' );
 
-const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
+//PARA PRUEBAS
+//-----------------------------------------------------------------------------------------------------
+//const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
+//-----------------------------------------------------------------------------------------------------
+const prisma = new PrismaClient();
+
 
 
 const { actualiza_datos_del_servicio } = require( '../helpers/actualiza_datos_servicio' );

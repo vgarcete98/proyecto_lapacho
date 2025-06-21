@@ -7,7 +7,12 @@ const { withOptimize } = require("@prisma/extension-optimize");
 const { generar_fecha } = require('../helpers/generar_fecha');
 const { obtener_cantidad_registros_query, excluir_campos_resultado } = require('../helpers/obtener_cant_registros_query');
 
-const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
+//PARA PRUEBAS
+//-----------------------------------------------------------------------------------------------------
+//const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
+//-----------------------------------------------------------------------------------------------------
+const prisma = new PrismaClient();
+
 
 const estados_evento = [ 'ACTIVO', 'ELIMINADO', 'SUSPENDIDO' ]
 

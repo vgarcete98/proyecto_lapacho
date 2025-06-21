@@ -8,7 +8,12 @@ const { subir_imagen } = require('../models/subir_imagen_cloud');
 
 
 //ESTO ES LO QUE HAY QUE AÑADIR A MEDIDA QUE REALIZAMOS LAS PRUEBAS
-const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
+//PARA PRUEBAS
+//-----------------------------------------------------------------------------------------------------
+//const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
+//-----------------------------------------------------------------------------------------------------
+const prisma = new PrismaClient();
+
 
 const estados_socio = {
 

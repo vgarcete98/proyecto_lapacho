@@ -3,7 +3,12 @@ const { request, response } = require('express')
 
 const { PrismaClient } = require('@prisma/client')
 const { withOptimize } = require("@prisma/extension-optimize");
-const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
+//PARA PRUEBAS
+//-----------------------------------------------------------------------------------------------------
+//const prisma = new PrismaClient().$extends(withOptimize( { apiKey: process.env.OPTIMIZE_API_KEY } ));
+//-----------------------------------------------------------------------------------------------------
+const prisma = new PrismaClient();
+
 
 
 
